@@ -1,0 +1,1 @@
+# steamgriddb-manager
