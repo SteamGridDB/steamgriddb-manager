@@ -219,7 +219,9 @@ class Steam {
 
     static deleteCustomGridImage(userdataGridPath, appid) {
         let imagePath = this.getCustomGridImage(userdataGridPath, appid);
-        fs.unlinkSync(imagePath);
+        if (imagePath) {
+            fs.unlinkSync(imagePath);
+        }
     }
 }
 
