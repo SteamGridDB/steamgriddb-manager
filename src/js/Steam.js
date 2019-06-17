@@ -93,42 +93,56 @@ class Steam {
         return new Promise((resolve, reject) => {
             this.getSteamPath().then((steamPath) => {
                 this.getCurrentUserGridPath().then((userdataPath) => {
-                    let appsPath = join(steamPath, 'steamapps');
-                    let files = fs.readdirSync(appsPath);
+                    let parsedLibFolders = VDF.parse(fs.readFileSync(join(steamPath, 'steamapps', 'libraryfolders.vdf'), 'utf-8'));
                     let games = [];
+                    let libraries = [];
 
-                    // files.forEach(function(file){
-                    files.forEach((file) => {
-                        let ext = file.split('.').pop();
+                    // Add Steam install dir
+                    libraries.push(steamPath);
 
-                        if (ext === 'acf') {
-                            let filePath = join(appsPath, file);
-                            let data = fs.readFileSync(filePath, 'utf-8');
-                            let gameData = VDF.parse(data);
+                    // Add library folders from libraryfolders.vdf
+                    Object.keys(parsedLibFolders.LibraryFolders).forEach((key) => {
+                        let library = parsedLibFolders.LibraryFolders[key];
+                        if (!isNaN(key)) {
+                            libraries.push(library);
+                        }
+                    });
 
-                            if (gameData.AppState.appid === 228980) {
-                                return;
-                            }
+                    libraries.forEach((library) => {
+                        let appsPath = join(library, 'steamapps');
+                        let files = fs.readdirSync(appsPath);
+                        files.forEach((file) => {
+                            let ext = file.split('.').pop();
 
-                            let image = this.getCustomGridImage(userdataPath, gameData.AppState.appid);
+                            if (ext === 'acf') {
+                                let filePath = join(appsPath, file);
+                                let data = fs.readFileSync(filePath, 'utf-8');
+                                let gameData = VDF.parse(data);
 
-                            try {
-                                // @todo We are checking this in getCustomGridIamge now, so no need to do it here
-                                if (!fs.existsSync(image)) {
+                                if (gameData.AppState.appid === 228980) {
+                                    return;
+                                }
+
+                                let image = this.getCustomGridImage(userdataPath, gameData.AppState.appid);
+
+                                try {
+                                    // @todo We are checking this in getCustomGridIamge now, so no need to do it here
+                                    if (!fs.existsSync(image)) {
+                                        image = this.getDefaultGridImage(gameData.AppState.appid);
+                                    }
+                                } catch(err) {
                                     image = this.getDefaultGridImage(gameData.AppState.appid);
                                 }
-                            } catch(err) {
-                                image = this.getDefaultGridImage(gameData.AppState.appid);
-                            }
 
-                            games.push({
-                                appid: gameData.AppState.appid,
-                                name: gameData.AppState.name,
-                                image: image,
-                                imageURI: image,
-                                type: 'game'
-                            });
-                        }
+                                games.push({
+                                    appid: gameData.AppState.appid,
+                                    name: gameData.AppState.name,
+                                    image: image,
+                                    imageURI: image,
+                                    type: 'game'
+                                });
+                            }
+                        });
                     });
 
                     resolve(games);
