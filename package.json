@@ -15,6 +15,9 @@
     "appId": "comnpm",
     "productName": "SteamGridDB Manager",
     "copyright": "SteamGridDB.com",
+    "directories": {
+      "buildResources": "assets/icons"
+    },
     "win": {
       "target": "nsis"
     },
