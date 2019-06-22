@@ -26,7 +26,6 @@ class Steam {
                 if (steamPath) {
                     resolve(steamPath);
                 } else {
-                    // @todo We need to check this at app start and show a giant error if it happens because nothing about this app will work without finding Steam
                     reject(new Error('Could not find Steam path.'));
                 }
             });

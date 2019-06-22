@@ -1,4 +1,5 @@
 import React from 'react';
+import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
 import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
 import queryString from 'query-string';
@@ -18,6 +19,7 @@ class Games extends React.Component {
             isLoaded: false,
             isHover: false,
             toSearch: false,
+            hasSteam: true,
             items: []
         };
 
@@ -34,7 +36,13 @@ class Games extends React.Component {
 
     componentDidMount() {
         if (this.state.items.length <= 0) {
-            this.fetchGames();
+            Steam.getSteamPath().then(() => {
+                this.fetchGames();
+            }).catch((err) => {
+                this.setState({
+                    hasSteam: false
+                });
+            });
         }
     }
 
@@ -67,7 +75,15 @@ class Games extends React.Component {
     }
 
     render() {
-        const {isLoaded, items} = this.state;
+        const {isLoaded, hasSteam, items} = this.state;
+
+        if (!hasSteam) {
+            return (
+                <h5 style={{...getTheme().typographyStyles.title, textAlign: 'center'}}>
+                    Steam installation not found.
+                </h5>
+            )
+        }
 
         if (this.state.success) {
             let title = `Success: ${this.state.success.game}`;
