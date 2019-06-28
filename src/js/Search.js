@@ -187,7 +187,6 @@ class Search extends React.Component {
         }
 
         if (!isLoaded) {
-            // @todo Does the spinner already put a width 100% div in?
             return (<Spinner/>);
         }
 
