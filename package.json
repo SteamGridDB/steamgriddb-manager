@@ -59,8 +59,10 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.17",
     "@fortawesome/free-solid-svg-icons": "^5.8.1",
     "@fortawesome/react-fontawesome": "^0.1.4",
-    "winreg": "^1.2.4",
     "@node-steam/vdf": "^2.0.1",
-    "steam-shortcut-editor": "^3.1.1"
+    "electron-store": "^4.0.0",
+    "steam-shortcut-editor": "^3.1.1",
+    "steamgriddb": "^1.0.1",
+    "winreg": "^1.2.4"
   }
 }

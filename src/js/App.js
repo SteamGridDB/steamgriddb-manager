@@ -9,6 +9,7 @@ import {HashRouter as Router, Redirect, Link, Route} from 'react-router-dom';
 
 import Search from './Search.js';
 import Games from './games.js';
+import Settings from './Settings.js';
 
 // Using window.require so babel doesn't change the node require
 const electron = window.require('electron');
@@ -114,9 +115,13 @@ class App extends React.Component {
                                 <Tab title="Library">
                                     <Redirect to="/games"/>
                                 </Tab>
+                                <Tab title="Settings">
+                                    <Redirect to="/settings"/>
+                                </Tab>
                             </Tabs>
                         </div>
 
+                        <Route exact path="/settings" component={Settings} />
                         <Route exact path="/games" component={Games} />
                         <Route exact path="/search" component={Search} />
                     </div>

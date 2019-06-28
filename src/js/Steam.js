@@ -124,12 +124,7 @@ class Steam {
 
                                 let image = this.getCustomGridImage(userdataPath, gameData.AppState.appid);
 
-                                try {
-                                    // @todo We are checking this in getCustomGridIamge now, so no need to do it here
-                                    if (!fs.existsSync(image)) {
-                                        image = this.getDefaultGridImage(gameData.AppState.appid);
-                                    }
-                                } catch(err) {
+                                if (!image) {
                                     image = this.getDefaultGridImage(gameData.AppState.appid);
                                 }
 
@@ -161,7 +156,7 @@ class Steam {
                         let games = [];
 
                         items.shortcuts.forEach((item) => {
-                            let appid = this.generateAppId(item.Exe, item.AppName);
+                            let appid = this.generateAppId(item.Exe, item.appname);
                             let image = this.getCustomGridImage(userdataGridPath, appid);
                             let imageURI = false;
 
@@ -171,7 +166,7 @@ class Steam {
 
                             games.push({
                                 appid: appid,
-                                name: item.AppName,
+                                name: item.appname,
                                 image: image,
                                 imageURI: imageURI,
                                 type: 'shortcut'
