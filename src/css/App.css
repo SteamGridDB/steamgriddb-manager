@@ -19,3 +19,7 @@ body {
 div[class^="fluent-background-"] {
     background-color: #1a1a1a;
 }
+
+[class*="split-view-command-icon-"] {
+    line-height: 48px !important; /* Conflicts with inherit value */
+}

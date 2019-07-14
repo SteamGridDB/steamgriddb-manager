@@ -87,7 +87,7 @@ class GridImage extends React.Component {
                     fontWeight: '500',
                     textAlign: 'center',
                     color: '#fff',
-                    zIndex: 2
+                    zIndex: 0
                 }}>
                     {this.props.name}
                 </div>
@@ -100,7 +100,7 @@ class GridImage extends React.Component {
                     height: this.gridHeight + 'px',
                     background: 'rgba(0,0,0,0.5)',
                     opacity: overlayOpacity,
-                    zIndex: 1
+                    zIndex: -1
                 }} />
 
                 {progressBar}

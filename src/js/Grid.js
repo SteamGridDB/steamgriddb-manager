@@ -17,7 +17,7 @@ class Grid extends React.Component {
                 width: '100%',
                 overflowX: 'hidden',
                 overflowY: 'auto',
-                maxHeight: 'calc(100vh - 108px)',
+                maxHeight: 'calc(100vh - 30px)',
                 fontFamily: 'Roboto, sans-serif',
             }}>
                 {this.props.children}

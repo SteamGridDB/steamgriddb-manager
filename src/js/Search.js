@@ -7,7 +7,7 @@ import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
 import Grid from "./Grid";
 import queryString from "query-string";
 const SGDB = window.require('steamgriddb');
-const path = window.require('path')
+const path = window.require('path');
 const https = window.require('https');
 const fs = window.require('fs');
 const Stream = window.require('stream').Transform
@@ -38,6 +38,8 @@ class Search extends React.Component {
         this.setImageDownloaded = this.setImageDownloaded.bind(this);
         this.setIsDownloading = this.setIsDownloading.bind(this);
         this.getIsDownloading = this.getIsDownloading.bind(this);
+
+        PubSub.publish('showBack', true);
     }
 
     componentDidMount() {
@@ -164,7 +166,7 @@ class Search extends React.Component {
         const {isLoaded, items} = this.state;
 
         if (this.state.imageDownloaded) {
-            let url = `/games/?success=true&game=${this.state.imageDownloaded.game}&image=${this.state.imageDownloaded.image}`;
+            let url = `/?success=true&game=${this.state.imageDownloaded.game}&image=${this.state.imageDownloaded.image}`;
             console.log('redirecing to games');
             return (
                 <div>
