@@ -35,7 +35,7 @@ class Settings extends React.Component {
         };
 
         return (
-            <div style={{margin: '0 20px'}}>
+            <div>
                 <h5 style={getTheme().typographyStyles.subTitle}>API Key</h5>
                 <p style={descStyle}>
                     Your API key can be found in your preferences page on steamgriddb.com.

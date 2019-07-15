@@ -15,9 +15,9 @@ class Grid extends React.Component {
                 gridAutoRows: (160 * this.zoom + 10) + 'px',
                 justifyItems: 'center',
                 width: '100%',
+                maxHeight: 'calc(100vh - 50px)',
                 overflowX: 'hidden',
                 overflowY: 'auto',
-                maxHeight: 'calc(100vh - 30px)',
                 fontFamily: 'Roboto, sans-serif',
             }}>
                 {this.props.children}

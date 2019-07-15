@@ -125,17 +125,15 @@ class App extends React.Component {
                                 navigationBottomNodes={navigationBottomNode}
                                 focusNavigationNodeIndex={0}
                             >
-                                <div style={{marginLeft: navWidth, paddingTop: 15}}>
+                                <div style={{marginLeft: navWidth, paddingLeft: 10}}>
                                     {this.state.redirectTo &&
                                         <Redirect to={this.state.redirectTo} />
                                     }
 
-                                    <div>
-                                        <Route exact path="/" component={Games} />
-                                        <Route exact path="/import" component={Import} />
-                                        <Route exact path="/settings" component={Settings} />
-                                        <Route exact path="/search" component={Search} />
-                                    </div>
+                                    <Route exact path="/" component={Games} />
+                                    <Route exact path="/import" component={Import} />
+                                    <Route exact path="/settings" component={Settings} />
+                                    <Route exact path="/search" component={Search} />
                                 </div>
                             </NavigationView>
                         </div>

@@ -4,6 +4,10 @@ import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
 import queryString from 'query-string';
 import Image from "react-uwp/Image";
+import CommandBar from "react-uwp/CommandBar";
+import AppBarButton from "react-uwp/AppBarButton";
+import AppBarSeparator from "react-uwp/AppBarSeparator";
+import AutoSuggestBox from "react-uwp/AutoSuggestBox";
 import Grid from "./Grid";
 import * as PubSub from "pubsub-js";
 import Steam from "./Steam";
@@ -66,6 +70,10 @@ class Games extends React.Component {
         this.setState({toSearch: true});
     }
 
+    filterGames(searchTerm) {
+        console.log(value);
+    }
+
     addNoCache(imageURI) {
         if (!imageURI) {
             return false;
@@ -101,15 +109,23 @@ class Games extends React.Component {
         }
 
         return (
-            <Grid zoom={this.zoom}>
-                {items.map((item, i) => {
-                    let imageURI = this.addNoCache((item.imageURI));
+            <div>
+                <div style={{margin: 5, float: 'right'}}>
+                    <AutoSuggestBox
+                        placeholder='Search'
+                        onChangeValue={this.filterGames}
+                    />
+                </div>
+                <Grid zoom={this.zoom}>
+                    {items.map((item, i) => {
+                        let imageURI = this.addNoCache((item.imageURI));
 
-                    return (
-                        <GridImage name={item.name} appid={item.appid} gameType={item.type} image={imageURI} zoom={this.zoom} onClick={this.onClick} key={i}/>
-                    )
-                })}
-            </Grid>
+                        return (
+                            <GridImage name={item.name} appid={item.appid} gameType={item.type} image={imageURI} zoom={this.zoom} onClick={this.onClick} key={i}/>
+                        )
+                    })}
+                </Grid>
+            </div>
         )
     }
 }
