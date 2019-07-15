@@ -61,6 +61,7 @@
     "@fortawesome/react-fontawesome": "^0.1.4",
     "@node-steam/vdf": "^2.0.1",
     "electron-store": "^4.0.0",
+    "jsonminify": "^0.4.1",
     "react-collapse": "^4.0.3",
     "react-motion": "^0.5.2",
     "steam-shortcut-editor": "^3.1.1",

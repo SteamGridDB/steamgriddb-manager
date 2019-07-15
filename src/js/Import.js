@@ -8,8 +8,10 @@ import Separator from "react-uwp/Separator";
 import CheckBox from "react-uwp/CheckBox";
 import Toggle from "react-uwp/Toggle";
 import Spinner from './spinner.js';
-import Origin from "./Origin";
 import Steam from "./Steam";
+import Origin from "./Origin";
+import Uplay from "./Uplay";
+import Epic from "./Epic";
 import {crc32} from 'crc';
 
 class Import extends React.Component {
@@ -22,18 +24,21 @@ class Import extends React.Component {
             isLoaded: false,
             currentPlatform: null,
             originGames: [],
-            steamApps: []
+            uplayGames: [],
+            epicGames: []
         };
     }
 
     componentDidMount() {
-        let nonSteamGamesPromise = Steam.getNonSteamGames();
         let originGamesPromise = Origin.getGames();
-        Promise.all([nonSteamGamesPromise, originGamesPromise]).then((values) => {
+        let uplayGamesPromise = Uplay.getGames();
+        let epicGamesPromise = Epic.getGames();
+        Promise.all([originGamesPromise, uplayGamesPromise, epicGamesPromise]).then((values) => {
             this.setState({
                 isLoaded: true,
-                originGames: values[1],
-                steamApps: values[0]
+                originGames: values[0],
+                uplayGames: values[1],
+                epicGames: values[2]
             })
         });
     }
@@ -85,7 +90,7 @@ class Import extends React.Component {
     }
 
     render() {
-        const {isLoaded, originGames} = this.state;
+        const {isLoaded, originGames, uplayGames, epicGames} = this.state;
         const listStyle = {
             background: 'none',
             border: 0
@@ -107,13 +112,23 @@ class Import extends React.Component {
                         </div>
                     </Tab>
                     <Tab title="Uplay">
-                        Uplay
+                        <div style={{overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 80px)'}}>
+                            <div style={{padding: 10}}>
+                                <p>Choose games to import from Uplay</p>
+                            </div>
+                            <ListView style={listStyle} listSource={this.gameList(uplayGames, 'uplay')} />
+                        </div>
+                    </Tab>
+                    <Tab title="Epic Games Launcher">
+                        <div style={{overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 80px)'}}>
+                            <div style={{padding: 10}}>
+                                <p>Choose games to import from the Epic Games Launcher</p>
+                            </div>
+                            <ListView style={listStyle} listSource={this.gameList(epicGames, 'egs')} />
+                        </div>
                     </Tab>
                     <Tab title="GOG.com">
                         GOG.com
-                    </Tab>
-                    <Tab title="Epic Games Store">
-                        Epic Games Store
                     </Tab>
                 </Tabs>
             </div>
