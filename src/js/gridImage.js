@@ -29,7 +29,7 @@ class GridImage extends React.Component {
         let overlayOpacity = this.state.isHover | 0;
 
         if (this.state.toSearch) {
-            let to = `/search/?game=${this.props.name}&appid=${this.props.appid}&type=${this.props.gameType}`;
+            let to = `/search/?game=${this.props.name}&appid=${this.props.appid}&type=${this.props.gameType}&gameId=${this.props.gameId}&platform=${this.props.platform}`;
 
             return(
                 <Redirect to={to} />

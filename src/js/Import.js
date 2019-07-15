@@ -9,6 +9,7 @@ import CheckBox from "react-uwp/CheckBox";
 import Toggle from "react-uwp/Toggle";
 import Spinner from './spinner.js';
 import Origin from "./Origin";
+import Steam from "./Steam";
 import {crc32} from 'crc';
 
 class Import extends React.Component {
@@ -20,45 +21,42 @@ class Import extends React.Component {
         this.state = {
             isLoaded: false,
             currentPlatform: null,
-            originGames: []
+            originGames: [],
+            steamApps: []
         };
     }
 
     componentDidMount() {
-        Origin.isInstalled().then((installed) => {
-            if (installed) {
-                this.fetchOrigin();
-            }
-        });
-    }
-
-    fetchOrigin() {
-        Origin.getGames().then((games) => {
+        let nonSteamGamesPromise = Steam.getNonSteamGames();
+        let originGamesPromise = Origin.getGames();
+        Promise.all([nonSteamGamesPromise, originGamesPromise]).then((values) => {
             this.setState({
                 isLoaded: true,
-                originGames: games
-            });
+                originGames: values[1],
+                steamApps: values[0]
+            })
         });
     }
 
-    platformGameSave(platformName, game) {
-        this.store.set(`platforms.${platformName}.${crc32(game.id).toString(16)}`, game);
+    platformGameSave(game) {
+        this.store.set(`games.${Steam.generateAppId(game.exe, game.name)}`, game);
     }
 
-    platformGameRemove(platformName, game) {
-        this.store.delete(`platforms.${platformName}.${crc32(game.id).toString(16)}`);
+    platformGameRemove(game) {
+        this.store.delete(`games.${Steam.generateAppId(game.exe, game.name)}`);
     }
 
-    platformGameExists(platformName, game) {
-        return this.store.has(`platforms.${platformName}.${crc32(game.id).toString(16)}`);
+    platformGameExists(game) {
+        return this.store.has(`games.${Steam.generateAppId(game.exe, game.name)}`);
     }
-
 
     onCheck(game, checked) {
         if (checked) {
-            this.platformGameSave('origin', game);
+            this.platformGameSave(game);
+            Steam.addShortcut(game.name, game.exe, game.startIn, game.params);
         } else {
-            this.platformGameRemove('origin', game);
+            this.platformGameRemove(game);
+            Steam.removeShortcut(game.name, game.exe);
         }
     }
 
@@ -66,7 +64,7 @@ class Import extends React.Component {
         return (
             games.map((game) => {
                 let checked = false;
-                if (this.platformGameExists(platform, game)) {
+                if (this.platformGameExists(game)) {
                     checked = true;
                 }
 
@@ -103,7 +101,6 @@ class Import extends React.Component {
                     <Tab title="Origin" style={{width: '100%'}}>
                         <div style={{overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 80px)'}}>
                             <div style={{padding: 10}}>
-                                <p>Found {originGames.length} Origin Games.</p>
                                 <p>Choose games to import from Origin</p>
                             </div>
                             <ListView style={listStyle} listSource={this.gameList(originGames, 'origin')} />

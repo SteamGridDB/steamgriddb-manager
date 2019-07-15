@@ -1,4 +1,5 @@
 const Registry = window.require('winreg');
+const Store = window.require('electron-store');
 const fs = window.require('fs');
 const {join} = window.require('path')
 const VDF = window.require('@node-steam/vdf');
@@ -149,30 +150,52 @@ class Steam {
         return new Promise((resolve, reject) => {
             this.getSteamPath().then((steamPath) => {
                 this.getLoggedInUser().then((user) => {
+                    let store = new Store();
                     let userdataPath = join(steamPath, 'userdata', String(user));
                     let userdataGridPath = join(userdataPath, 'config', 'grid');
                     let shortcutPath = join(userdataPath, 'config', 'shortcuts.vdf');
                     shortcut.parseFile(shortcutPath, (err, items) => {
-                        let games = [];
+                        let games = {
+                            'unknown': []
+                        };
+
+                        if (!items) {
+                            return resolve([]);
+                        }
 
                         items.shortcuts.forEach((item) => {
-                            let appid = this.generateAppId(item.Exe, item.appname);
+                            let appid = this.generateAppId(item.exe, item.appname);
                             let image = this.getCustomGridImage(userdataGridPath, appid);
                             let imageURI = false;
-
                             if (image) {
                                 imageURI = "file://" + image.replace(' ', '%20');
                             }
 
-                            games.push({
-                                appid: appid,
-                                name: item.appname,
-                                image: image,
-                                imageURI: imageURI,
-                                type: 'shortcut'
-                            });
-                        });
+                            if (store.has(`games.${appid}`)) {
+                                let storedGame = store.get(`games.${appid}`);
+                                if (typeof games[storedGame.platform] == 'undefined') {
+                                    games[storedGame.platform] = [];
+                                }
 
+                                games[storedGame.platform].push({
+                                    gameId: storedGame.id,
+                                    appid: appid,
+                                    name: item.appname,
+                                    image: image,
+                                    imageURI: imageURI,
+                                    type: 'shortcut'
+                                });
+                            } else {
+                                games['unknown'].push({
+                                    gameId: null,
+                                    appid: appid,
+                                    name: item.appname,
+                                    image: image,
+                                    imageURI: imageURI,
+                                    type: 'shortcut'
+                                });
+                            }
+                        });
                         resolve(games);
                     });
                 });
@@ -230,6 +253,112 @@ class Steam {
         if (imagePath) {
             fs.unlinkSync(imagePath);
         }
+    }
+
+    static getShortcutFile() {
+        return new Promise((resolve, reject) => {
+            this.getSteamPath().then((steamPath) => {
+                this.getLoggedInUser().then((user) => {
+                    let userdataPath = join(steamPath, 'userdata', String(user));
+                    let shortcutPath = join(userdataPath, 'config', 'shortcuts.vdf');
+                    resolve(shortcutPath);
+                });
+            });
+        });
+    }
+
+    static getShortcutIds(gameId) {
+        return new Promise((resolve, reject) => {
+            this.getShortcutFile().then((shortcutPath) => {
+                shortcut.parseFile(shortcutPath, (err, items) => {
+                    let apps = [];
+                    if (typeof items == 'undefined') {
+                        return resolve(apps);
+                    }
+
+                    apps = items.shortcuts;
+
+                    const result = apps.filter(app => typeof app.SGDB.id != 'undefined');
+                    return resolve(result);
+                });
+            });
+        });
+    }
+
+    static addShortcut(name, executable, startIn, launchOptions) {
+        return new Promise((resolve, reject) => {
+            this.getShortcutFile().then((shortcutPath) => {
+                shortcut.parseFile(shortcutPath, (err, items) => {
+                    let newShorcuts = {
+                        'shortcuts': []
+                    };
+
+                    let apps = [];
+                    if (typeof items != 'undefined') {
+                        apps = items.shortcuts;
+                    }
+
+                    // Don't add dupes
+                    for (let i = 0; i < apps.length; i++) {
+                        let app = apps[i];
+                        let appid = this.generateAppId(app.exe, app.appname);
+                        if (this.generateAppId(executable, name) === appid) {
+                            return resolve();
+                            break;
+                        }
+                    }
+
+                    apps.push({
+                        "appname": name,
+                        "exe": executable,
+                        "StartDir": startIn,
+                        "LaunchOptions": launchOptions,
+                        "icon": '',
+                        "IsHidden": false,
+                        "ShortcutPath": '',
+                        "AllowDesktopConfig": true,
+                        "OpenVR": false,
+                        "tags": []
+                    });
+                    newShorcuts.shortcuts = apps;
+
+                    shortcut.writeFile(shortcutPath, newShorcuts, (err) => {
+                        return resolve();
+                    });
+                });
+            });
+        });
+    }
+
+    static removeShortcut(name, executable) {
+        return new Promise((resolve, reject) => {
+            this.getShortcutFile().then((shortcutPath) => {
+                shortcut.parseFile(shortcutPath, (err, items) => {
+                    let newShorcuts = {
+                        'shortcuts': []
+                    };
+
+                    let apps = [];
+                    if (typeof items != 'undefined') {
+                        apps = items.shortcuts;
+                    }
+
+                    for (let i = 0; i < apps.length; i++) {
+                        let app = apps[i];
+                        let appid = this.generateAppId(app.exe, app.appname);
+                        if (this.generateAppId(executable, name) === appid) {
+                            apps.splice(i, 1);
+                            break;
+                        }
+                    }
+
+                    newShorcuts.shortcuts = apps;
+                    shortcut.writeFile(shortcutPath, newShorcuts, (err) => {
+                        resolve();
+                    });
+                });
+            });
+        });
     }
 }
 

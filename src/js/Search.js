@@ -24,6 +24,8 @@ class Search extends React.Component {
         this.query = qs.game;
         this.appid = qs.appid;
         this.gameType = qs.type;
+        this.platform = qs.platform;
+        this.gameId = qs.gameId;
 
         this.state = {
             error: null,
@@ -76,7 +78,33 @@ class Search extends React.Component {
                 });
         }
 
-        if (this.gameType === 'shortcut') {
+        if (this.gameType === 'shortcut' && this.platform !== 'unknown') {
+            console.log({
+                    type: this.platform,
+                    id: this.gameId
+                });
+            client.getGame({
+                    type: this.platform,
+                    id: this.gameId
+                })
+                .then((res) => {
+                    client.getGridsById(res.id)
+                        .then((res) => {
+                            let items = res;
+                            this.setState({
+                                isLoaded: true,
+                                items: items
+                            });
+                        });
+                })
+                .catch((err) => {
+                    this.setState({
+                        apiError: true
+                    });
+                });
+        }
+
+        if (this.gameType === 'shortcut' && this.platform === 'unknown') {
             client.searchGame(this.query)
                 .then((res) => {
                     client.getGridsById(res[0].id)

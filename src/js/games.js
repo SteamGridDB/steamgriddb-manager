@@ -4,9 +4,6 @@ import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
 import queryString from 'query-string';
 import Image from "react-uwp/Image";
-import CommandBar from "react-uwp/CommandBar";
-import AppBarButton from "react-uwp/AppBarButton";
-import AppBarSeparator from "react-uwp/AppBarSeparator";
 import AutoSuggestBox from "react-uwp/AutoSuggestBox";
 import Grid from "./Grid";
 import * as PubSub from "pubsub-js";
@@ -24,9 +21,8 @@ class Games extends React.Component {
             isHover: false,
             toSearch: false,
             hasSteam: true,
-            items: []
+            items: {}
         };
-
 
         const qs = this.props.location && queryString.parse(this.props.location.search);
 
@@ -39,7 +35,7 @@ class Games extends React.Component {
     }
 
     componentDidMount() {
-        if (this.state.items.length <= 0) {
+        if (Object.entries(this.state.items).length <= 0) {
             Steam.getSteamPath().then(() => {
                 this.fetchGames();
             }).catch((err) => {
@@ -55,14 +51,14 @@ class Games extends React.Component {
 
         let steamGamesPromise = Steam.getSteamGames();
         let nonSteamGamesPromise = Steam.getNonSteamGames();
-
         Promise.all([steamGamesPromise, nonSteamGamesPromise]).then((values) => {
-            let items =  [].concat.apply([], values);
-
-            self.setState({
+            this.setState({
                 isLoaded: true,
-                items: items
-            });
+                items: {...this.state.items, ...{
+                    'steam': values[0],
+                    'nonSteam': values[1]
+                }}
+            })
         });
     }
 
@@ -84,7 +80,6 @@ class Games extends React.Component {
 
     render() {
         const {isLoaded, hasSteam, items} = this.state;
-
         if (!hasSteam) {
             return (
                 <h5 style={{...getTheme().typographyStyles.title, textAlign: 'center'}}>
@@ -116,8 +111,9 @@ class Games extends React.Component {
                         onChangeValue={this.filterGames}
                     />
                 </div>
-                <Grid zoom={this.zoom}>
-                    {items.map((item, i) => {
+
+                <Grid zoom={this.zoom} platform="Steam">
+                    {items.steam.map((item, i) => {
                         let imageURI = this.addNoCache((item.imageURI));
 
                         return (
@@ -125,6 +121,26 @@ class Games extends React.Component {
                         )
                     })}
                 </Grid>
+
+                {Object.keys(items.nonSteam).map((platform, i) => (
+                    <Grid zoom={this.zoom} platform={platform} key={i}>
+                        {items.nonSteam[platform].map((item, i) => {
+                            let imageURI = this.addNoCache((item.imageURI));
+                            return (
+                                <GridImage
+                                    name={item.name}
+                                    gameId={item.gameId}
+                                    platform={platform}
+                                    appid={item.appid}
+                                    gameType={item.type}
+                                    image={imageURI}
+                                    zoom={this.zoom}
+                                    onClick={this.onClick}
+                                    key={i}/>
+                            )
+                        })}
+                    </Grid>
+                ))}
             </div>
         )
     }
