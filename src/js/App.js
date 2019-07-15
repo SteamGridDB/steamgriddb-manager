@@ -125,7 +125,7 @@ class App extends React.Component {
                                 navigationBottomNodes={navigationBottomNode}
                                 focusNavigationNodeIndex={0}
                             >
-                                <div style={{marginLeft: navWidth, paddingLeft: 10}}>
+                                <div style={{marginLeft: navWidth, height: '100%', paddingLeft: 10}}>
                                     {this.state.redirectTo &&
                                         <Redirect to={this.state.redirectTo} />
                                     }

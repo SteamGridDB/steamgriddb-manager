@@ -1,5 +1,5 @@
 import React from 'react';
-import {ProgressCircle} from 'react-desktop/windows';
+import ProgressRing from 'react-uwp/ProgressRing';
 
 class Spinner extends React.Component {
     constructor(props) {
@@ -12,9 +12,10 @@ class Spinner extends React.Component {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '100%'
+                width: '100%',
+                height: '100%'
             }}>
-                <ProgressCircle size="100" />
+                <ProgressRing size={100} />
             </div>
         )
     }
