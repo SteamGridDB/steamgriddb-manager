@@ -23,3 +23,7 @@ div[class^="fluent-background-"] {
 [class*="split-view-command-icon-"] {
     line-height: 48px !important; /* Conflicts with inherit value */
 }
+
+[class*="checkbox-iconParent"] {
+    margin-left: auto;
+}
