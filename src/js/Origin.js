@@ -50,9 +50,9 @@ class Origin {
 
     static getGames() {
         return new Promise((resolve, reject) => {
-            let originDataPath = 'C:\\ProgramData\\Origin';
-            let games = [];
             this.getOriginPath().then((originPath) => {
+                let originDataPath = 'C:\\ProgramData\\Origin';
+                let games = [];
                 if (fs.existsSync(path.join(originDataPath, 'LocalContent'))) {
                     fs.readdirSync(path.join(originDataPath, 'LocalContent')).forEach((folder) => {
                         let manifestFolder = path.join(originDataPath, 'LocalContent', folder);
@@ -80,8 +80,8 @@ class Origin {
                         }
                     });
                 }
+                resolve(games);
             });
-            resolve(games);
         });
     }
 }
