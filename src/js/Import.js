@@ -95,10 +95,6 @@ class Import extends React.Component {
     }
 
     gameList(games, platform) {
-        if (games == false) {
-
-        }
-
         return (
             games.map((game) => {
                 let checked = false;
@@ -132,8 +128,6 @@ class Import extends React.Component {
         if (!isLoaded) {
             return (<Spinner/>);
         }
-
-        games.map((game, i) => {console.log(this.platforms[i].name, i)});
 
         return (
             <div>
