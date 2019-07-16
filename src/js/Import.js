@@ -12,6 +12,7 @@ import Steam from "./Steam";
 import Origin from "./Origin";
 import Uplay from "./Uplay";
 import Epic from "./Epic";
+import Gog from "./Gog";
 import {crc32} from 'crc';
 
 class Import extends React.Component {
@@ -25,7 +26,8 @@ class Import extends React.Component {
             currentPlatform: null,
             originGames: [],
             uplayGames: [],
-            epicGames: []
+            epicGames: [],
+            gogGames: []
         };
     }
 
@@ -33,12 +35,14 @@ class Import extends React.Component {
         let originGamesPromise = Origin.getGames();
         let uplayGamesPromise = Uplay.getGames();
         let epicGamesPromise = Epic.getGames();
-        Promise.all([originGamesPromise, uplayGamesPromise, epicGamesPromise]).then((values) => {
+        let gogGamesPromise = Gog.getGames();
+        Promise.all([originGamesPromise, uplayGamesPromise, epicGamesPromise, gogGamesPromise]).then((values) => {
             this.setState({
                 isLoaded: true,
                 originGames: values[0],
                 uplayGames: values[1],
-                epicGames: values[2]
+                epicGames: values[2],
+                gogGames: values[3]
             })
         });
     }
@@ -90,7 +94,7 @@ class Import extends React.Component {
     }
 
     render() {
-        const {isLoaded, originGames, uplayGames, epicGames} = this.state;
+        const {isLoaded, originGames, uplayGames, epicGames, gogGames} = this.state;
         const listStyle = {
             background: 'none',
             border: 0
@@ -128,7 +132,12 @@ class Import extends React.Component {
                         </div>
                     </Tab>
                     <Tab title="GOG.com">
-                        GOG.com
+                        <div style={{overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 80px)'}}>
+                            <div style={{padding: 10}}>
+                                <p>Choose games to import from the GOG</p>
+                            </div>
+                            <ListView style={listStyle} listSource={this.gameList(gogGames, 'gog')} />
+                        </div>
                     </Tab>
                 </Tabs>
             </div>
