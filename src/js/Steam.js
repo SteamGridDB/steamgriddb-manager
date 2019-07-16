@@ -164,7 +164,8 @@ class Steam {
                         }
 
                         items.shortcuts.forEach((item) => {
-                            let appid = this.generateAppId(item.exe, item.appname);
+                            let appName = item.appname || item.AppName;
+                            let appid = this.generateAppId(item.exe || item.Exe, appName);
                             let image = this.getCustomGridImage(userdataGridPath, appid);
                             let imageURI = false;
                             if (image) {
@@ -180,7 +181,7 @@ class Steam {
                                 games[storedGame.platform].push({
                                     gameId: storedGame.id,
                                     appid: appid,
-                                    name: item.appname,
+                                    name: appName,
                                     image: image,
                                     imageURI: imageURI,
                                     type: 'shortcut'
@@ -189,7 +190,7 @@ class Steam {
                                 games['unknown'].push({
                                     gameId: null,
                                     appid: appid,
-                                    name: item.appname,
+                                    name: appName,
                                     image: image,
                                     imageURI: imageURI,
                                     type: 'shortcut'
