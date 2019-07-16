@@ -21,30 +21,55 @@ class Import extends React.Component {
 
         this.store = new Store();
 
+        this.platforms = [
+            {
+                id: 'origin',
+                name: 'Origin',
+                class: Origin
+            },
+            {
+                id: 'uplay',
+                name: 'Uplay',
+                class: Uplay
+            },
+            {
+                id: 'egs',
+                name: 'Epic Games Launcher',
+                class: Epic
+            },
+            {
+                id: 'gog',
+                name: 'GOG.com',
+                class: Gog
+            }
+        ];
+
         this.state = {
             isLoaded: false,
-            currentPlatform: null,
-            originGames: [],
-            uplayGames: [],
-            epicGames: [],
-            gogGames: []
+            games: []
         };
     }
 
     componentDidMount() {
-        let originGamesPromise = Origin.getGames();
-        let uplayGamesPromise = Uplay.getGames();
-        let epicGamesPromise = Epic.getGames();
-        let gogGamesPromise = Gog.getGames();
-        Promise.all([originGamesPromise, uplayGamesPromise, epicGamesPromise, gogGamesPromise]).then((values) => {
-            this.setState({
-                isLoaded: true,
-                originGames: values[0],
-                uplayGames: values[1],
-                epicGames: values[2],
-                gogGames: values[3]
-            })
-        });
+        Promise.all(this.platforms.map((platform) => platform.class.isInstalled()))
+            .then((values) => {
+                for (var i = 0; i < values.length; i++) {
+                    this.platforms[i].installed = values[i];
+                }
+
+                Promise.all(this.platforms.map((platform) => {
+                    if (platform.installed) {
+                        return platform.class.getGames()
+                    } else {
+                        return false;
+                    }
+                })).then((values) => {
+                    this.setState({
+                        isLoaded: true,
+                        games: values
+                    })
+                });
+            });
     }
 
     platformGameSave(game) {
@@ -70,6 +95,10 @@ class Import extends React.Component {
     }
 
     gameList(games, platform) {
+        if (games == false) {
+
+        }
+
         return (
             games.map((game) => {
                 let checked = false;
@@ -94,7 +123,7 @@ class Import extends React.Component {
     }
 
     render() {
-        const {isLoaded, originGames, uplayGames, epicGames, gogGames} = this.state;
+        const {isLoaded, games} = this.state;
         const listStyle = {
             background: 'none',
             border: 0
@@ -104,41 +133,27 @@ class Import extends React.Component {
             return (<Spinner/>);
         }
 
+        games.map((game, i) => {console.log(this.platforms[i].name, i)});
+
         return (
             <div>
                 <Tabs useAnimate={true} style={{width: '100%'}}>
-                    <Tab title="Origin" style={{width: '100%'}}>
-                        <div style={{overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 80px)'}}>
-                            <div style={{padding: 10}}>
-                                <p>Choose games to import from Origin</p>
+                    {games.map((game, i) => (
+                        <Tab title={this.platforms[i].name} key={i}>
+                            <div style={{overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 80px)'}}>
+                                {game ? (
+                                    <div style={{padding: 10}}>
+                                        <p>Choose games to import from {this.platforms[i].name}</p>
+                                        <ListView style={listStyle} listSource={this.gameList(game, this.platforms[i].id)} />
+                                    </div>
+                                ) : (
+                                    <div style={{padding: 10}}>
+                                        <p>{this.platforms[i].name} is not installed.</p>
+                                    </div>
+                                )}
                             </div>
-                            <ListView style={listStyle} listSource={this.gameList(originGames, 'origin')} />
-                        </div>
-                    </Tab>
-                    <Tab title="Uplay">
-                        <div style={{overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 80px)'}}>
-                            <div style={{padding: 10}}>
-                                <p>Choose games to import from Uplay</p>
-                            </div>
-                            <ListView style={listStyle} listSource={this.gameList(uplayGames, 'uplay')} />
-                        </div>
-                    </Tab>
-                    <Tab title="Epic Games Launcher">
-                        <div style={{overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 80px)'}}>
-                            <div style={{padding: 10}}>
-                                <p>Choose games to import from the Epic Games Launcher</p>
-                            </div>
-                            <ListView style={listStyle} listSource={this.gameList(epicGames, 'egs')} />
-                        </div>
-                    </Tab>
-                    <Tab title="GOG.com">
-                        <div style={{overflowX: 'hidden', overflowY: 'auto', maxHeight: 'calc(100vh - 80px)'}}>
-                            <div style={{padding: 10}}>
-                                <p>Choose games to import from the GOG</p>
-                            </div>
-                            <ListView style={listStyle} listSource={this.gameList(gogGames, 'gog')} />
-                        </div>
-                    </Tab>
+                        </Tab>
+                    ))}
                 </Tabs>
             </div>
         );

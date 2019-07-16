@@ -102,7 +102,6 @@ class Gog {
                     let promiseArr = keys.map((key) => {
                         return this._processRegKey(key)
                             .then((res) => {
-                                console.log(res);
                                 return res;
                             });
                     });
@@ -115,7 +114,6 @@ class Gog {
                                 }); 
                         })
                         .then((results) => {
-                            console.log(results);
                             resolve(results);
                         });
                 });
