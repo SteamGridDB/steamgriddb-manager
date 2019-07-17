@@ -61,6 +61,7 @@
     "@fortawesome/react-fontawesome": "^0.1.4",
     "@node-steam/vdf": "^2.0.1",
     "electron-store": "^4.0.0",
+    "js-yaml": "^3.13.1",
     "jsonminify": "^0.4.1",
     "promise-reflect": "^1.1.0",
     "react-collapse": "^4.0.3",
