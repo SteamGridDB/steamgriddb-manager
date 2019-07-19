@@ -67,15 +67,15 @@ class GridImage extends React.Component {
 
         return (
             <div style={{
-                margin: '5px',
-                position: 'relative',
-                width: this.gridWidth + 'px',
-                height: this.gridHeight + 'px',
-                backgroundColor: '#303030'
-            }}
-                 onMouseEnter={this.onMouseEnter.bind(this)}
-                 onMouseLeave={this.onMouseLeave.bind(this)}
-                 onClick={this.props.onClick.bind(this)}
+                    margin: '5px',
+                    position: 'relative',
+                    width: this.gridWidth + 'px',
+                    height: this.gridHeight + 'px',
+                    backgroundColor: '#303030'
+                }}
+                onMouseEnter={this.onMouseEnter.bind(this)}
+                onMouseLeave={this.onMouseLeave.bind(this)}
+                onClick={this.props.onClick.bind(this)}
             >
                 {image}
 
@@ -92,16 +92,24 @@ class GridImage extends React.Component {
                     {this.props.name}
                 </div>
 
-                <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: this.gridWidth + 'px',
-                    height: this.gridHeight + 'px',
-                    background: 'rgba(0,0,0,0.5)',
-                    opacity: overlayOpacity,
-                    zIndex: -1
-                }} />
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: this.gridWidth + 'px',
+                        height: this.gridHeight + 'px',
+                        background: 'rgba(0,0,0,0.5)',
+                        opacity: overlayOpacity,
+                        transition: 'opacity 150ms ease 0s',
+                        padding: 10,
+                        zIndex: 1
+                    }}
+                >
+                {this.props.author &&
+                    <span>Grid by: {this.props.author}</span>
+                }
+                </div>
 
                 {progressBar}
             </div>

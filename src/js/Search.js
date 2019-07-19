@@ -63,7 +63,10 @@ class Search extends React.Component {
                         url: defaultGridImage,
                         thumb: defaultGridImage,
                         style: 'default',
-                        title: this.query
+                        title: this.query,
+                        author: {
+                            name: null
+                        }
                     });
 
                     this.setState({
@@ -79,10 +82,6 @@ class Search extends React.Component {
         }
 
         if (this.gameType === 'shortcut' && this.platform !== 'unknown') {
-            console.log({
-                    type: this.platform,
-                    id: this.gameId
-                });
             client.getGame({
                     type: this.platform,
                     id: this.gameId
@@ -224,7 +223,8 @@ class Search extends React.Component {
             <Grid zoom={this.zoom}>
                 {items.map((item, i) => (
                     <GridImage
-                        name={this.query}
+                        name=""
+                        author={item.author.name}
                         image={item.thumb}
                         zoom={this.zoom}
                         onClick={this.onClick}
