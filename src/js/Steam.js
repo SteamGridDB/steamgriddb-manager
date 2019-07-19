@@ -169,7 +169,7 @@ class Steam {
                             let image = this.getCustomGridImage(userdataGridPath, appid);
                             let imageURI = false;
                             if (image) {
-                                imageURI = "file://" + image.replace(' ', '%20');
+                                imageURI = "file://" + image.replace(/ /g, '%20');
                             }
 
                             if (store.has(`games.${appid}`)) {
@@ -182,6 +182,7 @@ class Steam {
                                     gameId: storedGame.id,
                                     appid: appid,
                                     name: appName,
+                                    platform: storedGame.platform,
                                     image: image,
                                     imageURI: imageURI,
                                     type: 'shortcut'
@@ -191,6 +192,7 @@ class Steam {
                                     gameId: null,
                                     appid: appid,
                                     name: appName,
+                                    platform: 'unknown',
                                     image: image,
                                     imageURI: imageURI,
                                     type: 'shortcut'

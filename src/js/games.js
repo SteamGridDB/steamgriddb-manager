@@ -14,6 +14,14 @@ class Games extends React.Component {
         super(props);
 
         this.zoom = 1;
+        this.platformNames = {
+            'steam': 'Steam',
+            'unknown': 'Unknown Games',
+            'origin': 'Origin',
+            'uplay': 'Uplay',
+            'egs': 'Epic Games Launcher',
+            'gog': 'GOG.com'
+        };
 
         this.state = {
             error: null,
@@ -54,10 +62,10 @@ class Games extends React.Component {
         Promise.all([steamGamesPromise, nonSteamGamesPromise]).then((values) => {
             this.setState({
                 isLoaded: true,
-                items: {...this.state.items, ...{
-                    'steam': values[0],
-                    'nonSteam': values[1]
-                }}
+                items: {
+                    steam: values[0],
+                    ...values[1]
+                }
             })
         });
     }
@@ -80,6 +88,7 @@ class Games extends React.Component {
 
     render() {
         const {isLoaded, hasSteam, items} = this.state;
+
         if (!hasSteam) {
             return (
                 <h5 style={{...getTheme().typographyStyles.title, textAlign: 'center'}}>
@@ -104,43 +113,54 @@ class Games extends React.Component {
         }
 
         return (
-            <div>
-                <div style={{margin: 5, float: 'right'}}>
+            <div style={{height: 'inherit', overflow: 'hidden'}}>
+                <div style={{
+                    height: 32,
+                    width: '100%',
+                    margin: '10px 0'
+                }}>
                     <AutoSuggestBox
                         placeholder='Search'
                         onChangeValue={this.filterGames}
                     />
                 </div>
-
-                <Grid zoom={this.zoom} platform="Steam">
-                    {items.steam.map((item, i) => {
-                        let imageURI = this.addNoCache((item.imageURI));
-
-                        return (
-                            <GridImage name={item.name} appid={item.appid} gameType={item.type} image={imageURI} zoom={this.zoom} onClick={this.onClick} key={i}/>
-                        )
-                    })}
-                </Grid>
-
-                {Object.keys(items.nonSteam).map((platform, i) => (
-                    <Grid zoom={this.zoom} platform={platform} key={i}>
-                        {items.nonSteam[platform].map((item, i) => {
-                            let imageURI = this.addNoCache((item.imageURI));
-                            return (
-                                <GridImage
-                                    name={item.name}
-                                    gameId={item.gameId}
-                                    platform={platform}
-                                    appid={item.appid}
-                                    gameType={item.type}
-                                    image={imageURI}
-                                    zoom={this.zoom}
-                                    onClick={this.onClick}
-                                    key={i}/>
-                            )
-                        })}
-                    </Grid>
-                ))}
+                <div style={{height: 'calc(100% - 55px)', overflow: 'auto'}}>
+                    {Object.keys(items).map((platform, i) => (
+                        <div key={i}>
+                            <div style={{
+                                ...getTheme().typographyStyles.subTitleAlt,
+                                backgroundColor: '#1a1a1a',
+                                position: 'sticky',
+                                zIndex: 1,
+                                top: 0,
+                                paddingBottom: 5
+                            }}>
+                                {this.platformNames[platform]}
+                            </div>
+                            <Grid
+                                zoom={this.zoom}
+                                platform={platform}
+                            >
+                                {items[platform].map((item, i) => {
+                                    let imageURI = this.addNoCache((item.imageURI));
+                                    return (
+                                        <GridImage
+                                            name={item.name}
+                                            gameId={item.gameId}
+                                            platform={platform}
+                                            appid={item.appid}
+                                            gameType={item.type}
+                                            image={imageURI}
+                                            zoom={this.zoom}
+                                            onClick={this.onClick}
+                                            key={i}
+                                        />
+                                    )
+                                })}
+                            </Grid>
+                        </div>
+                    ))}
+                </div>
             </div>
         )
     }

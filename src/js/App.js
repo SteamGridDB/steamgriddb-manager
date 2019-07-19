@@ -118,6 +118,7 @@ class App extends React.Component {
 
                             <NavigationView
                                 style={{height: 'calc(100vh - 30px)', width: '100%' }}
+                                background='rgba(0, 0, 0, 0.85)'
                                 displayMode='overlay'
                                 autoResize={false}
                                 initWidth={navWidth}
@@ -125,7 +126,14 @@ class App extends React.Component {
                                 navigationBottomNodes={navigationBottomNode}
                                 focusNavigationNodeIndex={0}
                             >
-                                <div style={{...getTheme().typographyStyles.base, marginLeft: navWidth, height: '100%', paddingLeft: 10}}>
+                                <div style={{...getTheme().typographyStyles.base,
+                                    marginLeft: navWidth,
+                                    height: '100%',
+                                    paddingLeft: 10,
+                                    position: 'relative',
+                                    overflow: 'auto',
+                                    zIndex: 0
+                                }}>
                                     {this.state.redirectTo &&
                                         <Redirect to={this.state.redirectTo} />
                                     }
