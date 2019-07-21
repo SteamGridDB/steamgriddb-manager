@@ -178,7 +178,11 @@ class Uplay {
 
                                 // Get name from another key if has weird name assigned
                                 if (invalidNames.includes(game.root.name)) {
-                                    gameName = game.root.installer.game_identifier;
+                                    if (typeof game.root.installer !== 'undefined') {
+                                        gameName = game.root.installer.game_identifier
+                                    } else {
+                                        gameName = game.root.default[game.root.name];
+                                    }
                                 }
 
                                 // Check if game installed
