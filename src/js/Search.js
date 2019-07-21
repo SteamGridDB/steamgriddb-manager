@@ -81,7 +81,7 @@ class Search extends React.Component {
                 });
         }
 
-        if (this.gameType === 'shortcut' && this.platform !== 'unknown') {
+        if (this.gameType === 'shortcut' && this.platform !== 'other') {
             client.getGame({
                     type: this.platform,
                     id: this.gameId
@@ -103,7 +103,7 @@ class Search extends React.Component {
                 });
         }
 
-        if (this.gameType === 'shortcut' && this.platform === 'unknown') {
+        if (this.gameType === 'shortcut' && this.platform === 'other') {
             client.searchGame(this.query)
                 .then((res) => {
                     client.getGridsById(res[0].id)

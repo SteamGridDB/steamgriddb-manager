@@ -16,7 +16,7 @@ class Games extends React.Component {
         this.zoom = 1;
         this.platformNames = {
             'steam': 'Steam',
-            'unknown': 'Unknown Games',
+            'other': 'Other Games',
             'origin': 'Origin',
             'uplay': 'Uplay',
             'egs': 'Epic Games Launcher',

@@ -156,7 +156,7 @@ class Steam {
                     let shortcutPath = join(userdataPath, 'config', 'shortcuts.vdf');
                     shortcut.parseFile(shortcutPath, (err, items) => {
                         let games = {
-                            'unknown': []
+                            'other': []
                         };
 
                         if (!items) {
@@ -188,11 +188,11 @@ class Steam {
                                     type: 'shortcut'
                                 });
                             } else {
-                                games['unknown'].push({
+                                games['other'].push({
                                     gameId: null,
                                     appid: appid,
                                     name: appName,
-                                    platform: 'unknown',
+                                    platform: 'other',
                                     image: image,
                                     imageURI: imageURI,
                                     type: 'shortcut'
