@@ -10,7 +10,6 @@ import {HashRouter as Router, Redirect, Link, Route} from 'react-router-dom';
 
 import Search from './Search.js';
 import Games from './games.js';
-import Settings from './Settings.js';
 import Import from './Import.js';
 
 // Using window.require so babel doesn't change the node require
@@ -78,11 +77,6 @@ class App extends React.Component {
             <SplitViewCommand label="Import Games" icon={"\uE8B6"} onClick={() => this.handleNavRedirect('/import')} />
         ];
 
-        const navigationBottomNode = [
-            <SplitViewCommand label="Settings" icon={"\uE713"} onClick={() => this.handleNavRedirect('/settings')} />
-        ];
-
-
         let backBtn;
         let titleWidth = '100%';
         if (this.state.showBack) {
@@ -123,7 +117,6 @@ class App extends React.Component {
                                 autoResize={false}
                                 initWidth={navWidth}
                                 navigationTopNodes={navigationTopNodes}
-                                navigationBottomNodes={navigationBottomNode}
                                 focusNavigationNodeIndex={0}
                             >
                                 <div style={{...getTheme().typographyStyles.base,
@@ -140,7 +133,6 @@ class App extends React.Component {
 
                                     <Route exact path="/" component={Games} />
                                     <Route exact path="/import" component={Import} />
-                                    <Route exact path="/settings" component={Settings} />
                                     <Route exact path="/search" component={Search} />
                                 </div>
                             </NavigationView>

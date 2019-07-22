@@ -52,7 +52,7 @@ class Search extends React.Component {
 
     // @todo This should be it's own class so we can use it during one-click downloads
     searchGrids() {
-        const client = new SGDB(this.store.get('apiKey'));
+        const client = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
 
         if (this.gameType === 'game') {
             client.getGridsBySteamAppId(this.appid)
