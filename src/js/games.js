@@ -131,7 +131,7 @@ class Games extends React.Component {
                                 ...getTheme().typographyStyles.subTitleAlt,
                                 backgroundColor: '#1a1a1a',
                                 position: 'sticky',
-                                zIndex: 1,
+                                zIndex: 2,
                                 top: 0,
                                 paddingBottom: 5
                             }}>
