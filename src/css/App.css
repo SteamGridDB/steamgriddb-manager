@@ -20,6 +20,10 @@ div[class^="fluent-background-"] {
     background-color: #1a1a1a;
 }
 
+.import-list [class*="list-view-item-"]:hover button {
+    opacity: 1;
+}
+
 /* react-uwp sidebar is broken */
 [class*="split-view-command-icon-"] {
     font-size: 16px !important;

@@ -288,7 +288,7 @@ class Steam {
         });
     }
 
-    static addShortcut(name, executable, startIn, launchOptions) {
+    static addShortcuts(shortcuts) {
         return new Promise((resolve, reject) => {
             this.getShortcutFile().then((shortcutPath) => {
                 shortcut.parseFile(shortcutPath, (err, items) => {
@@ -301,28 +301,30 @@ class Steam {
                         apps = items.shortcuts;
                     }
 
-                    // Don't add dupes
-                    for (let i = 0; i < apps.length; i++) {
-                        let app = apps[i];
-                        let appid = this.generateAppId(app.exe, app.appname);
-                        if (this.generateAppId(executable, name) === appid) {
-                            return resolve();
-                            break;
+                    shortcuts.forEach((value) => {
+                        // Don't add dupes
+                        for (let i = 0; i < apps.length; i++) {
+                            let app = apps[i];
+                            let appid = this.generateAppId(app.exe, app.appname);
+                            if (this.generateAppId(value.exe, value.name) === appid) {
+                                return resolve();
+                                break;
+                            }
                         }
-                    }
-
-                    apps.push({
-                        "appname": name,
-                        "exe": executable,
-                        "StartDir": startIn,
-                        "LaunchOptions": launchOptions,
-                        "icon": '',
-                        "IsHidden": false,
-                        "ShortcutPath": '',
-                        "AllowDesktopConfig": true,
-                        "OpenVR": false,
-                        "tags": []
+                        apps.push({
+                            "appname": value.name,
+                            "exe": value.exe,
+                            "StartDir": value.startIn,
+                            "LaunchOptions": value.params,
+                            "icon": '',
+                            "IsHidden": false,
+                            "ShortcutPath": '',
+                            "AllowDesktopConfig": true,
+                            "OpenVR": false,
+                            "tags": []
+                        });
                     });
+
                     newShorcuts.shortcuts = apps;
 
                     shortcut.writeFile(shortcutPath, newShorcuts, (err) => {
@@ -330,6 +332,17 @@ class Steam {
                     });
                 });
             });
+        });
+    }
+
+    static addShortcut(name, executable, startIn, launchOptions) {
+        return new Promise((resolve, reject) => {
+            this.addShortcuts([{
+                name: name,
+                exe: executable,
+                startIn: startIn,
+                params: launchOptions
+            }]).then(() => resolve());
         });
     }
 
