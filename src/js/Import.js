@@ -1,5 +1,6 @@
 const Store = window.require('electron-store');
 import React from 'react';
+import settle from 'promise-settle';
 import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
 import Tabs, { Tab } from "react-uwp/Tabs";
 import TextBox from "react-uwp/TextBox";
@@ -57,17 +58,31 @@ class Import extends React.Component {
                     this.platforms[i].installed = values[i];
                 }
 
-                Promise.all(this.platforms.map((platform) => {
+                // Generate array of getGames() promises
+                let getGamesPromises = this.platforms.map((platform) => {
                     if (platform.installed) {
-                        return platform.class.getGames()
+                        return platform.class.getGames();
                     } else {
                         return false;
                     }
-                })).then((values) => {
+                });
+
+                settle(getGamesPromises).then((results) => {
+                    let games = [];
+                    results.forEach((result) => {
+                        if (result.isFulfilled()) {
+                            games.push(result.value());
+                        } else {
+                            // getGames() rejected
+                            // result.reason()
+                            games.push(false);
+                        }
+                    })
+
                     this.setState({
                         isLoaded: true,
-                        games: values
-                    })
+                        games: games
+                    });
                 });
             });
     }

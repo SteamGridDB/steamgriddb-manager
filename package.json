@@ -64,6 +64,7 @@
     "js-yaml": "^3.13.1",
     "jsonminify": "^0.4.1",
     "promise-reflect": "^1.1.0",
+    "promise-settle": "^0.3.0",
     "react-collapse": "^4.0.3",
     "react-motion": "^0.5.2",
     "steam-shortcut-editor": "^3.1.1",

@@ -74,9 +74,11 @@ class Epic {
                             platform: 'egs'
                         });
                     });
+                    resolve(games);
+                } else {
+                    reject('Could not find Epic Games Launcher data.');
                 }
-                resolve(games);
-            });
+            }).catch((err) => reject(err));
         });
     }
 }

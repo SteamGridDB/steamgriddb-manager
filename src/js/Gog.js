@@ -33,6 +33,10 @@ class Gog {
             });
 
             reg.values((err, items) => {
+                if (err) {
+                    reject(new Error('Could not find GOG Galaxy path.'));
+                }
+
                 let gogPath = false;
 
                 items.forEach((item) => {
@@ -99,6 +103,10 @@ class Gog {
                 });
 
                 reg.keys((err, keys) => {
+                    if (err) {
+                        reject(new Error('Could not get GOG games.'));
+                    }
+
                     let promiseArr = keys.map((key) => {
                         return this._processRegKey(key)
                             .then((res) => {
@@ -117,7 +125,7 @@ class Gog {
                             resolve(results);
                         });
                 });
-            });
+            }).catch((err) => reject(err));
         });
     }
 }

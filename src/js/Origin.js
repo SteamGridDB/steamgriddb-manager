@@ -31,6 +31,10 @@ class Origin {
             });
 
             reg.values((err, items) => {
+                if (err) {
+                    reject(new Error('Could not find Origin path.'));
+                }
+
                 let originPath = false;
 
                 items.forEach((item) => {
@@ -79,8 +83,10 @@ class Origin {
                             });
                         }
                     });
+                    resolve(games);
+                } else {
+                    reject('Could not find Origin content folder.');
                 }
-                resolve(games);
             });
         });
     }

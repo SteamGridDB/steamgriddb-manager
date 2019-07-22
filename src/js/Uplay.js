@@ -31,6 +31,10 @@ class Uplay {
             });
 
             reg.values((err, items) => {
+                if (err) {
+                    reject(err);
+                }
+
                 let uplayPath = false;
 
                 items.forEach((item) => {
@@ -67,11 +71,16 @@ class Uplay {
                         launcherId = this._convertLaunchId(ints);
                         return;
                     } else if (game.length > 1) {
-                        let gameParsed = yaml.load(game.join("\n"));
-                        if (launcherId) {
-                            gameParsed.root.launcher_id = launcherId;
+                        try {
+                            let gameParsed = yaml.load(game.join("\n"));
+
+                            if (launcherId) {
+                                gameParsed.root.launcher_id = launcherId;
+                            }
+                            finalOutput.push(gameParsed);
+                        } catch (e) {
+                            reject('Could not parse YAML');
                         }
-                        finalOutput.push(gameParsed);
 
                         let hexChars = foundId[1].match(/.{1,2}/g);
                         let ints = hexChars.map((x) => parseInt(x, 16));
@@ -129,6 +138,10 @@ class Uplay {
                 key:  '\\SOFTWARE\\Ubisoft\\Launcher\\Installs'
             });
             reg.keys((err, keys) => {
+                if (err) {
+                    reject(err);
+                }
+
                 let promiseArr = keys.map((key) => {
                     return this._processRegKey(key)
                         .then((res) => {
@@ -185,7 +198,6 @@ class Uplay {
                                     }
                                 }
 
-                                // Check if game installed
                                 if (game.root.space_id) {
                                     gameId = game.root.space_id;
                                 } else {
@@ -208,9 +220,9 @@ class Uplay {
                         });
 
                         resolve(games);
-                    });
-                });
-            });
+                    }).catch((err) => reject(err));
+                }).catch((err) => reject(err));
+            }).catch((err) => reject(err));
         });
     }
 }
