@@ -7,24 +7,32 @@ class ToastHandler extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {toast: null};
-
+        this.state = {
+            toast: null,
+            show: false
+        };
         PubSub.subscribe('toast', (message, args) => {
-            this.setState({toast: args});
+            this.setState({
+                toast: args,
+                show: true
+            });
+        });
+    }
+
+    closed(showToast) {
+        this.setState({
+            show: false
         });
     }
 
     render() {
-        if (this.state.toast) {
-            console.log('state toast:', this.state.toast);
-        }
-
         let toast = this.state.toast ? (
             <Toast
-                defaultShow={true}
+                defaultShow={this.state.show}
                 logoNode={<Icon>{this.state.toast.logoNode}</Icon>}
                 title={this.state.toast.title}
                 closeDelay={3000}
+                onToggleShowToast={this.closed.bind(this)}
                 showCloseIcon
             >
                 {this.state.toast.contents}

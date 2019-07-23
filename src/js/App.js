@@ -93,51 +93,52 @@ class App extends React.Component {
                     accent: '#' + accentColor,
                     useFluentDesign: true
                 })}
-            >       <Router>
-                        <div style={{width: '100%', height: '100%', backgroundColor: '#1a1a1a'}}>
-                            {backBtn}
-                            <TitleBar
-                                title="SteamGridDB Manager"
-                                style={{width: titleWidth}}
-                                controls
-                                isMaximized={this.state.isMaximized}
-                                onCloseClick={this.close}
-                                onMinimizeClick={this.minimize}
-                                onMaximizeClick={this.toggleMaximize}
-                                onRestoreDownClick = {this.toggleMaximize}
-                                background="#141414"
-                                color="#fff"
-                                theme="dark"
-                            />
+            >
+                <Router>
+                    <div style={{width: '100%', height: '100%', backgroundColor: '#1a1a1a'}}>
+                        {backBtn}
+                        <TitleBar
+                            title="SteamGridDB Manager"
+                            style={{width: titleWidth}}
+                            controls
+                            isMaximized={this.state.isMaximized}
+                            onCloseClick={this.close}
+                            onMinimizeClick={this.minimize}
+                            onMaximizeClick={this.toggleMaximize}
+                            onRestoreDownClick = {this.toggleMaximize}
+                            background="#141414"
+                            color="#fff"
+                            theme="dark"
+                        />
 
-                            <NavigationView
-                                style={{height: 'calc(100vh - 30px)', width: '100%' }}
-                                background='rgba(0, 0, 0, 0.85)'
-                                displayMode='overlay'
-                                autoResize={false}
-                                initWidth={navWidth}
-                                navigationTopNodes={navigationTopNodes}
-                                focusNavigationNodeIndex={0}
-                            >
-                                <div style={{...getTheme().typographyStyles.base,
-                                    marginLeft: navWidth,
-                                    height: '100%',
-                                    paddingLeft: 10,
-                                    position: 'relative',
-                                    overflow: 'auto',
-                                    zIndex: 0
-                                }}>
-                                    {this.state.redirectTo &&
-                                        <Redirect to={this.state.redirectTo} />
-                                    }
+                        <NavigationView
+                            style={{height: 'calc(100vh - 30px)', width: '100%' }}
+                            background='rgba(0, 0, 0, 0.85)'
+                            displayMode='overlay'
+                            autoResize={false}
+                            initWidth={navWidth}
+                            navigationTopNodes={navigationTopNodes}
+                            focusNavigationNodeIndex={0}
+                        >
+                            <div style={{...getTheme().typographyStyles.base,
+                                marginLeft: navWidth,
+                                height: '100%',
+                                paddingLeft: 10,
+                                position: 'relative',
+                                overflow: 'auto',
+                                zIndex: 0
+                            }}>
+                                {this.state.redirectTo &&
+                                    <Redirect to={this.state.redirectTo} />
+                                }
 
-                                    <Route exact path="/" component={Games} />
-                                    <Route exact path="/import" component={Import} />
-                                    <Route exact path="/search" component={Search} />
-                                </div>
-                            </NavigationView>
-                        </div>
-                    </Router>
+                                <Route exact path="/" component={Games} />
+                                <Route exact path="/import" component={Import} />
+                                <Route exact path="/search" component={Search} />
+                            </div>
+                        </NavigationView>
+                    </div>
+                </Router>
                 <ToastHandler />
             </UWPThemeProvider>
 

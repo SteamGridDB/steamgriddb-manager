@@ -3,7 +3,6 @@ import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
 import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
 import queryString from 'query-string';
-import Image from "react-uwp/Image";
 import AutoSuggestBox from "react-uwp/AutoSuggestBox";
 import Grid from "./Grid";
 import * as PubSub from "pubsub-js";
@@ -33,13 +32,6 @@ class Games extends React.Component {
         };
 
         const qs = this.props.location && queryString.parse(this.props.location.search);
-
-        if (qs.success) {
-            this.state.success = {
-                game: qs.game,
-                image: qs.image
-            }
-        }
     }
 
     componentDidMount() {
@@ -95,17 +87,6 @@ class Games extends React.Component {
                     Steam installation not found.
                 </h5>
             )
-        }
-
-        if (this.state.success) {
-            let title = `Success: ${this.state.success.game}`;
-
-            PubSub.publish('toast', {logoNode: 'Download', title: title, contents: (
-                <Image
-                    style={{width: "100%", marginTop: 10}}
-                    src={this.addNoCache(this.state.success.image)}
-                />
-            )});
         }
 
         if (!isLoaded) {

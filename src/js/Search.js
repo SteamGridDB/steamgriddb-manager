@@ -4,6 +4,7 @@ import {Redirect} from "react-router-dom";
 import Steam from "./Steam.js";
 import React from "react";
 import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
+import Image from "react-uwp/Image";
 import Grid from "./Grid";
 import queryString from "query-string";
 const SGDB = window.require('steamgriddb');
@@ -18,6 +19,7 @@ class Search extends React.Component {
         this.store = new Store();
 
         const qs = this.props.location && queryString.parse(this.props.location.search);
+        this.game = qs.game;
         this.query = qs.game;
         this.appid = qs.appid;
         this.gameType = qs.type;
@@ -158,8 +160,16 @@ class Search extends React.Component {
         const {isLoaded, items} = this.state;
 
         if (this.state.imageDownloaded) {
-            let url = `/?success=true&game=${this.state.imageDownloaded.game}&image=${this.state.imageDownloaded.image}`;
-            console.log('redirecing to games');
+            let url = `/?game=${this.state.imageDownloaded.game}&image=${this.state.imageDownloaded.image}`;
+
+            // Show toast
+            PubSub.publish('toast', {logoNode: 'Download', title: `Success: ${this.state.imageDownloaded.game}`, contents: (
+                <Image
+                    style={{width: "100%", marginTop: 10}}
+                    src={this.state.imageDownloaded.image}
+                />
+            )});
+
             return (
                 <div>
                     <Redirect to={url} />
@@ -185,7 +195,7 @@ class Search extends React.Component {
             <Grid zoom={this.zoom}>
                 {items.map((item, i) => (
                     <GridImage
-                        name=""
+                        name={this.game}
                         author={item.author.name}
                         image={item.thumb}
                         zoom={this.zoom}
