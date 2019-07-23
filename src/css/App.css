@@ -33,3 +33,12 @@ div[class^="fluent-background-"] {
 [class*="checkbox-iconParent"] {
     margin-left: auto;
 }
+
+.grid-fadein-appear {
+    opacity: 0;
+}
+
+.grid-fadein-appear.grid-fadein-appear-active {
+    opacity: 1;
+    transition: opacity 1s ease-in;
+}

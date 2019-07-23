@@ -67,6 +67,7 @@
     "promise-settle": "^0.3.0",
     "react-collapse": "^4.0.3",
     "react-motion": "^0.5.2",
+    "react-transition-group": "^1.2.1",
     "steam-shortcut-editor": "^3.1.1",
     "steamgriddb": "^1.2.1",
     "winreg": "^1.2.4"

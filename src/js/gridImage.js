@@ -1,6 +1,9 @@
 import React from 'react';
 import {Redirect} from "react-router-dom";
 import ProgressBar from "react-uwp/ProgressBar";
+import Image from "react-uwp/Image";
+import { CSSTransitionGroup } from 'react-transition-group';
+const ReactLazyLoad = require("react-lazyload").default;
 const { Menu, MenuItem } = window.require('electron');
 
 class GridImage extends React.Component {
@@ -55,13 +58,24 @@ class GridImage extends React.Component {
         let image = '';
         if (this.props.image) {
             image = (
-                <img
-                    src={this.props.image}
-                    style={{
-                        width: this.gridWidth + 'px',
-                        height: this.gridHeight + 'px'
-                    }}
-                />
+                <ReactLazyLoad
+                    height={this.gridHeight}
+                    overflow
+                    resize
+                    once
+                >
+                    <CSSTransitionGroup key="1"
+                        transitionName="grid-fadein"
+                        transitionAppear={true}
+                        transitionAppearTimeout={1000}
+                        transitionEnter={false}
+                        transitionLeave={false}>
+                        <img key="1" style={{
+                            width: this.gridWidth + 'px',
+                            height: this.gridHeight + 'px'
+                        }} src={this.props.image} />
+                    </CSSTransitionGroup>
+                </ReactLazyLoad>
             )
         }
 
