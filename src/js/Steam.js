@@ -4,6 +4,8 @@ const fs = window.require('fs');
 const {join} = window.require('path')
 const VDF = window.require('@node-steam/vdf');
 const shortcut = window.require('steam-shortcut-editor');
+const https = window.require('https');
+const Stream = window.require('stream').Transform;
 import SteamID from 'steamid';
 import {crc32} from 'crc';
 
@@ -283,6 +285,78 @@ class Steam {
 
                     const result = apps.filter(app => typeof app.SGDB.id != 'undefined');
                     return resolve(result);
+                });
+            });
+        });
+    }
+
+    static addGrid(appId, url, onProgress) {
+        if (typeof onProgress == 'undefined') {
+            onProgress = () => {};
+        }
+
+        return new Promise((resolve, reject) => {
+            this.getCurrentUserGridPath().then((userGridPath) => {
+                let image_url = url;
+                let image_ext = image_url.substr(image_url.lastIndexOf('.') + 1);
+                let dest = join(userGridPath, appId + '.' + image_ext);
+
+                let cur = 0;
+                let data = new Stream();
+
+                https.get(url, (response) => {
+                    let len = parseInt(response.headers['content-length'], 10);
+
+                    response.on('end', () => {
+                        this.deleteCustomGridImage(userGridPath, appId);
+                        fs.writeFileSync(dest, data.read());
+                        resolve(dest);
+                    });
+
+                    response.on('data', (chunk) => {
+                        cur += chunk.length;
+                        data.push(chunk);
+                        onProgress(cur / len);
+                    });
+                }).on('error', (err) => { // Handle errors
+                    fs.unlink(dest);
+                    reject();
+                });
+            });
+        });
+    }
+
+    static addGrid(appId, url, onProgress) {
+        if (typeof onProgress == 'undefined') {
+            onProgress = () => {};
+        }
+
+        return new Promise((resolve, reject) => {
+            this.getCurrentUserGridPath().then((userGridPath) => {
+                let image_url = url;
+                let image_ext = image_url.substr(image_url.lastIndexOf('.') + 1);
+                let dest = join(userGridPath, appId + '.' + image_ext);
+
+                let cur = 0;
+                let data = new Stream();
+
+                https.get(url, (response) => {
+                    let len = parseInt(response.headers['content-length'], 10);
+
+                    response.on('end', () => {
+                        this.deleteCustomGridImage(userGridPath, appId);
+                        fs.writeFileSync(dest, data.read());
+                        resolve(dest);
+                    });
+
+                    response.on('data', (chunk) => {
+                        cur += chunk.length;
+                        data.push(chunk);
+                        onProgress(cur / len);
+                    });
+                }).on('error', (err) => { // Handle errors
+                    fs.unlink(dest);
+                    reject();
                 });
             });
         });

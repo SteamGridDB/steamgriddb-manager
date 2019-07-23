@@ -1,4 +1,5 @@
 const Store = window.require('electron-store');
+const SGDB = window.require('steamgriddb');
 import React from 'react';
 import settle from 'promise-settle';
 import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
@@ -6,6 +7,7 @@ import TextBox from "react-uwp/TextBox";
 import ListView, { ListViewProps } from "react-uwp/ListView";
 import Separator from "react-uwp/Separator";
 import CheckBox from "react-uwp/CheckBox";
+import Image from "react-uwp/Image";
 import Toggle from "react-uwp/Toggle";
 import Button from "react-uwp/Button";
 import Spinner from './spinner.js';
@@ -44,6 +46,8 @@ class Import extends React.Component {
             }
         ];
 
+        this.SGDB = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
+
         this.state = {
             isLoaded: false,
             games: []
@@ -57,7 +61,7 @@ class Import extends React.Component {
                     this.platforms[i].installed = values[i];
                 }
 
-                // Generate array of getGames() promises
+                // Generate array of getGames() promises if installed
                 let getGamesPromises = this.platforms.map((platform) => {
                     if (platform.installed) {
                         return platform.class.getGames();
@@ -68,30 +72,45 @@ class Import extends React.Component {
 
                 settle(getGamesPromises).then((results) => {
                     let games = [];
+                    let gridsPromises = [];
+
                     results.forEach((result) => {
                         if (result.isFulfilled()) {
                             games.push(result.value());
+                            let ids = result.value().map(x => encodeURIComponent(x.id)).join(','); // Comma separated list of IDs for use with SGDB API
+                            let platform = result.value()[0].platform;
+
+                            // Get grids for each game
+                            gridsPromises.push(this.SGDB.getGrids({type: platform, id: ids}));
                         } else {
                             // getGames() rejected
                             // result.reason()
                             games.push(false);
+                            gridsPromises.push(false);
                         }
-                    })
+                    });
 
-                    this.setState({
-                        isLoaded: true,
-                        games: games
+                    Promise.all(gridsPromises).then((values) => {
+                        this.setState({
+                            isLoaded: true,
+                            games: games,
+                            grids: values
+                        });
                     });
                 });
             });
     }
 
     platformGamesSave(games) {
-        let formatted = {'games': {}};
+        let gamesStorage = this.store.get('games');
+        if (!gamesStorage) {
+            gamesStorage = {};
+        }
+
         games.forEach((game) => {
-            formatted.games[Steam.generateAppId(game.exe, game.name)] = game;
+            gamesStorage[Steam.generateAppId(game.exe, game.name)] = game;
         });
-        this.store.set(formatted);
+        this.store.set('games', gamesStorage);
     }
 
     platformGameSave(game) {
@@ -106,22 +125,55 @@ class Import extends React.Component {
         return this.store.has(`games.${Steam.generateAppId(game.exe, game.name)}`);
     }
 
-    addGames(games) {
+    addGames(games, grids) {
         this.platformGamesSave(games);
         Steam.addShortcuts(games);
+        games.forEach((game, i) => {
+            let thumb = null;
+            let image = null;
+            if (games.length > 1 && grids[i].length === 1 && grids[i][0].success !== false) {
+                image = grids[i][0].url;
+            } else if (games.length === 1 && grids) {
+                image = grids[0].url;
+            }
+            if (image) {
+                Steam.addGrid(Steam.generateAppId(game.exe, game.name), image);
+            }
+        });
     }
 
-    addGame(game) {
+    addGame(game, image) {
         this.platformGameSave(game);
         Steam.addShortcut(game.name, game.exe, game.startIn, game.params);
+        if (image) {
+            Steam.addGrid(Steam.generateAppId(game.exe, game.name), image);
+        }
     }
 
-    generateListItems(games, platform) {
+    generateListItems(games, platform, grids) {
         return (
-            games.map((game) => {
+            games.map((game, i) => {
+                let thumb = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkqAcAAIUAgUW0RjgAAAAASUVORK5CYII=';
+                let image = null;
+                if (games.length > 1 && grids[i].length === 1 && grids[i][0].success !== false) {
+                    thumb = grids[i][0].thumb;
+                    image = grids[i][0].url;
+                } else if (games.length === 1 && grids) {
+                    thumb = grids[0].thumb;
+                    image = grids[0].url;
+                }
+
+
                 return (
                     <div style={{display: 'flex', alignItems: 'center', width: 'inherit'}} key={game.id}>
-                        {game.name} <Button style={{opacity: 0, marginLeft: 'auto'}} onClick={this.addGame.bind(this, game)}>Import</Button>
+                        <Image
+                            style={{marginRight: 10}}
+                            height='30px'
+                            width='64px'
+                            src={thumb}
+                        />
+                        {game.name}
+                        <Button style={{opacity: 0, marginLeft: 'auto'}} onClick={this.addGame.bind(this, game, image)}>Import</Button>
                     </div>
                 )
             })
@@ -129,12 +181,13 @@ class Import extends React.Component {
     }
 
     render() {
-        const {isLoaded, games} = this.state;
+        const {isLoaded, games, grids} = this.state;
         const listStyle = {
             background: 'none',
             border: 0,
             width: '100%',
-            marginBottom: 10
+            marginBottom: 10,
+            clear: 'both'
         }
 
         if (!isLoaded) {
@@ -148,11 +201,11 @@ class Import extends React.Component {
                         <h5 style={{float: 'left', ...getTheme().typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
                         {game ? (
                             <div>
-                                <Button style={{float: 'right'}} onClick={this.addGames.bind(this, game, this.platforms[i].id)}>Import All</Button>
-                                <ListView style={listStyle} listSource={this.generateListItems(game, this.platforms[i].id)} />
+                                <Button style={{float: 'right'}} onClick={this.addGames.bind(this, game, grids[i])}>Import All</Button>
+                                <ListView style={listStyle} listSource={this.generateListItems(game, this.platforms[i].id, grids[i])} />
                             </div>
                         ) : (
-                            <div style={{padding: 10}}>
+                            <div style={{padding: 10, clear: 'both'}}>
                                 <p>{this.platforms[i].name} is not installed.</p>
                             </div>
                         )}

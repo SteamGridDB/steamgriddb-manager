@@ -7,10 +7,7 @@ import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
 import Grid from "./Grid";
 import queryString from "query-string";
 const SGDB = window.require('steamgriddb');
-const path = window.require('path');
-const https = window.require('https');
 const fs = window.require('fs');
-const Stream = window.require('stream').Transform
 const Store = window.require('electron-store');
 
 class Search extends React.Component {
@@ -130,44 +127,12 @@ class Search extends React.Component {
 
         this.props.setIsDownloading(true);
 
-        // @todo Move this into it's own function please
-        Steam.getCurrentUserGridPath().then((userGridPath) => {
-            let image_url = this.props.data.url;
-            let image_ext = image_url.substr(image_url.lastIndexOf('.') + 1);
-            let dest = path.join(userGridPath, this.props.appid + '.' + image_ext);
-            // let file = fs.createWriteStream(dest);
-
-            // @todo Delete current custom grid image (might be different extension
-            // @todo Some sort of spinner to show that we're downloading the file
-            let cur = 0;
-            let data = new Stream();
-
-            https.get(this.props.data.url, (response) => {
-                let len = parseInt(response.headers['content-length'], 10);
-
-                // @todo This shouldn't pipe because it can write partial images if there is an interruption
-                // response.pipe(file);
-                response.on('end', () => {
-
-
-                    Steam.deleteCustomGridImage(userGridPath, this.props.appid);
-
-                    fs.writeFileSync(dest, data.read());
-                    // file.close();
-
-                    this.props.setImageDownloaded(this.props.name, dest);
-                });
-
-                response.on('data', (chunk) => {
-                    cur += chunk.length;
-                    data.push(chunk);
-                    this.setState({downloadProgress: (cur / len)});
-                });
-            }).on('error', (err) => { // Handle errors
-                // @todo Something to show that there was an error downloading the file, perhaps use the toast
-                this.props.setIsDownloading(false);
-                fs.unlink(dest);
-            });
+        Steam.addGrid(this.props.appid, this.props.data.url, (progress) => {
+            this.setState({downloadProgress: progress});
+        }).then((dest) => {
+            this.props.setImageDownloaded(this.props.name, dest);
+        }).catch((err) => {
+            this.props.setIsDownloading(false);
         });
     }
 
@@ -208,9 +173,6 @@ class Search extends React.Component {
                     <h5 style={{...getTheme().typographyStyles.title, textAlign: 'center'}}>
                         Error trying to use the SteamGridDB API. 
                     </h5>
-                    <p style={{...getTheme().typographyStyles.base, textAlign: 'center', color: getTheme().baseMedium}}>
-                        Please check your API key in the settings tab.
-                    </p>
                 </div>
             )
         }
