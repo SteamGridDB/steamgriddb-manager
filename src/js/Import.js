@@ -17,6 +17,7 @@ import Uplay from "./Uplay";
 import Epic from "./Epic";
 import Gog from "./Gog";
 import BattleNet from "./BattleNet";
+import Bethesda from "./Bethesda";
 
 class Import extends React.Component {
     constructor(props) {
@@ -81,7 +82,7 @@ class Import extends React.Component {
                     let gridsPromises = [];
 
                     results.forEach((result) => {
-                        if (result.isFulfilled()) {
+                        if (result.isFulfilled() && result.value() !== false) {
                             games.push(result.value());
                             let ids = result.value().map(x => encodeURIComponent(x.id)).join(','); // Comma separated list of IDs for use with SGDB API
                             let platform = result.value()[0].platform;

@@ -2,7 +2,6 @@ const electron = window.require('electron');
 const Registry = window.require('winreg');
 const fs = window.require('fs');
 const path = window.require('path');
-const {arch} = window.require('os');
 import decoder from 'blizzard-product-parser/src/js/database'; // Workaround for badly configured lib
 
 class BattleNet {
