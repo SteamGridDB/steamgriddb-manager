@@ -16,6 +16,7 @@ import Origin from "./Origin";
 import Uplay from "./Uplay";
 import Epic from "./Epic";
 import Gog from "./Gog";
+import BattleNet from "./BattleNet";
 
 class Import extends React.Component {
     constructor(props) {
@@ -38,6 +39,11 @@ class Import extends React.Component {
                 id: 'egs',
                 name: 'Epic Games Launcher',
                 class: Epic
+            },
+            {
+                id: 'bnet',
+                name: 'Blizzard Battle.net',
+                class: BattleNet
             },
             {
                 id: 'gog',

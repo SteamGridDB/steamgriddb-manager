@@ -19,7 +19,8 @@ class Games extends React.Component {
             'origin': 'Origin',
             'uplay': 'Uplay',
             'egs': 'Epic Games Launcher',
-            'gog': 'GOG.com'
+            'gog': 'GOG.com',
+            'bnet': 'Blizzard Battle.net'
         };
 
         this.state = {

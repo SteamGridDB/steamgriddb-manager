@@ -60,6 +60,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.8.1",
     "@fortawesome/react-fontawesome": "^0.1.4",
     "@node-steam/vdf": "^2.0.1",
+    "blizzard-product-parser": "^1.0.1",
     "electron-store": "^4.0.0",
     "js-yaml": "^3.13.1",
     "jsonminify": "^0.4.1",
