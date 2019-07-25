@@ -9,7 +9,8 @@
     "build": "webpack --mode development",
     "run": "webpack --mode development && electron .",
     "pack": "build --dir",
-    "dist": "build"
+    "dist": "build",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
     "appId": "comnpm",
@@ -39,7 +40,6 @@
     "electron-builder": "^20.39.0",
     "electron-builder-squirrel-windows": "^20.39.0",
     "electron-packager": "^13.1.1",
-    "electron-rebuild": "^1.8.4",
     "electron-vibrancy": "^0.1.3",
     "prop-types": "^15.7.2",
     "pubsub-js": "^1.7.0",
@@ -64,6 +64,7 @@
     "electron-store": "^4.0.0",
     "js-yaml": "^3.13.1",
     "jsonminify": "^0.4.1",
+    "metrohash": "^2.6.0",
     "promise-reflect": "^1.1.0",
     "promise-settle": "^0.3.0",
     "react-collapse": "^4.0.3",

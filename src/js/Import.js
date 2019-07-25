@@ -1,5 +1,6 @@
 const Store = window.require('electron-store');
 const SGDB = window.require('steamgriddb');
+const metrohash64 = window.require('metrohash').metrohash64;
 import React from 'react';
 import settle from 'promise-settle';
 import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
@@ -115,21 +116,18 @@ class Import extends React.Component {
         }
 
         games.forEach((game) => {
-            gamesStorage[Steam.generateAppId(game.exe, game.name)] = game;
+            gamesStorage[metrohash64(game.exe+game.params)] = game;
         });
         this.store.set('games', gamesStorage);
     }
 
     platformGameSave(game) {
-        this.store.set(`games.${Steam.generateAppId(game.exe, game.name)}`, game);
+        console.log(metrohash64(game.exe+game.params));
+        this.store.set(`games.${metrohash64(game.exe+game.params)}`, game);
     }
 
     platformGameRemove(game) {
-        this.store.delete(`games.${Steam.generateAppId(game.exe, game.name)}`);
-    }
-
-    platformGameExists(game) {
-        return this.store.has(`games.${Steam.generateAppId(game.exe, game.name)}`);
+        this.store.delete(`games.${metrohash64(game.exe+game.params)}`);
     }
 
     addGames(games, grids) {

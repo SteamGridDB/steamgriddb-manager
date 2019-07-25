@@ -6,6 +6,7 @@ const VDF = window.require('@node-steam/vdf');
 const shortcut = window.require('steam-shortcut-editor');
 const https = window.require('https');
 const Stream = window.require('stream').Transform;
+const metrohash64 = window.require('metrohash').metrohash64;
 import SteamID from 'steamid';
 import {crc32} from 'crc';
 
@@ -167,15 +168,17 @@ class Steam {
 
                         items.shortcuts.forEach((item) => {
                             let appName = item.appname || item.AppName;
-                            let appid = this.generateAppId(item.exe || item.Exe, appName);
+                            let exe = item.exe || item.Exe;
+                            let appid = this.generateAppId(exe, appName);
                             let image = this.getCustomGridImage(userdataGridPath, appid);
                             let imageURI = false;
                             if (image) {
                                 imageURI = "file://" + image.replace(/ /g, '%20');
                             }
 
-                            if (store.has(`games.${appid}`)) {
-                                let storedGame = store.get(`games.${appid}`);
+                            let configId = metrohash64(exe+item.LaunchOptions);
+                            if (store.has(`games.${configId}`)) {
+                                let storedGame = store.get(`games.${configId}`);
                                 if (typeof games[storedGame.platform] == 'undefined') {
                                     games[storedGame.platform] = [];
                                 }
