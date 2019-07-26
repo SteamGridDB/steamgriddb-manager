@@ -138,7 +138,10 @@ GridImage.propTypes = {
         PropTypes.number
     ]),
     gameType: PropTypes.string,
-    gameId: PropTypes.string,
+    gameId: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
     platform: PropTypes.string,
     author: PropTypes.string,
     zoom: PropTypes.number,
