@@ -3,7 +3,7 @@ import ProgressRing from 'react-uwp/ProgressRing';
 
 class Spinner extends React.Component {
     constructor(props) {
-        super(props)
+        super(props);
     }
 
     render() {
@@ -17,7 +17,7 @@ class Spinner extends React.Component {
             }}>
                 <ProgressRing size={100} />
             </div>
-        )
+        );
     }
 }
 

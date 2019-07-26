@@ -1,12 +1,10 @@
 import React from 'react';
-import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
+import {getTheme} from 'react-uwp/Theme';
 import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
-import queryString from 'query-string';
-import AutoSuggestBox from "react-uwp/AutoSuggestBox";
-import Grid from "./Grid";
-import * as PubSub from "pubsub-js";
-import Steam from "./Steam";
+import AutoSuggestBox from 'react-uwp/AutoSuggestBox';
+import Grid from './Grid';
+import Steam from './Steam';
 
 class Games extends React.Component {
     constructor(props) {
@@ -31,15 +29,13 @@ class Games extends React.Component {
             hasSteam: true,
             items: {}
         };
-
-        const qs = this.props.location && queryString.parse(this.props.location.search);
     }
 
     componentDidMount() {
         if (Object.entries(this.state.items).length <= 0) {
             Steam.getSteamPath().then(() => {
                 this.fetchGames();
-            }).catch((err) => {
+            }).catch(() => {
                 this.setState({
                     hasSteam: false
                 });
@@ -48,10 +44,8 @@ class Games extends React.Component {
     }
 
     fetchGames() {
-        let self = this;
-
-        let steamGamesPromise = Steam.getSteamGames();
-        let nonSteamGamesPromise = Steam.getNonSteamGames();
+        const steamGamesPromise = Steam.getSteamGames();
+        const nonSteamGamesPromise = Steam.getNonSteamGames();
         Promise.all([steamGamesPromise, nonSteamGamesPromise]).then((values) => {
             this.setState({
                 isLoaded: true,
@@ -59,7 +53,7 @@ class Games extends React.Component {
                     steam: values[0],
                     ...values[1]
                 }
-            })
+            });
         });
     }
 
@@ -68,7 +62,7 @@ class Games extends React.Component {
     }
 
     filterGames(searchTerm) {
-        console.log(value);
+        console.log(searchTerm);
     }
 
     addNoCache(imageURI) {
@@ -87,11 +81,11 @@ class Games extends React.Component {
                 <h5 style={{...getTheme().typographyStyles.title, textAlign: 'center'}}>
                     Steam installation not found.
                 </h5>
-            )
+            );
         }
 
         if (!isLoaded) {
-            return <Spinner/>
+            return <Spinner/>;
         }
 
         return (
@@ -124,7 +118,7 @@ class Games extends React.Component {
                                 platform={platform}
                             >
                                 {items[platform].map((item, i) => {
-                                    let imageURI = this.addNoCache((item.imageURI));
+                                    const imageURI = this.addNoCache((item.imageURI));
                                     return (
                                         <GridImage
                                             name={item.name}
@@ -137,14 +131,14 @@ class Games extends React.Component {
                                             onClick={this.onClick}
                                             key={i}
                                         />
-                                    )
+                                    );
                                 })}
                             </Grid>
                         </div>
                     ))}
                 </div>
             </div>
-        )
+        );
     }
 }
 

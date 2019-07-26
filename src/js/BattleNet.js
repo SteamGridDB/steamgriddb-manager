@@ -7,7 +7,7 @@ import decoder from 'blizzard-product-parser/src/js/database'; // Workaround for
 class BattleNet {
     static isInstalled() {
         return new Promise((resolve, reject) => {
-            let reg = new Registry({
+            const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
                 key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Battle.net'
@@ -25,7 +25,7 @@ class BattleNet {
 
     static getBattlenetPath() {
         return new Promise((resolve, reject) => {
-            let reg = new Registry({
+            const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
                 key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Battle.net'
@@ -51,22 +51,22 @@ class BattleNet {
     static getGames() {
         return new Promise((resolve, reject) => {
             this.getBattlenetPath().then((bnetPath) => {
-                let games = [];
-                let executable = path.join(bnetPath, 'Battle.net.exe');
+                const games = [];
+                const executable = path.join(bnetPath, 'Battle.net.exe');
                 let appData = (electron.app || electron.remote.app).getPath('userData');
                 appData = path.join(appData.replace(path.basename(appData), ''), 'Battle.net');
 
                 // Get latest .config file
-                let files = fs.readdirSync(appData).filter((files) => !(files === 'Battle.net.config' || !files.includes('.config')));
-                let latest = files.reduce((prev, current) => {
-                    let prevFile = fs.statSync(path.join(appData, prev)).mtimeMs;
-                    let currentFile = fs.statSync(path.join(appData, current)).mtimeMs;
+                const files = fs.readdirSync(appData).filter((files) => !(files === 'Battle.net.config' || !files.includes('.config')));
+                const latest = files.reduce((prev, current) => {
+                    const prevFile = fs.statSync(path.join(appData, prev)).mtimeMs;
+                    const currentFile = fs.statSync(path.join(appData, current)).mtimeMs;
                     return (prevFile.mtimeMs > currentFile.mtimeMs) ? prev : current;
                 });
 
                 // Parse config file as JSON
-                let config = JSON.parse(fs.readFileSync(path.join(appData, latest)).toString());
-                let gameIds = {};
+                const config = JSON.parse(fs.readFileSync(path.join(appData, latest)).toString());
+                const gameIds = {};
 
                 // Map correct case id to lower case key
                 Object.keys(config.User.Client.PlayScreen.GameFamily).forEach((id) => {
@@ -74,15 +74,15 @@ class BattleNet {
                 });
 
                 try {
-                    let decoded = decoder.decode(fs.readFileSync('C:\\ProgramData\\Battle.net\\Agent\\product.db'));
-                    let installed = decoded.productInstall.filter((product) => !(product.uid === 'battle.net' || product.uid === 'agent')); // Filter out non-games
+                    const decoded = decoder.decode(fs.readFileSync('C:\\ProgramData\\Battle.net\\Agent\\product.db'));
+                    const installed = decoded.productInstall.filter((product) => !(product.uid === 'battle.net' || product.uid === 'agent')); // Filter out non-games
 
                     installed.forEach((product) => {
-                        let gameId = product.uid;
+                        const gameId = product.uid;
                         let launchId = product.productCode; // Lowercase, find correct case by matching with .config file
                         launchId = gameIds[launchId.toLowerCase()];
 
-                        let name = path.basename(product.settings.installPath);
+                        const name = path.basename(product.settings.installPath);
 
                         games.push({
                             id: gameId,

@@ -7,7 +7,7 @@ const {arch} = window.require('os');
 class Epic {
     static isInstalled() {
         return new Promise((resolve, reject) => {
-            let reg = new Registry({
+            const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
                 key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{AAA3417F-FEAD-4AF7-9C01-9FAE1BB44E3D}'
@@ -25,7 +25,7 @@ class Epic {
 
     static getEpicPath() {
         return new Promise((resolve, reject) => {
-            let reg = new Registry({
+            const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
                 key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{AAA3417F-FEAD-4AF7-9C01-9FAE1BB44E3D}'
@@ -52,18 +52,18 @@ class Epic {
     static getGames() {
         return new Promise((resolve, reject) => {
             this.getEpicPath().then((epicPath) => {
-                let games = [];
+                const games = [];
                 let binFolder;
                 if (arch == 'ia32') {
                     binFolder = 'Win32';
                 } else if (arch == 'x64') {
                     binFolder = 'Win64';
                 }
-                let binaryPath = path.join(epicPath, 'Launcher', 'Portal', 'Binaries', binFolder);
+                const binaryPath = path.join(epicPath, 'Launcher', 'Portal', 'Binaries', binFolder);
                 const launcherData = 'C:\\ProgramData\\Epic\\UnrealEngineLauncher\\LauncherInstalled.dat';
                 if (fs.existsSync(launcherData)) {
-                    let launcherDataStr = fs.readFileSync(launcherData).toString();
-                    let parsed = JSON.parse(jsonminify(launcherDataStr));
+                    const launcherDataStr = fs.readFileSync(launcherData).toString();
+                    const parsed = JSON.parse(jsonminify(launcherDataStr));
                     parsed.InstallationList.forEach((game) => {
                         games.push({
                             id: game.AppName,

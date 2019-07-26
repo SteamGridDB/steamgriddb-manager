@@ -1,7 +1,7 @@
-import React from "react";
-import PubSub from "pubsub-js";
-import Toast from "react-uwp/Toast";
-import Icon from "react-uwp/Icon";
+import React from 'react';
+import PubSub from 'pubsub-js';
+import Toast from 'react-uwp/Toast';
+import Icon from 'react-uwp/Icon';
 
 class ToastHandler extends React.Component {
     constructor(props) {
@@ -19,14 +19,14 @@ class ToastHandler extends React.Component {
         });
     }
 
-    closed(showToast) {
+    closed() {
         this.setState({
             show: false
         });
     }
 
     render() {
-        let toast = this.state.toast ? (
+        const toast = this.state.toast ? (
             <Toast
                 defaultShow={this.state.show}
                 logoNode={<Icon>{this.state.toast.logoNode}</Icon>}

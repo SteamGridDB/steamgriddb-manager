@@ -1,14 +1,15 @@
 import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
-import {Redirect} from "react-router-dom";
-import Steam from "./Steam.js";
-import React from "react";
-import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
-import Image from "react-uwp/Image";
-import Grid from "./Grid";
-import queryString from "query-string";
+import {Redirect} from 'react-router-dom';
+import Steam from './Steam.js';
+import React from 'react';
+import {getTheme} from 'react-uwp/Theme';
+import Image from 'react-uwp/Image';
+import Grid from './Grid';
+import queryString from 'query-string';
+import PropTypes from 'prop-types';
+import PubSub from 'pubsub-js';
 const SGDB = window.require('steamgriddb');
-const fs = window.require('fs');
 const Store = window.require('electron-store');
 
 class Search extends React.Component {
@@ -56,8 +57,8 @@ class Search extends React.Component {
         if (this.gameType === 'game') {
             client.getGridsBySteamAppId(this.appid)
                 .then((res) => {
-                    let items = res;
-                    let defaultGridImage = Steam.getDefaultGridImage(this.appid);
+                    const items = res;
+                    const defaultGridImage = Steam.getDefaultGridImage(this.appid);
                     items.unshift({
                         url: defaultGridImage,
                         thumb: defaultGridImage,
@@ -73,7 +74,7 @@ class Search extends React.Component {
                         items: items
                     });
                 })
-                .catch((err) => {
+                .catch(() => {
                     this.setState({
                         apiError: true
                     });
@@ -82,39 +83,34 @@ class Search extends React.Component {
 
         if (this.gameType === 'shortcut' && this.platform !== 'other') {
             client.getGame({
-                    type: this.platform,
-                    id: this.gameId
-                })
-                .then((res) => {
-                    client.getGridsById(res.id)
-                        .then((res) => {
-                            let items = res;
-                            this.setState({
-                                isLoaded: true,
-                                items: items
-                            });
+                type: this.platform,
+                id: this.gameId
+            }).then((res) => {
+                client.getGridsById(res.id)
+                    .then((items) => {
+                        this.setState({
+                            isLoaded: true,
+                            items: items
                         });
-                })
-                .catch((err) => {
-                    this.setState({
-                        apiError: true
                     });
+            }).catch(() => {
+                this.setState({
+                    apiError: true
                 });
+            });
         }
 
         if (this.gameType === 'shortcut' && this.platform === 'other') {
             client.searchGame(this.query)
                 .then((res) => {
                     client.getGridsById(res[0].id)
-                        .then((res) => {
-                            let items = res;
+                        .then((items) => {
                             this.setState({
                                 isLoaded: true,
                                 items: items
                             });
                         });
-                })
-                .catch((err) => {
+                }).catch(() => {
                     this.setState({
                         apiError: true
                     });
@@ -122,18 +118,19 @@ class Search extends React.Component {
         }
     }
 
+    // This is executed from the gridImage component
     onClick() {
+        /* eslint-disable react/prop-types */
         if (this.props.getIsDownloading()) {
             return;
         }
 
         this.props.setIsDownloading(true);
-
         Steam.addGrid(this.props.appid, this.props.data.url, (progress) => {
             this.setState({downloadProgress: progress});
         }).then((dest) => {
             this.props.setImageDownloaded(this.props.name, dest);
-        }).catch((err) => {
+        }).catch(() => {
             this.props.setIsDownloading(false);
         });
     }
@@ -160,12 +157,12 @@ class Search extends React.Component {
         const {isLoaded, items} = this.state;
 
         if (this.state.imageDownloaded) {
-            let url = `/?game=${this.state.imageDownloaded.game}&image=${this.state.imageDownloaded.image}`;
+            const url = `/?game=${this.state.imageDownloaded.game}&image=${this.state.imageDownloaded.image}`;
 
             // Show toast
             PubSub.publish('toast', {logoNode: 'Download', title: `Success: ${this.state.imageDownloaded.game}`, contents: (
                 <Image
-                    style={{width: "100%", marginTop: 10}}
+                    style={{width: '100%', marginTop: 10}}
                     src={this.state.imageDownloaded.image}
                 />
             )});
@@ -184,7 +181,7 @@ class Search extends React.Component {
                         Error trying to use the SteamGridDB API. 
                     </h5>
                 </div>
-            )
+            );
         }
 
         if (!isLoaded) {
@@ -195,22 +192,26 @@ class Search extends React.Component {
             <Grid zoom={this.zoom}>
                 {items.map((item, i) => (
                     <GridImage
+                        key={i}
+                        appid={this.appid}
                         name={this.game}
                         author={item.author.name}
                         image={item.thumb}
                         zoom={this.zoom}
                         onClick={this.onClick}
-                        appid={this.appid}
                         setImageDownloaded={this.setImageDownloaded}
                         getIsDownloading={this.getIsDownloading}
                         setIsDownloading={this.setIsDownloading}
                         data={item}
-                        key={i}
                     />
                 ))}
             </Grid>
-        )
+        );
     }
 }
+
+Search.propTypes = {
+    location: PropTypes.object
+};
 
 export default Search;

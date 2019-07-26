@@ -1,14 +1,10 @@
 const Registry = window.require('winreg');
-const fs = window.require('fs');
-const path = window.require('path');
-const jsonminify = window.require('jsonminify');
-const {arch} = window.require('os');
 const promiseReflect = window.require('promise-reflect');
 
 class Gog {
     static isInstalled() {
         return new Promise((resolve, reject) => {
-            let reg = new Registry({
+            const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
                 key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{7258BA11-600C-430E-A759-27E2C691A335}_is1'
@@ -26,7 +22,7 @@ class Gog {
 
     static getGogPath() {
         return new Promise((resolve, reject) => {
-            let reg = new Registry({
+            const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
                 key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{7258BA11-600C-430E-A759-27E2C691A335}_is1'
@@ -59,7 +55,7 @@ class Gog {
             key.get('dependsOn', (err, dependsOn) => {
                 if (dependsOn == null) {
                     key.values((err, items) => {
-                        let game = {
+                        const game = {
                             platform: 'gog'
                         };
 
@@ -95,8 +91,8 @@ class Gog {
 
     static getGames() {
         return new Promise((resolve, reject) => {
-            this.getGogPath().then((gogPath) => {
-                let reg = new Registry({
+            this.getGogPath().then(() => {
+                const reg = new Registry({
                     hive: Registry.HKLM,
                     arch: 'x86',
                     key:  '\\SOFTWARE\\GOG.com\\Games'
@@ -107,23 +103,10 @@ class Gog {
                         reject(new Error('Could not get GOG games.'));
                     }
 
-                    let promiseArr = keys.map((key) => {
-                        return this._processRegKey(key)
-                            .then((res) => {
-                                return res;
-                            });
-                    });
+                    const promiseArr = keys.map((key) => this._processRegKey(key).then((res) => res));
                     Promise.all(promiseArr.map(promiseReflect))
-                        .then((results) => {
-                            return results.filter((result) => {
-                                   return result.status === 'resolved';
-                                }).map((result) => {
-                                   return result.data;
-                                }); 
-                        })
-                        .then((results) => {
-                            resolve(results);
-                        });
+                        .then((results) => results.filter((result) => result.status === 'resolved').map((result) => result.data))
+                        .then((results) => resolve(results));
                 });
             }).catch((err) => reject(err));
         });

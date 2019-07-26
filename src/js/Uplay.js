@@ -6,7 +6,7 @@ const path = window.require('path');
 class Uplay {
     static isInstalled() {
         return new Promise((resolve, reject) => {
-            let reg = new Registry({
+            const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
                 key:  '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Uplay'
@@ -24,7 +24,7 @@ class Uplay {
 
     static getUplayPath() {
         return new Promise((resolve, reject) => {
-            let reg = new Registry({
+            const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
                 key:  '\\SOFTWARE\\Ubisoft\\Launcher'
@@ -54,25 +54,24 @@ class Uplay {
 
     static parseConfig(config) {
         return new Promise((resolve, reject) => {
-            let configFile = fs.readFileSync(config, 'hex');
+            const configFile = fs.readFileSync(config, 'hex');
 
-            let finalOutput = [];
-            let startSaving = false;
+            const finalOutput = [];
             let game = ['root:'];
             let launcherId = null;
             this._generateHexArr(configFile).forEach((hexStr) => {
-                let line = Buffer.from(hexStr, 'hex').toString('utf8').replace(/\n/g, '');
+                const line = Buffer.from(hexStr, 'hex').toString('utf8').replace(/\n/g, '');
 
-                let foundId = hexStr.match(/08([0-9a-f]+)10[0-9a-f]+1a/);
+                const foundId = hexStr.match(/08([0-9a-f]+)10[0-9a-f]+1a/);
                 if (foundId) {
                     if (game.length === 1) {
-                        let hexChars = foundId[1].match(/.{1,2}/g);
-                        let ints = hexChars.map((x) => parseInt(x, 16));
+                        const hexChars = foundId[1].match(/.{1,2}/g);
+                        const ints = hexChars.map((x) => parseInt(x, 16));
                         launcherId = this._convertLaunchId(ints);
                         return;
                     } else if (game.length > 1) {
                         try {
-                            let gameParsed = yaml.load(game.join("\n"));
+                            const gameParsed = yaml.load(game.join('\n'));
 
                             if (launcherId) {
                                 gameParsed.root.launcher_id = launcherId;
@@ -82,8 +81,8 @@ class Uplay {
                             reject('Could not parse YAML');
                         }
 
-                        let hexChars = foundId[1].match(/.{1,2}/g);
-                        let ints = hexChars.map((x) => parseInt(x, 16));
+                        const hexChars = foundId[1].match(/.{1,2}/g);
+                        const ints = hexChars.map((x) => parseInt(x, 16));
                         launcherId = this._convertLaunchId(ints);
                         game = ['root:'];
                         return;
@@ -105,8 +104,8 @@ class Uplay {
     }
 
     static _generateHexArr(str) {
-        let lines = [];
-        let split = str.match(/.{1,2}/g);
+        const lines = [];
+        const split = str.match(/.{1,2}/g);
         let line = '';
         for (let i = 0; i < split.length; i++) {
             line = line+split[i];
@@ -119,8 +118,8 @@ class Uplay {
     }
 
     static _processRegKey(key) {
-        return new Promise((resolve, reject) => {
-            let id = path.basename(key.key);
+        return new Promise((resolve) => {
+            const id = path.basename(key.key);
             key.get('InstallDir', (err, installDir) => {
                 resolve({
                     id: id,
@@ -132,7 +131,7 @@ class Uplay {
 
     static _getRegInstalled() {
         return new Promise((resolve, reject) => {
-            let reg = new Registry({
+            const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
                 key:  '\\SOFTWARE\\Ubisoft\\Launcher\\Installs'
@@ -142,15 +141,8 @@ class Uplay {
                     reject(err);
                 }
 
-                let promiseArr = keys.map((key) => {
-                    return this._processRegKey(key)
-                        .then((res) => {
-                            return res;
-                        });
-                });
-                Promise.all(promiseArr).then((resultsArray) => {
-                    resolve(resultsArray);
-                });
+                const promiseArr = keys.map((key) => this._processRegKey(key).then((res) => res));
+                Promise.all(promiseArr).then((resultsArray) => resolve(resultsArray));
             });
         });
     }
@@ -182,7 +174,7 @@ class Uplay {
                         // Only need launch IDs
                         installedGames = installedGames.map((game) => String(game.id));
 
-                        let games = [];
+                        const games = [];
                         const invalidNames = ['NAME', 'GAMENAME', 'l1'];
                         configItems.forEach((game) => {
                             if (game.root.start_game) { // DLC's and other stuff dont have this key
@@ -192,7 +184,7 @@ class Uplay {
                                 // Get name from another key if has weird name assigned
                                 if (invalidNames.includes(game.root.name)) {
                                     if (typeof game.root.installer !== 'undefined') {
-                                        gameName = game.root.installer.game_identifier
+                                        gameName = game.root.installer.game_identifier;
                                     } else {
                                         gameName = game.root.default[game.root.name];
                                     }

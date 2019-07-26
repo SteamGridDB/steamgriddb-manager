@@ -3,22 +3,18 @@ const SGDB = window.require('steamgriddb');
 const metrohash64 = window.require('metrohash').metrohash64;
 import React from 'react';
 import settle from 'promise-settle';
-import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
-import TextBox from "react-uwp/TextBox";
-import ListView, { ListViewProps } from "react-uwp/ListView";
-import Separator from "react-uwp/Separator";
-import CheckBox from "react-uwp/CheckBox";
-import Image from "react-uwp/Image";
-import Toggle from "react-uwp/Toggle";
-import Button from "react-uwp/Button";
+import {getTheme} from 'react-uwp/Theme';
+import ListView from 'react-uwp/ListView';
+import Image from 'react-uwp/Image';
+import Button from 'react-uwp/Button';
 import Spinner from './spinner.js';
-import Steam from "./Steam";
-import Origin from "./Origin";
-import Uplay from "./Uplay";
-import Epic from "./Epic";
-import Gog from "./Gog";
-import BattleNet from "./BattleNet";
-import Bethesda from "./Bethesda";
+import Steam from './Steam';
+import Origin from './Origin';
+import Uplay from './Uplay';
+import Epic from './Epic';
+import Gog from './Gog';
+import BattleNet from './BattleNet';
+//import Bethesda from './Bethesda';
 
 class Import extends React.Component {
     constructor(props) {
@@ -65,12 +61,12 @@ class Import extends React.Component {
     componentDidMount() {
         Promise.all(this.platforms.map((platform) => platform.class.isInstalled()))
             .then((values) => {
-                for (var i = 0; i < values.length; i++) {
+                for (let i = 0; i < values.length; i++) {
                     this.platforms[i].installed = values[i];
                 }
 
                 // Generate array of getGames() promises if installed
-                let getGamesPromises = this.platforms.map((platform) => {
+                const getGamesPromises = this.platforms.map((platform) => {
                     if (platform.installed) {
                         return platform.class.getGames();
                     } else {
@@ -79,17 +75,17 @@ class Import extends React.Component {
                 });
 
                 settle(getGamesPromises).then((results) => {
-                    let games = [];
-                    let gridsPromises = [];
+                    const games = [];
+                    const gridsPromises = [];
 
                     results.forEach((result) => {
                         if (result.isFulfilled() && result.value() !== false) {
                             games.push(result.value());
                             let ids = result.value().map(x => encodeURIComponent(x.id)).join(','); // Comma separated list of IDs for use with SGDB API
-                            let platform = result.value()[0].platform;
+                            const platform = result.value()[0].platform;
 
                             // Get grids for each game
-                            let getGrids = this.SGDB.getGrids({type: platform, id: ids}).then((res) => {
+                            const getGrids = this.SGDB.getGrids({type: platform, id: ids}).then((res) => {
                                 // Treat each object as a request
                                 return res.map((x) => {
                                     if (x.success) {
@@ -145,7 +141,6 @@ class Import extends React.Component {
         this.platformGamesSave(games);
         Steam.addShortcuts(games);
         games.forEach((game, i) => {
-            let thumb = null;
             let image = null;
             if (games.length > 1 && grids[i].length === 1 && grids[i][0].success !== false) {
                 image = grids[i][0].url;
@@ -191,9 +186,9 @@ class Import extends React.Component {
                         {game.name}
                         <Button style={{opacity: 0, marginLeft: 'auto'}} onClick={this.addGame.bind(this, game, image)}>Import</Button>
                     </div>
-                )
+                );
             })
-        )
+        );
     }
 
     render() {
@@ -204,7 +199,7 @@ class Import extends React.Component {
             width: '100%',
             marginBottom: 10,
             clear: 'both'
-        }
+        };
 
         if (!isLoaded) {
             return (<Spinner/>);

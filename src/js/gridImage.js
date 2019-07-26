@@ -1,14 +1,13 @@
 import React from 'react';
-import {Redirect} from "react-router-dom";
-import ProgressBar from "react-uwp/ProgressBar";
-import Image from "react-uwp/Image";
-import { CSSTransitionGroup } from 'react-transition-group';
-const ReactLazyLoad = require("react-lazyload").default;
-const { Menu, MenuItem } = window.require('electron');
+import {Redirect} from 'react-router-dom';
+import ProgressBar from 'react-uwp/ProgressBar';
+import {CSSTransitionGroup} from 'react-transition-group';
+import PropTypes from 'prop-types';
+const ReactLazyLoad = require('react-lazyload').default;
 
 class GridImage extends React.Component {
     constructor(props) {
-        super(props)
+        super(props);
 
         this.gridWidth = 300 * this.props.zoom;
         this.gridHeight = 140 * this.props.zoom;
@@ -17,7 +16,7 @@ class GridImage extends React.Component {
             isHover: false,
             toSearch: false,
             downloadProgress: false
-        }
+        };
     }
 
     onMouseEnter() {
@@ -29,22 +28,22 @@ class GridImage extends React.Component {
     }
 
     render() {
-        let overlayOpacity = this.state.isHover | 0;
+        const overlayOpacity = this.state.isHover | 0;
 
         if (this.state.toSearch) {
-            let to = `/search/?game=${encodeURIComponent(this.props.name)}&appid=${this.props.appid}&type=${this.props.gameType}&gameId=${this.props.gameId}&platform=${this.props.platform}`;
+            const to = `/search/?game=${encodeURIComponent(this.props.name)}&appid=${this.props.appid}&type=${this.props.gameType}&gameId=${this.props.gameId}&platform=${this.props.platform}`;
 
-            return(
+            return (
                 <Redirect to={to} />
-            )
+            );
         }
 
-        let progressBar = "";
+        let progressBar = '';
         if (this.state.downloadProgress) {
             progressBar = (
                 <div style={{
                     position: 'absolute',
-                    width: this.gridWidth + 'px',
+                    width: `${this.gridWidth}px`,
                     bottom: '-5px'
                 }}>
                     <ProgressBar
@@ -71,20 +70,21 @@ class GridImage extends React.Component {
                         transitionEnter={false}
                         transitionLeave={false}>
                         <img key="1" style={{
-                            width: this.gridWidth + 'px',
-                            height: this.gridHeight + 'px'
+                            width: `${this.gridWidth}px`,
+                            height: `${this.gridHeight}px`
                         }} src={this.props.image} />
                     </CSSTransitionGroup>
                 </ReactLazyLoad>
-            )
+            );
         }
 
         return (
-            <div style={{
+            <div
+                style={{
                     margin: '5px',
                     position: 'relative',
-                    width: this.gridWidth + 'px',
-                    height: this.gridHeight + 'px',
+                    width: `${this.gridWidth}px`,
+                    height: `${this.gridHeight}px`,
                     backgroundColor: '#303030'
                 }}
                 onMouseEnter={this.onMouseEnter.bind(this)}
@@ -111,8 +111,8 @@ class GridImage extends React.Component {
                         position: 'absolute',
                         top: 0,
                         left: 0,
-                        width: this.gridWidth + 'px',
-                        height: this.gridHeight + 'px',
+                        width: `${this.gridWidth}px`,
+                        height: `${this.gridHeight}px`,
                         background: 'rgba(0,0,0,0.5)',
                         opacity: overlayOpacity,
                         transition: 'opacity 150ms ease 0s',
@@ -120,15 +120,33 @@ class GridImage extends React.Component {
                         zIndex: 1
                     }}
                 >
-                {this.props.author &&
-                    <span>Grid by: {this.props.author}</span>
-                }
+                    {this.props.author &&
+                        <span>Grid by: {this.props.author}</span>
+                    }
                 </div>
 
                 {progressBar}
             </div>
-        )
+        );
     }
 }
+
+GridImage.propTypes = {
+    name: PropTypes.string,
+    appid: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
+    gameType: PropTypes.string,
+    gameId: PropTypes.string,
+    platform: PropTypes.string,
+    author: PropTypes.string,
+    zoom: PropTypes.number,
+    image: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.bool
+    ]),
+    onClick: PropTypes.func
+};
 
 export default GridImage;

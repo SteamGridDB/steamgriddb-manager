@@ -1,11 +1,11 @@
 import React from 'react';
 import {TitleBar} from 'react-desktop/windows';
-import {Theme as UWPThemeProvider, getTheme} from "react-uwp/Theme";
-import NavigationView from "react-uwp/NavigationView";
-import SplitViewCommand from "react-uwp/SplitViewCommand";
-import {IconButton} from "react-uwp";
-import ToastHandler from "./toastHandler.js";
-import PubSub from "pubsub-js";
+import {Theme as UWPThemeProvider, getTheme} from 'react-uwp/Theme';
+import NavigationView from 'react-uwp/NavigationView';
+import SplitViewCommand from 'react-uwp/SplitViewCommand';
+import {IconButton} from 'react-uwp';
+import ToastHandler from './toastHandler.js';
+import PubSub from 'pubsub-js';
 import {HashRouter as Router, Redirect, Link, Route} from 'react-router-dom';
 
 import Search from './Search.js';
@@ -16,27 +16,27 @@ import Import from './Import.js';
 const electron = window.require('electron');
 const remote = electron.remote;
 
-import "../css/App.css";
+import '../css/App.css';
 
 import Steam from './Steam.js';
 window.Steam = Steam;
 
 class App extends React.Component {
     constructor(props) {
-        super(props)
+        super(props);
 
-        this.state = {isMaximized: false, showBack: false}
+        this.state = {isMaximized: false, showBack: false};
         this.toggleMaximize = this.toggleMaximize.bind(this);
 
         //Track windows snap calling maximize / unmaximize
-        let window = remote.BrowserWindow.getFocusedWindow();
+        const window = remote.BrowserWindow.getFocusedWindow();
 
         window.on('maximize', () => {
-            this.setState({ isMaximized: true })
+            this.setState({ isMaximized: true });
         });
 
         window.on('unmaximize', () => {
-            this.setState({ isMaximized: false })
+            this.setState({ isMaximized: false });
         });
 
         PubSub.subscribe('showBack', (message, args) => {
@@ -45,22 +45,22 @@ class App extends React.Component {
     }
 
     close() {
-        let window = remote.BrowserWindow.getFocusedWindow();
-        window.close()
+        const window = remote.BrowserWindow.getFocusedWindow();
+        window.close();
     }
 
     minimize() {
-        let window = remote.BrowserWindow.getFocusedWindow();
-        window.minimize()
+        const window = remote.BrowserWindow.getFocusedWindow();
+        window.minimize();
     }
 
     toggleMaximize() {
-        let window = remote.BrowserWindow.getFocusedWindow();
-        this.setState({ isMaximized: !this.state.isMaximized })
+        const window = remote.BrowserWindow.getFocusedWindow();
+        this.setState({ isMaximized: !this.state.isMaximized });
         if(!this.state.isMaximized) {
-            window.maximize()
+            window.maximize();
         } else {
-            window.unmaximize()
+            window.unmaximize();
         }
     }
 
@@ -69,28 +69,28 @@ class App extends React.Component {
     }
 
     render() {
-        let accentColor = electron.remote.systemPreferences.getAccentColor();
+        const accentColor = electron.remote.systemPreferences.getAccentColor();
         const navWidth = 48;
 
         const navigationTopNodes = [
-            <SplitViewCommand label="Library" icon={"\uE8F1"} onClick={() => this.handleNavRedirect('/')} />,
-            <SplitViewCommand label="Import Games" icon={"\uE8B6"} onClick={() => this.handleNavRedirect('/import')} />
+            <SplitViewCommand key="0" label="Library" icon={'Library'} onClick={() => this.handleNavRedirect('/')} />,
+            <SplitViewCommand key="1" label="Import Games" icon={'ImportAll'} onClick={() => this.handleNavRedirect('/import')} />
         ];
 
         let backBtn;
         let titleWidth = '100%';
         if (this.state.showBack) {
-            backBtn = <Link to='/' onClick={() => {this.setState({showBack: false})}}>
-                        <IconButton style={{width: navWidth, height: 30, lineHeight: '31px', backgroundColor: '#141414', float: 'left'}} size={22}>Back</IconButton>
-                      </Link>
+            backBtn = <Link to='/' onClick={() => {this.setState({showBack: false});}}>
+                <IconButton style={{width: navWidth, height: 30, lineHeight: '31px', backgroundColor: '#141414', float: 'left'}} size={22}>Back</IconButton>
+            </Link>;
             titleWidth = `calc(100% - ${navWidth}px)`;
         }
 
         return (
             <UWPThemeProvider
                 theme={getTheme({
-                    themeName: "dark",
-                    accent: '#' + accentColor,
+                    themeName: 'dark',
+                    accent: `#${accentColor}`,
                     useFluentDesign: true
                 })}
             >
@@ -141,8 +141,7 @@ class App extends React.Component {
                 </Router>
                 <ToastHandler />
             </UWPThemeProvider>
-
-        )
+        );
     }
 }
 
