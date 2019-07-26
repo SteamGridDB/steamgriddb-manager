@@ -89,7 +89,19 @@ class Import extends React.Component {
                             let platform = result.value()[0].platform;
 
                             // Get grids for each game
-                            gridsPromises.push(this.SGDB.getGrids({type: platform, id: ids}));
+                            let getGrids = this.SGDB.getGrids({type: platform, id: ids}).then((res) => {
+                                // Treat each object as a request
+                                return res.map((x) => {
+                                    if (x.success) {
+                                        return x.data;
+                                    } else {
+                                        return false;
+                                    }
+                                });
+                            }).catch((err) => {
+                                // show an error toast
+                            });
+                            gridsPromises.push(getGrids);
                         } else {
                             // getGames() rejected
                             // result.reason()
@@ -122,7 +134,6 @@ class Import extends React.Component {
     }
 
     platformGameSave(game) {
-        console.log(metrohash64(game.exe+game.params));
         this.store.set(`games.${metrohash64(game.exe+game.params)}`, game);
     }
 
