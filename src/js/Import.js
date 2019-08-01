@@ -137,7 +137,7 @@ class Import extends React.Component {
     }
 
     platformGameSave(game) {
-        this.store.set(`games.${metrohash64(game.exe+game.params)}`, game);
+        this.store.set(`games.${metrohash64(game.exe+(typeof game.params !== 'undefined' ? game.params : ''))}`, game);
     }
 
     platformGameRemove(game) {
