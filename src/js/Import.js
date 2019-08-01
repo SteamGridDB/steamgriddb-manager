@@ -105,11 +105,13 @@ class Import extends React.Component {
                                 // show an error toast
                             });
                             gridsPromises.push(getGrids);
-                        } else {
+                        } else if (result.isRejected()) {
                             // getGames() rejected
                             // result.reason()
-                            games.push(false);
-                            gridsPromises.push(false);
+                        } else {
+                            // not installed
+                            games.push(null);
+                            gridsPromises.push(null);
                         }
                     });
 
@@ -221,15 +223,11 @@ class Import extends React.Component {
             <div className="import-list" style={{padding: 15, paddingLeft: 0}}>
                 {games.map((game, i) => (
                     <div key={i}>
-                        <h5 style={{float: 'left', ...getTheme().typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
-                        {game ? (
+                        {this.platforms[i].installed && (
                             <div>
+                                <h5 style={{float: 'left', ...getTheme().typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
                                 <Button style={{float: 'right'}} onClick={this.addGames.bind(this, game, grids[i], this.platforms[i])}>Import All</Button>
                                 <ListView style={listStyle} listSource={this.generateListItems(game, this.platforms[i], grids[i])} />
-                            </div>
-                        ) : (
-                            <div style={{padding: 10, clear: 'both'}}>
-                                <p>{this.platforms[i].name} is not installed.</p>
                             </div>
                         )}
                     </div>
