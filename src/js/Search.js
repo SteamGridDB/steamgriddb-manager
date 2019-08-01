@@ -55,29 +55,36 @@ class Search extends React.Component {
         const client = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
 
         if (this.gameType === 'game') {
+            const defaultGridImage = Steam.getDefaultGridImage(this.appid);
+            const items = [{
+                url: defaultGridImage,
+                thumb: defaultGridImage,
+                style: 'default',
+                title: this.query,
+                author: {
+                    name: null
+                }
+            }];
             client.getGridsBySteamAppId(this.appid)
                 .then((res) => {
-                    const items = res;
-                    const defaultGridImage = Steam.getDefaultGridImage(this.appid);
-                    items.unshift({
-                        url: defaultGridImage,
-                        thumb: defaultGridImage,
-                        style: 'default',
-                        title: this.query,
-                        author: {
-                            name: null
-                        }
-                    });
-
                     this.setState({
                         isLoaded: true,
-                        items: items
+                        items: [...items, ...res]
                     });
                 })
-                .catch(() => {
-                    this.setState({
-                        apiError: true
-                    });
+                .catch((err) => {
+                    if (err.response.statusCode === 404) {
+                        // Game not found is fine
+                        this.setState({
+                            isLoaded: true,
+                            items: items
+                        });
+                    } else {
+                        // Any other error is baad
+                        this.setState({
+                            apiError: true
+                        });
+                    }
                 });
         }
 
