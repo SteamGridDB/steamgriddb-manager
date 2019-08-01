@@ -144,9 +144,14 @@ class Import extends React.Component {
         this.store.delete(`games.${metrohash64(game.exe+game.params)}`);
     }
 
-    addGames(games, grids) {
+    addGames(games, grids, platform) {
         this.platformGamesSave(games);
-        Steam.addShortcuts(games);
+
+        // Add shortcuts with platform name as tag
+        Steam.addShortcuts(games.map((game) => {
+            game.tags = [platform.name];
+            return game;
+        }));
         games.forEach((game, i) => {
             let image = null;
             if (games.length > 1 && grids[i].length === 1 && grids[i][0].success !== false) {
@@ -160,9 +165,9 @@ class Import extends React.Component {
         });
     }
 
-    addGame(game, image) {
+    addGame(game, image, platform) {
         this.platformGameSave(game);
-        Steam.addShortcut(game.name, game.exe, game.startIn, game.params);
+        Steam.addShortcut(game.name, game.exe, game.startIn, game.params, [platform.name]);
         if (image) {
             Steam.addGrid(Steam.generateAppId(game.exe, game.name), image);
         }
@@ -191,7 +196,7 @@ class Import extends React.Component {
                             src={thumb}
                         />
                         {game.name}
-                        <Button style={{opacity: 0, marginLeft: 'auto'}} onClick={this.addGame.bind(this, game, image)}>Import</Button>
+                        <Button style={{opacity: 0, marginLeft: 'auto'}} onClick={this.addGame.bind(this, game, image, platform)}>Import</Button>
                     </div>
                 );
             })
@@ -219,8 +224,8 @@ class Import extends React.Component {
                         <h5 style={{float: 'left', ...getTheme().typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
                         {game ? (
                             <div>
-                                <Button style={{float: 'right'}} onClick={this.addGames.bind(this, game, grids[i])}>Import All</Button>
-                                <ListView style={listStyle} listSource={this.generateListItems(game, this.platforms[i].id, grids[i])} />
+                                <Button style={{float: 'right'}} onClick={this.addGames.bind(this, game, grids[i], this.platforms[i])}>Import All</Button>
+                                <ListView style={listStyle} listSource={this.generateListItems(game, this.platforms[i], grids[i])} />
                             </div>
                         ) : (
                             <div style={{padding: 10, clear: 'both'}}>

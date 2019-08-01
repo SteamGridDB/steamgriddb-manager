@@ -322,6 +322,7 @@ class Steam {
                                 return resolve();
                             }
                         }
+
                         apps.push({
                             'appname': value.name,
                             'exe': value.exe,
@@ -332,7 +333,7 @@ class Steam {
                             'ShortcutPath': '',
                             'AllowDesktopConfig': true,
                             'OpenVR': false,
-                            'tags': []
+                            'tags': (typeof value.tags !== 'undefined' ? value.tags : [])
                         });
                     });
 
@@ -344,13 +345,14 @@ class Steam {
         });
     }
 
-    static addShortcut(name, executable, startIn, launchOptions) {
+    static addShortcut(name, executable, startIn, launchOptions, tags = []) {
         return new Promise((resolve) => {
             this.addShortcuts([{
                 name: name,
                 exe: executable,
                 startIn: startIn,
-                params: launchOptions
+                params: launchOptions,
+                tags: tags
             }]).then(() => resolve());
         });
     }
