@@ -81,30 +81,35 @@ class Import extends React.Component {
                     results.forEach((result) => {
                         if (result.isFulfilled() && result.value() !== false) {
                             games.push(result.value());
-                            const ids = result.value().map((x) => encodeURIComponent(x.id)).join(','); // Comma separated list of IDs for use with SGDB API
-                            const platform = result.value()[0].platform;
 
-                            // Get grids for each game
-                            const getGrids = this.SGDB.getGrids({type: platform, id: ids}).then((res) => {
-                                let formatted;
-                                // if only single id then return first grid
-                                if (result.value().length === 1) {
-                                    formatted = [res[0]];
-                                } else {
-                                    // if multiple ids treat each object as a request
-                                    formatted = res.map((x) => {
-                                        if (x.success) {
-                                            return x.data;
-                                        } else {
-                                            return false;
-                                        }
-                                    });
-                                }
-                                return formatted;
-                            }).catch(() => {
-                                // show an error toast
-                            });
-                            gridsPromises.push(getGrids);
+                            if (result.value().length > 0) {
+                                const ids = result.value().map((x) => encodeURIComponent(x.id)).join(','); // Comma separated list of IDs for use with SGDB API
+                                const platform = result.value()[0].platform;
+
+                                // Get grids for each game
+                                const getGrids = this.SGDB.getGrids({type: platform, id: ids}).then((res) => {
+                                    let formatted;
+                                    // if only single id then return first grid
+                                    if (result.value().length === 1) {
+                                        formatted = [res[0]];
+                                    } else {
+                                        // if multiple ids treat each object as a request
+                                        formatted = res.map((x) => {
+                                            if (x.success) {
+                                                return x.data;
+                                            } else {
+                                                return false;
+                                            }
+                                        });
+                                    }
+                                    return formatted;
+                                }).catch(() => {
+                                    // show an error toast
+                                });
+                                gridsPromises.push(getGrids);
+                            } else {
+                                gridsPromises.push(false);
+                            }
                         } else if (result.isRejected()) {
                             // getGames() rejected
                             // result.reason()
