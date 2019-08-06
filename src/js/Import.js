@@ -1,12 +1,13 @@
 const Store = window.require('electron-store');
 const SGDB = window.require('steamgriddb');
 const metrohash64 = window.require('metrohash').metrohash64;
+import PubSub from 'pubsub-js';
 import React from 'react';
 import settle from 'promise-settle';
 import {getTheme} from 'react-uwp/Theme';
-import ListView from 'react-uwp/ListView';
-import Image from 'react-uwp/Image';
 import Button from 'react-uwp/Button';
+import Image from 'react-uwp/Image';
+import ImportList from './ImportList';
 import Spinner from './spinner.js';
 import Steam from './Steam';
 import Origin from './Origin';
@@ -54,7 +55,7 @@ class Import extends React.Component {
 
         this.state = {
             isLoaded: false,
-            games: []
+            games: {}
         };
     }
 
@@ -75,12 +76,12 @@ class Import extends React.Component {
                 });
 
                 settle(getGamesPromises).then((results) => {
-                    const games = [];
+                    const games = {};
                     const gridsPromises = [];
 
-                    results.forEach((result) => {
+                    results.forEach((result, index) => {
                         if (result.isFulfilled() && result.value() !== false) {
-                            games.push(result.value());
+                            games[this.platforms[index].id] = result.value();
 
                             if (result.value().length > 0) {
                                 const ids = result.value().map((x) => encodeURIComponent(x.id)).join(','); // Comma separated list of IDs for use with SGDB API
@@ -115,7 +116,7 @@ class Import extends React.Component {
                             // result.reason()
                         } else {
                             // not installed
-                            games.push(false);
+                            games[this.platforms[index].id] = false;
                             gridsPromises.push(false);
                         }
                     });
@@ -159,6 +160,8 @@ class Import extends React.Component {
             game.tags = [platform.name];
             return game;
         }));
+
+        const addGridPromises = [];
         games.forEach((game, i) => {
             let image = null;
             if (games.length > 1 && grids[i].length === 1 && grids[i][0].success !== false) {
@@ -167,8 +170,20 @@ class Import extends React.Component {
                 image = grids[0].url;
             }
             if (image) {
-                Steam.addGrid(Steam.generateAppId(game.exe, game.name), image);
+                const gamesClone = Object.assign(this.state.games);
+                const addGrid = Steam.addGrid(Steam.generateAppId(game.exe, game.name), image, (progress) => {
+                    gamesClone[platform.id][gamesClone[platform.id].indexOf(game)].progress = progress;
+                    this.setState({gamesClone});
+                });
+
+                addGridPromises.push(addGrid);
             }
+        });
+
+        Promise.all(addGridPromises).then(() => {
+            PubSub.publish('toast', {logoNode: 'ImportAll', title: 'Successfully Imported!', contents: (
+                <p>{games.length} games imported from {platform.name}</p>
+            )});
         });
     }
 
@@ -176,56 +191,34 @@ class Import extends React.Component {
         this.platformGameSave(game);
         Steam.addShortcut(game.name, game.exe, game.startIn, game.params, [platform.name]);
         if (image) {
-            Steam.addGrid(Steam.generateAppId(game.exe, game.name), image);
+            const gamesClone = Object.assign(this.state.games);
+            Steam.addGrid(Steam.generateAppId(game.exe, game.name), image, (progress) => {
+                gamesClone[platform.id][gamesClone[platform.id].indexOf(game)].progress = progress;
+                this.setState({gamesClone});
+            }).then((dest) => {
+                PubSub.publish('toast', {logoNode: 'Import', title: `Successfully Imported: ${game.name}`, contents: (
+                    <Image
+                        style={{width: '100%', marginTop: 10}}
+                        src={dest}
+                    />
+                )});
+            }).catch((err) => {
+                PubSub.publish('toast', {logoNode: 'Error', title: `Failed to import: ${game.name}`, contents: (
+                    <p>{err.message}</p>
+                )});
+            });
         }
-    }
-
-    generateListItems(games, platform, grids) {
-        return (
-            games.map((game, i) => {
-                let thumb = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkqAcAAIUAgUW0RjgAAAAASUVORK5CYII=';
-                let image = null;
-                if (games.length > 1 && grids[i].length === 1 && grids[i][0].success !== false) {
-                    thumb = grids[i][0].thumb;
-                    image = grids[i][0].url;
-                } else if (games.length === 1 && grids) {
-                    thumb = grids[0].thumb;
-                    image = grids[0].url;
-                }
-
-
-                return (
-                    <div style={{display: 'flex', alignItems: 'center', width: 'inherit'}} key={game.id}>
-                        <Image
-                            style={{marginRight: 10}}
-                            height='30px'
-                            width='64px'
-                            src={thumb}
-                        />
-                        {game.name}
-                        <Button style={{opacity: 0, marginLeft: 'auto'}} onClick={this.addGame.bind(this, game, image, platform)}>Import</Button>
-                    </div>
-                );
-            })
-        );
     }
 
     render() {
         const {isLoaded, games, grids} = this.state;
-        const listStyle = {
-            background: 'none',
-            border: 0,
-            width: '100%',
-            marginBottom: 10,
-            clear: 'both'
-        };
 
         if (!isLoaded) {
             return (<Spinner/>);
         }
 
         // if no launcher installed
-        if (games.every((x) => x === false)) {
+        if (Object.values(games).every((x) => x === false)) {
             return (
                 <div className="import-list" style={{padding: 15, paddingLeft: 0, textAlign: 'center', ...getTheme().typographyStyles.body}}>
                     <p>Looks like you have no launchers installed. Install some launchers to import games from them into Steam.</p>
@@ -236,13 +229,18 @@ class Import extends React.Component {
 
         return (
             <div className="import-list" style={{padding: 15, paddingLeft: 0}}>
-                {games.map((game, i) => (
+                {Object.keys(games).map((platform, i) => (
                     <div key={i}>
                         {this.platforms[i].installed && (
                             <div>
                                 <h5 style={{float: 'left', ...getTheme().typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
-                                <Button style={{float: 'right'}} onClick={this.addGames.bind(this, game, grids[i], this.platforms[i])}>Import All</Button>
-                                <ListView style={listStyle} listSource={this.generateListItems(game, this.platforms[i], grids[i])} />
+                                <Button style={{float: 'right'}} onClick={this.addGames.bind(this, games[platform], grids[i], this.platforms[i])}>Import All</Button>
+                                <ImportList
+                                    games={games[platform]}
+                                    platform={this.platforms[i]}
+                                    grids={grids[i]}
+                                    onImportClick={this.addGame.bind(this)}
+                                />
                             </div>
                         )}
                     </div>

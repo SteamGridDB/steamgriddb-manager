@@ -264,11 +264,7 @@ class Steam {
         });
     }
 
-    static addGrid(appId, url, onProgress) {
-        if (typeof onProgress == 'undefined') {
-            onProgress = () => {};
-        }
-
+    static addGrid(appId, url, onProgress = () => {}) {
         return new Promise((resolve, reject) => {
             this.getCurrentUserGridPath().then((userGridPath) => {
                 const image_url = url;
@@ -290,11 +286,11 @@ class Steam {
                     response.on('data', (chunk) => {
                         cur += chunk.length;
                         data.push(chunk);
-                        onProgress(cur / len);
+                        onProgress(Math.round((cur / len) * 100) / 100);
                     });
-                }).on('error', () => { // Handle errors
+                }).on('error', (err) => {
                     fs.unlink(dest);
-                    reject();
+                    reject(err);
                 });
             });
         });
