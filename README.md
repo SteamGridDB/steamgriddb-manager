@@ -12,7 +12,7 @@ See the website for screenshots and more information: https://www.steamgriddb.co
 [Windows (Portable)]()
 
 # Supported Launchers
-SteamgridDB Manager supports importing from the following launchers:
+SteamGridDB Manager supports importing from the following launchers:
 - Origin
 - Uplay
 - Epic Games Launcher
