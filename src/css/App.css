@@ -20,6 +20,11 @@ div[class^="fluent-background-"] {
     background-color: #1a1a1a;
 }
 
+/* Transition progress bar */
+[class*="progress-bar-bar"] {
+    transition: transform ease 300ms;
+}
+
 .import-list [class*="list-view-item-"]:hover button {
     opacity: 1;
 }
