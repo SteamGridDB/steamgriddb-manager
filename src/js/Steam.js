@@ -273,7 +273,8 @@ class Steam {
 
                 let cur = 0;
                 const data = new Stream();
-
+                let progress = 0;
+                let lastProgress = 0;
                 https.get(url, (response) => {
                     const len = parseInt(response.headers['content-length'], 10);
 
@@ -286,7 +287,11 @@ class Steam {
                     response.on('data', (chunk) => {
                         cur += chunk.length;
                         data.push(chunk);
-                        onProgress(Math.round((cur / len) * 100) / 100);
+                        progress = Math.round((cur / len) * 10) / 10;
+                        if (progress !== lastProgress) {
+                            lastProgress = progress;
+                            onProgress(progress);
+                        }
                     });
                 }).on('error', (err) => {
                     fs.unlink(dest);
