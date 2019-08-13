@@ -1,6 +1,6 @@
 {
   "name": "steamgriddb-manager",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Easily find and download new grid images for your Steam games.",
   "main": "main.js",
   "author": "SteamGridDB.com",
@@ -9,11 +9,12 @@
     "build": "webpack --mode development",
     "run": "webpack --mode development && electron .",
     "pack": "build --dir",
-    "dist": "build",
+    "build": "build",
+    "publish": "electron-builder --publish always",
     "postinstall": "electron-builder install-app-deps"
   },
   "build": {
-    "appId": "comnpm",
+    "appId": "com.steamgriddb.manager",
     "productName": "SteamGridDB Manager",
     "copyright": "SteamGridDB.com",
     "directories": {
@@ -24,6 +25,11 @@
     },
     "nsis": {
       "oneClick": false
+    },
+    "publish": {
+      "provider": "s3",
+      "endpoint": "http://192.168.0.18:9000",
+      "bucket": "sgdb-manager"
     }
   },
   "devDependencies": {
@@ -64,6 +70,7 @@
     "@node-steam/vdf": "^2.0.1",
     "blizzard-product-parser": "^1.0.1",
     "electron-store": "^4.0.0",
+    "electron-updater": "^4.1.2",
     "js-yaml": "^3.13.1",
     "jsonminify": "^0.4.1",
     "metrohash": "^2.6.0",
