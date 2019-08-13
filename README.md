@@ -1,15 +1,7 @@
 # [SteamGridDB Manager](https://www.steamgriddb.com/manager)
 SteamGridDB Manager automatically finds games from launchers on your system and imports them into your Steam library with a click of a button.
 
-See the website for screenshots and more information: https://www.steamgriddb.com/manager
-
-# Features
- - Easily import games from [other launchers](#supported-launchers) into Steam.
- - Browse and apply grids for any game in your Steam library from [our extensive database](https://www.steamgriddb.com/). 
-
-# Download
-[Windows (Installer)]()  
-[Windows (Portable)]()
+See the website for download and more information: https://www.steamgriddb.com/manager
 
 # Supported Launchers
 SteamGridDB Manager supports importing from the following launchers:
