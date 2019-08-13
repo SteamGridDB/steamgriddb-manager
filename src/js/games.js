@@ -1,5 +1,5 @@
 import React from 'react';
-import {getTheme} from 'react-uwp/Theme';
+import PropTypes from 'prop-types';
 import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
 import AutoSuggestBox from 'react-uwp/AutoSuggestBox';
@@ -78,7 +78,7 @@ class Games extends React.Component {
 
         if (!hasSteam) {
             return (
-                <h5 style={{...getTheme().typographyStyles.title, textAlign: 'center'}}>
+                <h5 style={{...this.context.theme.typographyStyles.title, textAlign: 'center'}}>
                     Steam installation not found.
                 </h5>
             );
@@ -104,7 +104,7 @@ class Games extends React.Component {
                     {Object.keys(items).map((platform, i) => (
                         <div key={i}>
                             <div style={{
-                                ...getTheme().typographyStyles.subTitleAlt,
+                                ...this.context.theme.typographyStyles.subTitleAlt,
                                 backgroundColor: '#1a1a1a',
                                 position: 'sticky',
                                 zIndex: 2,
@@ -142,4 +142,5 @@ class Games extends React.Component {
     }
 }
 
+Games.contextTypes = { theme: PropTypes.object };
 export default Games;

@@ -3,7 +3,6 @@ import GridImage from './gridImage.js';
 import {Redirect} from 'react-router-dom';
 import Steam from './Steam.js';
 import React from 'react';
-import {getTheme} from 'react-uwp/Theme';
 import Image from 'react-uwp/Image';
 import Grid from './Grid';
 import queryString from 'query-string';
@@ -184,7 +183,7 @@ class Search extends React.Component {
         if (this.state.apiError) {
             return (
                 <div>
-                    <h5 style={{...getTheme().typographyStyles.title, textAlign: 'center'}}>
+                    <h5 style={{...this.context.theme.typographyStyles.title, textAlign: 'center'}}>
                         Error trying to use the SteamGridDB API. 
                     </h5>
                 </div>
@@ -220,5 +219,5 @@ class Search extends React.Component {
 Search.propTypes = {
     location: PropTypes.object
 };
-
+Search.contextTypes = { theme: PropTypes.object };
 export default Search;

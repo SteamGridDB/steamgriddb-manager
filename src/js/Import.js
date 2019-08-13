@@ -4,7 +4,7 @@ const metrohash64 = window.require('metrohash').metrohash64;
 import PubSub from 'pubsub-js';
 import React from 'react';
 import settle from 'promise-settle';
-import {getTheme} from 'react-uwp/Theme';
+import PropTypes from 'prop-types';
 import Button from 'react-uwp/Button';
 import Image from 'react-uwp/Image';
 import ImportList from './ImportList';
@@ -220,7 +220,7 @@ class Import extends React.Component {
         // if no launcher installed
         if (Object.values(games).every((x) => x === false)) {
             return (
-                <div className="import-list" style={{padding: 15, paddingLeft: 0, textAlign: 'center', ...getTheme().typographyStyles.body}}>
+                <div className="import-list" style={{padding: 15, paddingLeft: 0, textAlign: 'center', ...this.context.theme.typographyStyles.body}}>
                     <p>Looks like you have no launchers installed. Install some launchers to import games from them into Steam.</p>
                     <p>The following launchers are supported: {this.platforms.map((x) => x.name).join(', ')}</p>
                 </div>
@@ -233,7 +233,7 @@ class Import extends React.Component {
                     <div key={i}>
                         {this.platforms[i].installed && (
                             <div>
-                                <h5 style={{float: 'left', ...getTheme().typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
+                                <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
                                 <Button style={{float: 'right'}} onClick={this.addGames.bind(this, games[platform], grids[i], this.platforms[i])}>Import All</Button>
                                 <ImportList
                                     games={games[platform]}
@@ -250,4 +250,5 @@ class Import extends React.Component {
     }
 }
 
+Import.contextTypes = { theme: PropTypes.object };
 export default Import;
