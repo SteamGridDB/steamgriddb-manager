@@ -10,7 +10,7 @@
     "run": "webpack --mode development && electron .",
     "pack": "build --dir",
     "build": "build",
-    "publish": "electron-builder --publish onTag",
+    "publish": "electron-builder --publish always",
     "postinstall": "electron-builder install-app-deps"
   },
   "build": {
