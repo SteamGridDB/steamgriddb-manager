@@ -16,6 +16,7 @@
     "appId": "com.steamgriddb.manager",
     "productName": "SteamGridDB Manager",
     "copyright": "SteamGridDB.com",
+    "compression": "maximum",
     "directories": {
       "buildResources": "assets/icons"
     },
@@ -27,6 +28,8 @@
     },
     "publish": {
       "provider": "s3",
+      "region": "us-east-1",
+      "path": "/manager",
       "bucket": "steamgriddb"
     }
   },

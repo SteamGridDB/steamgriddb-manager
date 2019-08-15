@@ -92,7 +92,9 @@ class Import extends React.Component {
                                     let formatted;
                                     // if only single id then return first grid
                                     if (result.value().length === 1) {
-                                        formatted = [res[0]];
+                                        if (res.length > 0) {
+                                            formatted = [res[0]];
+                                        }
                                     } else {
                                         // if multiple ids treat each object as a request
                                         formatted = res.map((x) => {
@@ -188,6 +190,7 @@ class Import extends React.Component {
     }
 
     addGame(game, image, platform) {
+        console.log( image, platform);
         this.platformGameSave(game);
         Steam.addShortcut(game.name, game.exe, game.startIn, game.params, [platform.name]);
         if (image) {
@@ -229,22 +232,26 @@ class Import extends React.Component {
 
         return (
             <div className="import-list" style={{padding: 15, paddingLeft: 0}}>
-                {Object.keys(games).map((platform, i) => (
-                    <div key={i}>
-                        {this.platforms[i].installed && (
-                            <div>
-                                <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
-                                <Button style={{float: 'right'}} onClick={this.addGames.bind(this, games[platform], grids[i], this.platforms[i])}>Import All</Button>
-                                <ImportList
-                                    games={games[platform]}
-                                    platform={this.platforms[i]}
-                                    grids={grids[i]}
-                                    onImportClick={this.addGame.bind(this)}
-                                />
+                {Object.keys(games).map((platform, i) => {
+                    if (games[platform] !== false) { // If installed
+                        return (
+                            <div key={i}>
+                                {this.platforms[i].installed && (
+                                    <div>
+                                        <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
+                                        <Button style={{float: 'right'}} onClick={this.addGames.bind(this, games[platform], grids[i], this.platforms[i])}>Import All</Button>
+                                        <ImportList
+                                            games={games[platform]}
+                                            platform={this.platforms[i]}
+                                            grids={grids[i]}
+                                            onImportClick={this.addGame.bind(this)}
+                                        />
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                ))}
+                        );
+                    }
+                })}
             </div>
         );
     }
