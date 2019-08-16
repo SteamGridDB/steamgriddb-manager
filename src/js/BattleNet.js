@@ -81,17 +81,17 @@ class BattleNet {
                         const gameId = product.uid;
                         let launchId = product.productCode; // Lowercase, find correct case by matching with .config file
                         launchId = gameIds[launchId.toLowerCase()];
-
-                        const name = path.basename(product.settings.installPath);
-
-                        games.push({
-                            id: gameId,
-                            name: name,
-                            exe: `"${executable}"`,
-                            startIn: `"${bnetPath}"`,
-                            params: `--exec="launch ${launchId}"`,
-                            platform: 'bnet'
-                        });
+                        if (launchId) {
+                            const name = path.basename(product.settings.installPath);
+                            games.push({
+                                id: gameId,
+                                name: name,
+                                exe: `"${executable}"`,
+                                startIn: `"${bnetPath}"`,
+                                params: `--exec="launch ${launchId}"`,
+                                platform: 'bnet'
+                            });
+                        }
                     });
                     resolve(games);
                 } catch(err) {

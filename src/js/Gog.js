@@ -1,4 +1,5 @@
 const Registry = window.require('winreg');
+const fs = window.require('fs');
 const promiseReflect = window.require('promise-reflect');
 
 class Gog {
@@ -7,15 +8,18 @@ class Gog {
             const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
-                key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{7258BA11-600C-430E-A759-27E2C691A335}_is1'
+                key:  '\\SOFTWARE\\GOG.com\\GalaxyClient\\paths'
             });
 
-            reg.valueExists('', (err, exists) => {
+            reg.get('client', (err, installDir) => {
                 if (err) {
+                    if (err.code == 1) {
+                        return resolve(false);
+                    }
                     reject(new Error('Could not check if GOG Galaxy is installed.'));
                 }
-
-                resolve(exists);
+                const dirExists = fs.existsSync(installDir.value);
+                resolve(dirExists);
             });
         });
     }
@@ -25,27 +29,15 @@ class Gog {
             const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
-                key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{7258BA11-600C-430E-A759-27E2C691A335}_is1'
+                key:  '\\SOFTWARE\\GOG.com\\GalaxyClient\\paths'
             });
 
-            reg.values((err, items) => {
+            reg.get('client', (err, installDir) => {
                 if (err) {
                     reject(new Error('Could not find GOG Galaxy path.'));
                 }
 
-                let gogPath = false;
-
-                items.forEach((item) => {
-                    if (item.name === 'InstallLocation') {
-                        gogPath = item.value;
-                    }
-                });
-
-                if (gogPath) {
-                    resolve(gogPath);
-                } else {
-                    reject(new Error('Could not find GOG Galaxy path.'));
-                }
+                resolve(installDir.value);
             });
         });
     }

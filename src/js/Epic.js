@@ -10,15 +10,19 @@ class Epic {
             const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
-                key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{AAA3417F-FEAD-4AF7-9C01-9FAE1BB44E3D}'
+                key: '\\SOFTWARE\\EpicGames\\Unreal Engine'
             });
 
-            reg.valueExists('', (err, exists) => {
+            reg.get('INSTALLDIR', (err, installDir) => {
                 if (err) {
+                    if (err.code == 1) {
+                        return resolve(false);
+                    }
                     reject(new Error('Could not check if Epic Games Launcher is installed.'));
                 }
 
-                resolve(exists);
+                const exeExists = fs.existsSync(path.join(installDir.value, 'Launcher', 'Engine', 'Binaries', 'Win32', 'EpicGamesLauncher.exe'));
+                resolve(exeExists);
             });
         });
     }
@@ -28,23 +32,15 @@ class Epic {
             const reg = new Registry({
                 hive: Registry.HKLM,
                 arch: 'x86',
-                key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{AAA3417F-FEAD-4AF7-9C01-9FAE1BB44E3D}'
+                key: '\\SOFTWARE\\EpicGames\\Unreal Engine'
             });
 
-            reg.values((err, items) => {
-                let epicPath = false;
-
-                items.forEach((item) => {
-                    if (item.name === 'InstallLocation') {
-                        epicPath = item.value;
-                    }
-                });
-
-                if (epicPath) {
-                    resolve(epicPath);
-                } else {
+            reg.get('INSTALLDIR', (err, installDir) => {
+                if (err) {
                     reject(new Error('Could not find Epic Games Launcher path.'));
                 }
+
+                resolve(installDir.value);
             });
         });
     }
