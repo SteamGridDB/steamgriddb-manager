@@ -116,6 +116,8 @@ class Import extends React.Component {
                         } else if (result.isRejected()) {
                             // getGames() rejected
                             // result.reason()
+                            games[this.platforms[index].id] = result.reason();
+                            gridsPromises.push(false);
                         } else {
                             // not installed
                             games[this.platforms[index].id] = false;
@@ -190,7 +192,6 @@ class Import extends React.Component {
     }
 
     addGame(game, image, platform) {
-        console.log( image, platform);
         this.platformGameSave(game);
         Steam.addShortcut(game.name, game.exe, game.startIn, game.params, [platform.name]);
         if (image) {
@@ -233,21 +234,24 @@ class Import extends React.Component {
         return (
             <div className="import-list" style={{padding: 15, paddingLeft: 0}}>
                 {Object.keys(games).map((platform, i) => {
-                    if (games[platform] !== false) { // If installed
+                    if (typeof games[platform] === 'object') {
                         return (
                             <div key={i}>
-                                {this.platforms[i].installed && (
-                                    <div>
-                                        <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
-                                        <Button style={{float: 'right'}} onClick={this.addGames.bind(this, games[platform], grids[i], this.platforms[i])}>Import All</Button>
-                                        <ImportList
-                                            games={games[platform]}
-                                            platform={this.platforms[i]}
-                                            grids={grids[i]}
-                                            onImportClick={this.addGame.bind(this)}
-                                        />
-                                    </div>
-                                )}
+                                <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
+                                <Button style={{float: 'right'}} onClick={this.addGames.bind(this, games[platform], grids[i], this.platforms[i])}>Import All</Button>
+                                <ImportList
+                                    games={games[platform]}
+                                    platform={this.platforms[i]}
+                                    grids={grids[i]}
+                                    onImportClick={this.addGame.bind(this)}
+                                />
+                            </div>
+                        );
+                    } else if (typeof games[platform] === 'string') {
+                        return (
+                            <div key={i}>
+                                <h5 style={this.context.theme.typographyStyles.subTitle}>{this.platforms[i].name}</h5>
+                                <p>Error importing: {games[platform]}</p>
                             </div>
                         );
                     }
