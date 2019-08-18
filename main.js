@@ -1,7 +1,5 @@
-const electron = require('electron');
+const {app, globalShortcut, BrowserWindow} = require('electron');
 const {autoUpdater} = require('electron-updater');
-const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
 
 const path = require('path');
 const url = require('url');
@@ -32,7 +30,13 @@ function createWindow () {
     }));
 
     // Open the DevTools.
-    // mainWindow.webContents.openDevTools();
+    globalShortcut.register('CommandOrControl+Shift+L', () => {
+        mainWindow.webContents.openDevTools();
+    });
+
+    mainWindow.on('beforeunload', () => {
+        globalShortcut.unregisterAll();
+    });
 
     // Emitted when the window is closed.
     mainWindow.on('closed', () => {

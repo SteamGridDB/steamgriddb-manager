@@ -84,14 +84,20 @@ class Origin {
                                         // If __Installer/installerdata.xml file exists in the install dir
                                         if (fs.existsSync(installerDataFile)) {
                                             // Parse installerdata.xml file
-                                            const xml = xml2js(fs.readFileSync(installerDataFile).toString(), {compact: true});
-                                            let exeDef = xml.DiPManifest.runtime.launcher[0]; // Always get first executable
+                                            let xml, exeDef;
+                                            try {
+                                                xml = xml2js(fs.readFileSync(installerDataFile).toString(), {compact: true});
+                                            } catch (err) {
+                                                return reject('Could not parse installerdata.xml');
+                                            }
+
+                                            exeDef = xml.DiPManifest.runtime.launcher[0]; // Always get first executable
 
                                             if (!exeDef && xml.DiPManifest.runtime.launcher.filePath) {
                                                 // Game only has one exe
                                                 exeDef = xml.DiPManifest.runtime.launcher;
                                             } else if (!exeDef) {
-                                                reject(`Could not find game executable for ${xml.DiPManifest.gameTitles.gameTitle[0]._text}`);
+                                                return reject(`Could not find game executable for ${xml.DiPManifest.gameTitles.gameTitle[0]._text}`);
                                             }
 
                                             // remove everything in [] cause we only need the exe name
