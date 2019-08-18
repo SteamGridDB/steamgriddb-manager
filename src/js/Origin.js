@@ -85,9 +85,12 @@ class Origin {
                                         if (fs.existsSync(installerDataFile)) {
                                             // Parse installerdata.xml file
                                             const xml = xml2js(fs.readFileSync(installerDataFile).toString(), {compact: true});
-                                            const exeDef = xml.DiPManifest.runtime.launcher[0]; // Always get first executable
+                                            let exeDef = xml.DiPManifest.runtime.launcher[0]; // Always get first executable
 
-                                            if (!exeDef) {
+                                            if (!exeDef && xml.DiPManifest.runtime.launcher.filePath) {
+                                                // Game only has one exe
+                                                exeDef = xml.DiPManifest.runtime.launcher;
+                                            } else if (!exeDef) {
                                                 reject(`Could not find game executable for ${xml.DiPManifest.gameTitles.gameTitle[0]._text}`);
                                             }
 
