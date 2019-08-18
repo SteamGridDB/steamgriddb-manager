@@ -56,24 +56,27 @@ class Epic {
                     binFolder = 'Win64';
                 }
                 const binaryPath = path.join(epicPath, 'Launcher', 'Portal', 'Binaries', binFolder);
-                const launcherData = 'C:\\ProgramData\\Epic\\UnrealEngineLauncher\\LauncherInstalled.dat';
-                if (fs.existsSync(launcherData)) {
-                    const launcherDataStr = fs.readFileSync(launcherData).toString();
-                    const parsed = JSON.parse(jsonminify(launcherDataStr));
-                    parsed.InstallationList.forEach((game) => {
+                const manifestsDir = 'C:\\ProgramData\\Epic\\EpicGamesLauncher\\Data\\Manifests';
+
+                if (!fs.existsSync(manifestsDir)) {
+                    return reject('Could not find Epic Games Launcher data.');
+                }
+
+                fs.readdirSync(manifestsDir).forEach((file) => {
+                    if (path.extname(file) === '.item') {
+                        const launcherDataStr = fs.readFileSync(path.join(manifestsDir, file)).toString();
+                        const parsed = JSON.parse(jsonminify(launcherDataStr));
                         games.push({
-                            id: game.AppName,
-                            name: path.basename(game.InstallLocation),
+                            id: parsed.AppName,
+                            name: parsed.DisplayName,
                             exe: `"${path.join(binaryPath, 'EpicGamesLauncher.exe')}"`,
                             startIn: `"${binaryPath}"`,
-                            params: `com.epicgames.launcher://apps/${game.AppName}?action=launch&silent=true`,
+                            params: `com.epicgames.launcher://apps/${parsed.AppName}?action=launch&silent=true`,
                             platform: 'egs'
                         });
-                    });
-                    resolve(games);
-                } else {
-                    reject('Could not find Epic Games Launcher data.');
-                }
+                    }
+                });
+                resolve(games);
             }).catch((err) => reject(err));
         });
     }
