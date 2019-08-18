@@ -71,6 +71,10 @@ class Uplay {
                         return;
                     } else if (game.length > 1) {
                         try {
+                            // Just discard ULCs
+                            if (game.join('\n').includes('is_ulc: yes')) {
+                                return;
+                            }
                             const gameParsed = yaml.load(game.join('\n'));
 
                             if (launcherId) {
