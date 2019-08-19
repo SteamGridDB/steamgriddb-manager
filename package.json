@@ -9,7 +9,7 @@
     "build": "webpack --mode production && build",
     "run": "webpack --mode development && electron .",
     "pack": "build --dir",
-    "publish": "electron-builder --publish always",
+    "publish": "webpack --mode production && electron-builder --publish always",
     "postinstall": "electron-builder install-app-deps"
   },
   "build": {
