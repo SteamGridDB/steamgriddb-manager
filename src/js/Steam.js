@@ -329,7 +329,7 @@ class Steam {
                             'exe': value.exe,
                             'StartDir': value.startIn,
                             'LaunchOptions': value.params,
-                            'icon': '',
+                            'icon': (typeof value.icon !== 'undefined' ? value.icon : ''),
                             'IsHidden': false,
                             'ShortcutPath': '',
                             'AllowDesktopConfig': true,
@@ -343,18 +343,6 @@ class Steam {
                     shortcut.writeFile(shortcutPath, newShorcuts, () => resolve());
                 });
             });
-        });
-    }
-
-    static addShortcut(name, executable, startIn, launchOptions, tags = []) {
-        return new Promise((resolve) => {
-            this.addShortcuts([{
-                name: name,
-                exe: executable,
-                startIn: startIn,
-                params: launchOptions,
-                tags: tags
-            }]).then(() => resolve());
         });
     }
 

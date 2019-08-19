@@ -109,14 +109,15 @@ class Origin {
                                                 }
 
                                                 // remove everything in [] cause we only need the exe name
-                                                const executable = path.parse(exeDef.filePath._text.replace(/\[.+\]/g, '')).name;
+                                                const executable = path.parse(exeDef.filePath._text.replace(/\[.+\]/g, ''));
 
                                                 games.push({
                                                     id: manifestStrParsed.id,
                                                     name: xml.DiPManifest.gameTitles.gameTitle[0]._text,
                                                     exe: `"${powershellExe}"`,
+                                                    icon: `"${path.join(manifestStrParsed.dipinstallpath, executable.base)}"`,
                                                     startIn: `"${path.dirname(originPath)}"`,
-                                                    params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& '${launcherWatcher}' -launcher "Origin" -game "${executable}" -launchcmd "origin://launchgamejump/${manifestStrParsed.id}""`,
+                                                    params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& '${launcherWatcher}' -launcher "Origin" -game "${executable.name}" -launchcmd "origin://launchgamejump/${manifestStrParsed.id}""`,
                                                     platform: 'origin'
                                                 });
                                                 return true;

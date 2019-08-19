@@ -193,7 +193,14 @@ class Import extends React.Component {
 
     addGame(game, image, platform) {
         this.platformGameSave(game);
-        Steam.addShortcut(game.name, game.exe, game.startIn, game.params, [platform.name]);
+        Steam.addShortcuts([{
+            name: game.name,
+            exe: game.exe,
+            startIn: game.startIn,
+            params: game.params,
+            tags: [platform.name],
+            icon: game.icon
+        }]);
         if (image) {
             const gamesClone = Object.assign(this.state.games);
             Steam.addGrid(Steam.generateAppId(game.exe, game.name), image, (progress) => {
