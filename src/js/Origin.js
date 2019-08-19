@@ -117,7 +117,7 @@ class Origin {
                                                     exe: `"${powershellExe}"`,
                                                     icon: `"${path.join(manifestStrParsed.dipinstallpath, executable.base)}"`,
                                                     startIn: `"${path.dirname(originPath)}"`,
-                                                    params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& '${launcherWatcher}' -launcher "Origin" -game "${executable.name}" -launchcmd "origin://launchgamejump/${manifestStrParsed.id}""`,
+                                                    params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& '${launcherWatcher}' -launcher 'Origi' -game '${executable.name}' -launchcmd 'origin://launchgamejump/${manifestStrParsed.id}'"`,
                                                     platform: 'origin'
                                                 });
                                                 return true;
