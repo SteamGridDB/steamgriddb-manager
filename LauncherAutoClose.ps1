@@ -11,6 +11,14 @@ param (
     [Parameter(Mandatory=$true)][string[]]$game
 )
 
+function Wait-ProcessChildren($id) {
+    $child = Get-WmiObject win32_process | where {$_.ParentProcessId -In $id}
+    if ($child) {
+        Write-Host 'Child found'
+        Wait-Process -Id $child.handle
+        Wait-ProcessChildren $child.handle
+    }
+}
 
 # Kill launcher
 Write-Host 'Killing launcher'
@@ -36,17 +44,8 @@ Do {
 # Wait until game closes
 Wait-Process -InputObject $gameProcess
 
-# Get child processes of game
-$gameSubProcesses = Get-WmiObject win32_process | where {$_.ParentProcessId -eq $gameProcess.ID}
-
-# Wait until game child processes close
-Wait-Process -Id $gameSubProcesses.handle
-
-# Get child's child processes of game
-$gameSubProcessesSubProcesses = Get-WmiObject win32_process | where {$_.ParentProcessId -eq $gameProcesses.handle}
-
-# Wait until child's child processes close
-Wait-Process -Id $gameSubProcessesSubProcesses.handle
+# Wait until child processes close
+Wait-ProcessChildren $gameProcess.Id
 
 Write-Host 'Game closed'
 
