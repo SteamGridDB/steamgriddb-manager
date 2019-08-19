@@ -3,12 +3,12 @@
 
 # $launchcmd = Command to launch game
 # $launcher  = Launcher to kill
-# $game      = Game to watch
+# $game      = Game(s) to watch
 
 param (
     [Parameter(Mandatory=$true)][string]$launchcmd,
     [Parameter(Mandatory=$true)][string]$launcher,
-    [Parameter(Mandatory=$true)][string]$game
+    [Parameter(Mandatory=$true)][string[]]$game
 )
 
 

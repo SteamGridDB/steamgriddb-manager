@@ -61,7 +61,6 @@ class Uplay {
             let launcherId = null;
             this._generateHexArr(configFile).forEach((hexStr) => {
                 const line = Buffer.from(hexStr, 'hex').toString('utf8').replace(/\n/g, '');
-
                 const foundId = hexStr.match(/08([0-9a-f]+)10[0-9a-f]+1a/);
                 if (foundId) {
                     if (game.length === 1) {
@@ -71,10 +70,6 @@ class Uplay {
                         return;
                     } else if (game.length > 1) {
                         try {
-                            // Just discard ULCs
-                            if (game.join('\n').includes('is_ulc: yes')) {
-                                return;
-                            }
                             const gameParsed = yaml.load(game.join('\n'));
 
                             if (launcherId) {
@@ -113,7 +108,7 @@ class Uplay {
         let line = '';
         for (let i = 0; i < split.length; i++) {
             line = line+split[i];
-            if (split[i] === '0a') {
+            if (split[i] === '0a' && split[i-2] !== '08') {
                 lines.push(line);
                 line = '';
             }
@@ -170,8 +165,79 @@ class Uplay {
         return launchId;
     }
 
+    static resolveConfigPath(value) {
+        const hives = {
+            'HKEY_LOCAL_MACHINE': 'HKLM',
+            'HKEY_CURRENT_USER': 'HKCU',
+            'HKEY_CLASSES_ROOT': 'HKCR',
+            'HKEY_USERS': 'HKU',
+            'HKEY_CURRENT_CONFIG': 'HKCC',
+        };
+        let output = '';
+        return new Promise((resolve) => {
+            // Value is stored in registry
+            if (value.register) {
+                const key = value.register.split('\\');
+                const hive = hives[key.shift()];
+                const valueName = key.pop();
+                const reg = new Registry({
+                    hive: hive,
+                    arch: 'x86',
+                    key: `\\${key.join('\\')}`
+                });
+                reg.values((err, items) => {
+                    if (err) {
+                        return resolve(false);
+                    }
+                    items.forEach((item) => {
+                        if (item.name.toLowerCase() === valueName.toLowerCase()) {
+                            output += item.value;
+                            if (value.append) {
+                                output += value.append;
+                            }
+                            return resolve(output);
+                        }
+                    });
+                });
+            } else if (value.relative) {
+                return resolve(value.relative);
+            }
+        });
+    }
+
+    static getGameExes(executables) {
+        return new Promise((resolve) => {
+            const promises = [];
+            executables.forEach((exe) => {
+                const promise = new Promise((resolve) => {
+                    // Get working directory
+                    this.resolveConfigPath(exe.working_directory).then((workingDir) => {
+                        if (workingDir) {
+                            // Get exe
+                            this.resolveConfigPath(exe.path).then((exePath) => {
+                                // check if exe is actually there
+                                if (fs.existsSync(path.join(workingDir, exePath))) {
+                                    resolve(path.join(workingDir, exePath));
+                                }
+                            });
+                        }
+                    });
+                });
+                promises.push(promise);
+            });
+            Promise.all(promises).then((results) => resolve(results));
+        });
+    }
+
     static getGames() {
         return new Promise((resolve, reject) => {
+            // Get path to LauncherAutoClose.ps1
+            let launcherWatcher = path.resolve(path.dirname(process.resourcesPath), '../../../', 'LauncherAutoClose.ps1');
+            if (!fs.existsSync(launcherWatcher)) {
+                launcherWatcher = path.join(path.dirname(process.resourcesPath), 'LauncherAutoClose.ps1');
+            }
+            const powershellExe = path.join(process.env.windir, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+
             this.getUplayPath().then((uplayPath) => {
                 this.parseConfig(path.join(uplayPath, 'cache', 'configuration', 'configurations')).then((configItems) => {
                     this._getRegInstalled().then((installedGames) => {
@@ -181,7 +247,12 @@ class Uplay {
                         const games = [];
                         const invalidNames = ['NAME', 'GAMENAME', 'l1'];
                         configItems.forEach((game) => {
-                            if (game.root.start_game) { // DLC's and other stuff dont have this key
+                            if (game.root.start_game) { // DLC's and other non-games dont have this key
+                                // Skip adding games launched via Steam.
+                                if (game.root.start_game.steam) {
+                                    return;
+                                }
+
                                 let gameName = game.root.name;
                                 let gameId;
 
@@ -201,16 +272,21 @@ class Uplay {
                                     gameId = game.root.launcher_id;
                                 }
 
-                                // Only add if launcher id is found in registry
-                                if (installedGames.includes(String(game.root.launcher_id))) {
-                                    games.push({
-                                        id: gameId,
-                                        name: gameName,
-                                        exe: `"${path.join(uplayPath, 'Uplay.exe')}"`,
-                                        startIn: `"${uplayPath}"`,
-                                        params: `uplay://launch/${game.root.launcher_id}`,
-                                        platform: 'uplay'
-                                    });
+                                // Only add if launcher id is found in registry and has executables
+                                if (installedGames.includes(String(game.root.launcher_id)) && game.root.start_game.offline) {
+                                    this.getGameExes(game.root.start_game.offline.executables)
+                                        .then((executables) => {
+                                            const watchedExes = executables.map((x) => path.parse(path.basename(x)).name);
+                                            games.push({
+                                                id: gameId,
+                                                name: gameName,
+                                                exe: `"${powershellExe}"`,
+                                                icon: `"${executables[0]}"`,
+                                                startIn: `"${uplayPath}"`,
+                                                params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\" -launcher \\"upc\\" -game \\"${watchedExes.join('\\",\\"')}\\" -launchcmd \\"uplay://launch/${game.root.launcher_id}\\""`,
+                                                platform: 'uplay'
+                                            });
+                                        });
                                 }
                             }
                         });
