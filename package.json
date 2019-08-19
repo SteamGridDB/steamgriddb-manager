@@ -6,7 +6,7 @@
   "author": "SteamGridDB.com",
   "scripts": {
     "start": "electron .",
-    "build": "build",
+    "build": "webpack --mode production && build",
     "run": "webpack --mode development && electron .",
     "pack": "build --dir",
     "publish": "electron-builder --publish always",
@@ -78,6 +78,7 @@
     "blizzard-product-parser": "^1.0.1",
     "electron-store": "^4.0.0",
     "electron-updater": "^4.1.2",
+    "iconv-lite": "^0.5.0",
     "js-yaml": "^3.13.1",
     "jsonminify": "^0.4.1",
     "metrohash": "^2.6.0",

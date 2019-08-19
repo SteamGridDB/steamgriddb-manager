@@ -3,6 +3,7 @@ const fs = window.require('fs');
 const path = window.require('path');
 const querystring = window.require('querystring');
 const xml2js = window.require('xml-js').xml2js;
+const iconv = window.require('iconv-lite');
 
 class Origin {
     static isInstalled() {
@@ -80,38 +81,46 @@ class Origin {
                                     const manifestStrParsed = querystring.parse(manifestStr);
                                     // Check if has a "dipinstallpath" param
                                     if (manifestStrParsed.dipinstallpath) {
-                                        const installerDataFile = path.join(manifestStrParsed.dipinstallpath, '__Installer', 'installerdata.xml');
+                                        const installerDataPath = path.join(manifestStrParsed.dipinstallpath, '__Installer', 'installerdata.xml');
                                         // If __Installer/installerdata.xml file exists in the install dir
-                                        if (fs.existsSync(installerDataFile)) {
+                                        if (fs.existsSync(installerDataPath)) {
                                             // Parse installerdata.xml file
                                             let xml, exeDef;
                                             try {
-                                                xml = xml2js(fs.readFileSync(installerDataFile).toString(), {compact: true});
+                                                const installerDataFile = fs.readFileSync(installerDataPath);
+                                                try {
+                                                    xml = xml2js(iconv.decode(installerDataFile, 'utf8'), {compact: true});
+                                                } catch (err) {
+                                                    xml = xml2js(iconv.decode(installerDataFile, 'utf16'), {compact: true});
+                                                }
                                             } catch (err) {
-                                                return reject('Could not parse installerdata.xml');
+                                                return reject(`Could not parse installerdata.xml for ${path.basename(folder)}`);
                                             }
 
-                                            exeDef = xml.DiPManifest.runtime.launcher[0]; // Always get first executable
+                                            if (xml.DiPManifest) {
+                                                if (xml.DiPManifest.runtime.launcher.filePath) {
+                                                    // Only one exe
+                                                    exeDef = xml.DiPManifest.runtime.launcher;
+                                                } else if (xml.DiPManifest.runtime.launcher[0] && xml.DiPManifest.runtime.launcher[0].filePath) {
+                                                    // Multiple exes
+                                                    exeDef = xml.DiPManifest.runtime.launcher[0]; // Always get first executable
+                                                } else {
+                                                    return reject(`Could not find game executable for ${xml.DiPManifest.gameTitles.gameTitle[0]._text}`);
+                                                }
 
-                                            if (!exeDef && xml.DiPManifest.runtime.launcher.filePath) {
-                                                // Game only has one exe
-                                                exeDef = xml.DiPManifest.runtime.launcher;
-                                            } else if (!exeDef) {
-                                                return reject(`Could not find game executable for ${xml.DiPManifest.gameTitles.gameTitle[0]._text}`);
+                                                // remove everything in [] cause we only need the exe name
+                                                const executable = path.parse(exeDef.filePath._text.replace(/\[.+\]/g, '')).name;
+
+                                                games.push({
+                                                    id: manifestStrParsed.id,
+                                                    name: xml.DiPManifest.gameTitles.gameTitle[0]._text,
+                                                    exe: `"${powershellExe}"`,
+                                                    startIn: `"${path.dirname(originPath)}"`,
+                                                    params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& '${launcherWatcher}' -launcher "Origin" -game "${executable}" -launchcmd "origin://launchgamejump/${manifestStrParsed.id}""`,
+                                                    platform: 'origin'
+                                                });
+                                                return true;
                                             }
-
-                                            // remove everything in [] cause we only need the exe name
-                                            const executable = path.parse(exeDef.filePath._text.replace(/\[.+\]/g, '')).name;
-
-                                            games.push({
-                                                id: manifestStrParsed.id,
-                                                name: xml.DiPManifest.gameTitles.gameTitle[0]._text,
-                                                exe: `"${powershellExe}"`,
-                                                startIn: `"${path.dirname(originPath)}"`,
-                                                params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& '${launcherWatcher}' -launcher "Origin" -game "${executable}" -launchcmd "origin://launchgamejump/${manifestStrParsed.id}""`,
-                                                platform: 'origin'
-                                            });
-                                            return true;
                                         }
                                     }
                                 }
