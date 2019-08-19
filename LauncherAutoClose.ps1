@@ -30,10 +30,19 @@ Start-Process $launchcmd
 $gameStarted = $false
 
 Write-Host 'Waiting for game to start'
+
+// Get current system date
+$currentDate = Get-Date
 Do {
     $gameProcess = Get-Process $game -ErrorAction SilentlyContinue
 
     If (!($gameProcess)) {
+        // Timeout after 30 minutes
+		If ($currentDate.AddMinutes(30) -gt (Get-Date))
+		{
+			Write-Host 'Game process could not be found'
+			exit
+		}
         Start-Sleep -Seconds 1
     } Else {
         Write-Host 'Game started!'
