@@ -54,6 +54,21 @@ class Origin {
         });
     }
 
+    static _parseRuntime(runtime) {
+        let exeDef = false;
+        if (runtime.launcher.filePath) {
+            // Only one exe
+            exeDef = runtime.launcher;
+        } else if (runtime.launcher[0] && runtime.launcher[0].filePath) {
+            // Multiple exes
+            exeDef = runtime.launcher[0]; // Always get first executable
+        } else {
+            return false;
+        }
+        // remove everything in [] cause we only need the exe name
+        return path.parse(exeDef.filePath._text.replace(/\[.+\]/g, ''));
+    }
+
     static getGames() {
         return new Promise((resolve, reject) => {
             this.getOriginPath().then((originPath) => {
@@ -85,7 +100,7 @@ class Origin {
                                         // If __Installer/installerdata.xml file exists in the install dir
                                         if (fs.existsSync(installerDataPath)) {
                                             // Parse installerdata.xml file
-                                            let xml, exeDef;
+                                            let xml, executable, name;
                                             try {
                                                 const installerDataFile = fs.readFileSync(installerDataPath);
                                                 try {
@@ -98,22 +113,17 @@ class Origin {
                                             }
 
                                             if (xml.DiPManifest) {
-                                                if (xml.DiPManifest.runtime.launcher.filePath) {
-                                                    // Only one exe
-                                                    exeDef = xml.DiPManifest.runtime.launcher;
-                                                } else if (xml.DiPManifest.runtime.launcher[0] && xml.DiPManifest.runtime.launcher[0].filePath) {
-                                                    // Multiple exes
-                                                    exeDef = xml.DiPManifest.runtime.launcher[0]; // Always get first executable
-                                                } else {
-                                                    return reject(`Could not find game executable for ${xml.DiPManifest.gameTitles.gameTitle[0]._text}`);
-                                                }
+                                                executable = this._parseRuntime(xml.DiPManifest.runtime);
+                                                name = xml.DiPManifest.gameTitles.gameTitle[0]._text;
+                                            } else if (xml.game) {
+                                                executable = this._parseRuntime(xml.game.runtime);
+                                                name = xml.game.metadata.localeInfo[0].title._text;
+                                            }
 
-                                                // remove everything in [] cause we only need the exe name
-                                                const executable = path.parse(exeDef.filePath._text.replace(/\[.+\]/g, ''));
-
+                                            if (executable) {
                                                 games.push({
                                                     id: manifestStrParsed.id,
-                                                    name: xml.DiPManifest.gameTitles.gameTitle[0]._text,
+                                                    name: name,
                                                     exe: `"${powershellExe}"`,
                                                     icon: `"${path.join(manifestStrParsed.dipinstallpath, executable.base)}"`,
                                                     startIn: `"${path.dirname(originPath)}"`,
@@ -121,6 +131,8 @@ class Origin {
                                                     platform: 'origin'
                                                 });
                                                 return true;
+                                            } else {
+                                                return reject(`Could not find game executable for ${path.basename(folder)}`);
                                             }
                                         }
                                     }
