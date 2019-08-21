@@ -137,7 +137,7 @@ class Search extends React.Component {
             itemsClone[props.index].progress = progress;
             this.setState({itemsClone});
         }).then((dest) => {
-            this.setImageDownloaded(name, dest);
+            this.setImageDownloaded(props.appid, props.name, dest);
         }).catch(() => {
             this.setIsDownloading(false);
         });
@@ -151,9 +151,10 @@ class Search extends React.Component {
         return this.state.isDownloading;
     }
 
-    setImageDownloaded(game, image) {
+    setImageDownloaded(appid, game, image) {
         this.setState({
             imageDownloaded: {
+                appid: appid,
                 game: game,
                 image: image
             },
@@ -165,7 +166,7 @@ class Search extends React.Component {
         const {isLoaded, items} = this.state;
 
         if (this.state.imageDownloaded) {
-            const url = `/?game=${this.state.imageDownloaded.game}&image=${this.state.imageDownloaded.image}`;
+            const url = `/?scrollto=${this.state.imageDownloaded.appid}`;
 
             // Show toast
             PubSub.publish('toast', {logoNode: 'Download', title: `Success: ${this.state.imageDownloaded.game}`, contents: (

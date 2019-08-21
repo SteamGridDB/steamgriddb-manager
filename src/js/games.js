@@ -13,6 +13,9 @@ class Games extends React.Component {
         super(props);
         this.toSearch = this.toSearch.bind(this);
 
+        const qs = this.props.location && queryString.parse(this.props.location.search);
+        this.scrollToTarget = qs.scrollto;
+
         this.zoom = 1;
         this.platformNames = {
             'steam': 'Steam',
@@ -43,6 +46,12 @@ class Games extends React.Component {
                     hasSteam: false
                 });
             });
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (Object.entries(prevState.items).length === 0 && this.scrollToTarget) {
+            this.scrollTo(this.scrollToTarget);
         }
     }
 
@@ -77,6 +86,11 @@ class Games extends React.Component {
 
     filterGames() {
         //console.log(searchTerm);
+    }
+
+    scrollTo(id) {
+        document.getElementById(id).scrollIntoView(true);
+        document.querySelector('#grids-container').scrollTop -= 25; // scroll down a bit cause grid goes under floating launcher name
     }
 
     addNoCache(imageURI) {
@@ -118,7 +132,7 @@ class Games extends React.Component {
                         onChangeValue={this.filterGames}
                     />
                 </div>
-                <div style={{height: 'calc(100% - 55px)', overflow: 'auto'}}>
+                <div id="grids-container" style={{height: 'calc(100% - 55px)', overflow: 'auto'}}>
                     {Object.keys(items).map((platform, i) => (
                         <div key={i}>
                             <div style={{
@@ -138,17 +152,19 @@ class Games extends React.Component {
                                 {items[platform].map((item, i) => {
                                     const imageURI = this.addNoCache((item.imageURI));
                                     return (
-                                        <GridImage
-                                            name={item.name}
-                                            gameId={item.gameId}
-                                            platform={platform}
-                                            appid={item.appid}
-                                            gameType={item.type}
-                                            image={imageURI}
-                                            zoom={this.zoom}
-                                            onGridClick={this.toSearch}
-                                            key={i}
-                                        />
+                                        // id attribute is used as a scroll target after a search
+                                        <div id={item.appid} key={i}>
+                                            <GridImage
+                                                name={item.name}
+                                                gameId={item.gameId}
+                                                platform={platform}
+                                                appid={item.appid}
+                                                gameType={item.type}
+                                                image={imageURI}
+                                                zoom={this.zoom}
+                                                onGridClick={this.toSearch}
+                                            />
+                                        </div>
                                     );
                                 })}
                             </Grid>
@@ -160,5 +176,8 @@ class Games extends React.Component {
     }
 }
 
+Games.propTypes = {
+    location: PropTypes.object
+};
 Games.contextTypes = { theme: PropTypes.object };
 export default Games;
