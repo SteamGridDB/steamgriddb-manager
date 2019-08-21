@@ -6,7 +6,7 @@ import Icon from 'react-uwp/Icon';
 class ToastHandler extends React.Component {
     constructor(props) {
         super(props);
-
+        this.closed = this.closed.bind(this);
         this.state = {
             toast: null,
             show: false
@@ -32,7 +32,7 @@ class ToastHandler extends React.Component {
                 logoNode={<Icon>{this.state.toast.logoNode}</Icon>}
                 title={this.state.toast.title}
                 closeDelay={3000}
-                onToggleShowToast={this.closed.bind(this)}
+                onToggleShowToast={this.closed}
                 showCloseIcon
             >
                 {this.state.toast.contents}

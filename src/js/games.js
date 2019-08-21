@@ -1,14 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {Redirect} from 'react-router-dom';
 import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
 import AutoSuggestBox from 'react-uwp/AutoSuggestBox';
 import Grid from './Grid';
 import Steam from './Steam';
+const queryString = window.require('query-string');
 
 class Games extends React.Component {
     constructor(props) {
         super(props);
+        this.toSearch = this.toSearch.bind(this);
 
         this.zoom = 1;
         this.platformNames = {
@@ -57,12 +60,23 @@ class Games extends React.Component {
         });
     }
 
-    onClick() {
-        this.setState({toSearch: true});
+    toSearch(props) {
+        const parsedQs = queryString.stringify({
+            game: props.name,
+            appid: props.appid,
+            type: props.gameType,
+            gameId: props.gameId,
+            platform: props.platform
+        });
+
+        const to = `/search/?${parsedQs}`;
+        this.setState({
+            toSearch: <Redirect to={to} />
+        });
     }
 
-    filterGames(searchTerm) {
-        console.log(searchTerm);
+    filterGames() {
+        //console.log(searchTerm);
     }
 
     addNoCache(imageURI) {
@@ -86,6 +100,10 @@ class Games extends React.Component {
 
         if (!isLoaded) {
             return <Spinner/>;
+        }
+
+        if (this.state.toSearch) {
+            return this.state.toSearch;
         }
 
         return (
@@ -128,7 +146,7 @@ class Games extends React.Component {
                                             gameType={item.type}
                                             image={imageURI}
                                             zoom={this.zoom}
-                                            onClick={this.onClick}
+                                            onGridClick={this.toSearch}
                                             key={i}
                                         />
                                     );

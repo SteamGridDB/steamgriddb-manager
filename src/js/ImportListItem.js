@@ -11,8 +11,7 @@ class ImportListItem extends React.Component {
         this.thumb = this.props.thumb;
         this.game = this.props.game;
         this.platform = this.props.platform;
-        this.progress = this.props.progress;
-        this.onImportClick = this.props.onImportClick;
+        this.handleClick = this.handleClick.bind(this);
     }
 
     shouldComponentUpdate(nextProps) {
@@ -20,7 +19,7 @@ class ImportListItem extends React.Component {
     }
 
     handleClick() {
-        this.onImportClick(this.game, this.image, this.platform);
+        this.props.onImportClick(this.game, this.image, this.platform);
     }
 
     render() {
@@ -38,7 +37,7 @@ class ImportListItem extends React.Component {
                     src={this.thumb}
                 />
                 {this.game.name}
-                <Button style={{opacity: 0, marginLeft: 'auto'}} onClick={this.handleClick.bind(this)}>Import</Button>
+                <Button style={{opacity: 0, marginLeft: 'auto'}} onClick={this.handleClick}>Import</Button>
                 {progressBar}
             </div>
         );

@@ -15,6 +15,7 @@ class Search extends React.Component {
     constructor(props) {
         super(props);
 
+        this.applyGrid = this.applyGrid.bind(this);
         this.zoom = 1;
         this.store = new Store();
 
@@ -124,20 +125,21 @@ class Search extends React.Component {
         }
     }
 
-    // This is executed from the gridImage component
-    onClick() {
-        /* eslint-disable react/prop-types */
-        if (this.props.getIsDownloading()) {
+    applyGrid(props) {
+        if (this.getIsDownloading()) {
             return;
         }
 
-        this.props.setIsDownloading(true);
-        Steam.addGrid(this.props.appid, this.props.data.url, (progress) => {
+        this.setIsDownloading(true);
+        const itemsClone = Object.assign(this.state.items);
+        Steam.addGrid(props.appid, props.image, (progress) => {
             this.setState({downloadProgress: progress});
+            itemsClone[props.index].progress = progress;
+            this.setState({itemsClone});
         }).then((dest) => {
-            this.props.setImageDownloaded(this.props.name, dest);
+            this.setImageDownloaded(name, dest);
         }).catch(() => {
-            this.props.setIsDownloading(false);
+            this.setIsDownloading(false);
         });
     }
 
@@ -196,21 +198,26 @@ class Search extends React.Component {
 
         return (
             <Grid zoom={this.zoom}>
-                {items.map((item, i) => (
-                    <GridImage
-                        key={i}
-                        appid={this.appid}
-                        name={this.game}
-                        author={item.author.name}
-                        image={item.thumb}
-                        zoom={this.zoom}
-                        onClick={this.onClick}
-                        setImageDownloaded={this.setImageDownloaded}
-                        getIsDownloading={this.getIsDownloading}
-                        setIsDownloading={this.setIsDownloading}
-                        data={item}
-                    />
-                ))}
+                {items.map((item, i) => {
+                    let progress = item.progress;
+                    if (typeof item.progress == 'undefined') {
+                        progress = 0;
+                    }
+                    return (
+                        <GridImage
+                            key={i}
+                            index={i}
+                            appid={this.appid}
+                            name={this.game}
+                            author={item.author.name}
+                            image={item.thumb}
+                            zoom={this.zoom}
+                            progress={progress}
+                            onGridClick={this.applyGrid}
+                            data={item}
+                        />
+                    );
+                })}
             </Grid>
         );
     }

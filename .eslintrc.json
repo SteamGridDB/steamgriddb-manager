@@ -80,6 +80,7 @@
                 "destructuring": "any",
                 "ignoreReadBeforeAssign": true
             }
-        ]
+        ],
+        "react/jsx-no-bind": "warn"
     }
 }

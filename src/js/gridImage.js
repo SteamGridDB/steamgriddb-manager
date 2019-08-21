@@ -1,5 +1,4 @@
 import React from 'react';
-import {Redirect} from 'react-router-dom';
 import ProgressBar from 'react-uwp/ProgressBar';
 import {CSSTransitionGroup} from 'react-transition-group';
 import PropTypes from 'prop-types';
@@ -11,35 +10,21 @@ class GridImage extends React.Component {
 
         this.gridWidth = 300 * this.props.zoom;
         this.gridHeight = 140 * this.props.zoom;
-
-        this.state = {
-            isHover: false,
-            toSearch: false,
-            downloadProgress: false
-        };
+        this.onGridClick = this.props.onGridClick;
+        this.handleClick = this.handleClick.bind(this);
     }
 
-    onMouseEnter() {
-        this.setState({isHover: true});
+    shouldComponentUpdate(nextProps) {
+        return !(this.props.progress === nextProps.progress);
     }
 
-    onMouseLeave() {
-        this.setState({isHover: false});
+    handleClick() {
+        this.onGridClick(this.props);
     }
 
     render() {
-        const overlayOpacity = this.state.isHover | 0;
-
-        if (this.state.toSearch) {
-            const to = `/search/?game=${encodeURIComponent(this.props.name)}&appid=${this.props.appid}&type=${this.props.gameType}&gameId=${this.props.gameId}&platform=${this.props.platform}`;
-
-            return (
-                <Redirect to={to} />
-            );
-        }
-
-        let progressBar = '';
-        if (this.state.downloadProgress) {
+        let progressBar = <div></div>;
+        if (this.props.progress) {
             progressBar = (
                 <div style={{
                     position: 'absolute',
@@ -47,12 +32,13 @@ class GridImage extends React.Component {
                     bottom: '-5px'
                 }}>
                     <ProgressBar
-                        defaultProgressValue={this.state.downloadProgress}
+                        defaultProgressValue={this.props.progress}
                         barWidth={this.gridWidth}
                     />
                 </div>
             );
         }
+
 
         let image = '';
         if (this.props.image) {
@@ -87,9 +73,7 @@ class GridImage extends React.Component {
                     height: `${this.gridHeight}px`,
                     backgroundColor: '#303030'
                 }}
-                onMouseEnter={this.onMouseEnter.bind(this)}
-                onMouseLeave={this.onMouseLeave.bind(this)}
-                onClick={this.props.onClick.bind(this)}
+                onClick={this.handleClick}
             >
                 {image}
 
@@ -107,17 +91,10 @@ class GridImage extends React.Component {
                 </div>
 
                 <div
+                    className="grid-overlay"
                     style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
                         width: `${this.gridWidth}px`,
-                        height: `${this.gridHeight}px`,
-                        background: 'rgba(0,0,0,0.5)',
-                        opacity: overlayOpacity,
-                        transition: 'opacity 150ms ease 0s',
-                        padding: 10,
-                        zIndex: 1
+                        height: `${this.gridHeight}px`
                     }}
                 >
                     {this.props.author &&
@@ -137,6 +114,7 @@ GridImage.propTypes = {
         PropTypes.string,
         PropTypes.number
     ]),
+    index: PropTypes.number,
     gameType: PropTypes.string,
     gameId: PropTypes.oneOfType([
         PropTypes.string,
@@ -145,11 +123,12 @@ GridImage.propTypes = {
     platform: PropTypes.string,
     author: PropTypes.string,
     zoom: PropTypes.number,
+    progress: PropTypes.number,
     image: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.bool
     ]),
-    onClick: PropTypes.func
+    onGridClick: PropTypes.func
 };
 
 export default GridImage;

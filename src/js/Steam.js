@@ -11,8 +11,18 @@ import SteamID from 'steamid';
 import {crc32} from 'crc';
 
 class Steam {
+    constructor() {
+        this.steamPath = null;
+        this.loggedInUser = null;
+        this.currentUserGridPath = null;
+    }
+
     static getSteamPath() {
         return new Promise((resolve, reject) => {
+            if (this.steamPath) {
+                return resolve(this.steamPath);
+            }
+
             const key = new Registry({
                 hive: Registry.HKCU,
                 key:  '\\Software\\Valve\\Steam'
@@ -28,6 +38,7 @@ class Steam {
                 });
 
                 if (steamPath) {
+                    this.steamPath = steamPath;
                     resolve(steamPath);
                 } else {
                     reject(new Error('Could not find Steam path.'));
@@ -38,8 +49,15 @@ class Steam {
 
     static getCurrentUserGridPath() {
         return new Promise((resolve) => {
+            if (this.currentUserGridPath) {
+                return resolve(this.currentUserGridPath);
+            }
             this.getSteamPath().then((steamPath) => {
-                this.getLoggedInUser().then((user) => resolve(join(steamPath, 'userdata', String(user), 'config', 'grid')));
+                this.getLoggedInUser().then((user) => {
+                    const gridPath = join(steamPath, 'userdata', String(user), 'config', 'grid');
+                    this.currentUserGridPath = gridPath;
+                    resolve(gridPath);
+                });
             });
         });
     }
@@ -208,6 +226,10 @@ class Steam {
 
     static getLoggedInUser() {
         return new Promise((resolve) => {
+            if (this.loggedInUser) {
+                return resolve(this.loggedInUser);
+            }
+
             this.getSteamPath().then((steamPath) => {
                 const loginusersPath = join(steamPath, 'config', 'loginusers.vdf');
                 const data = fs.readFileSync(loginusersPath, 'utf-8');
@@ -216,7 +238,7 @@ class Steam {
                 for (const user in loginusersData.users) {
                     if (loginusersData.users[user].mostrecent) {
                         const accountid = (new SteamID(user)).accountid;
-
+                        this.loggedInUser = accountid;
                         resolve(accountid);
                     }
                 }
