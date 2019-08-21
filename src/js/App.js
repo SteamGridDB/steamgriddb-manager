@@ -29,7 +29,7 @@ class App extends React.Component {
         this.toggleMaximize = this.toggleMaximize.bind(this);
 
         //Track windows snap calling maximize / unmaximize
-        const window = remote.BrowserWindow.getFocusedWindow();
+        const window = remote.getCurrentWindow();
 
         window.on('maximize', () => {
             this.setState({ isMaximized: true });
@@ -45,17 +45,17 @@ class App extends React.Component {
     }
 
     close() {
-        const window = remote.BrowserWindow.getFocusedWindow();
+        const window = remote.getCurrentWindow();
         window.close();
     }
 
     minimize() {
-        const window = remote.BrowserWindow.getFocusedWindow();
+        const window = remote.getCurrentWindow();
         window.minimize();
     }
 
     toggleMaximize() {
-        const window = remote.BrowserWindow.getFocusedWindow();
+        const window = remote.getCurrentWindow();
         this.setState({ isMaximized: !this.state.isMaximized });
         if(!this.state.isMaximized) {
             window.maximize();
@@ -69,7 +69,7 @@ class App extends React.Component {
     }
 
     render() {
-        const accentColor = electron.remote.systemPreferences.getAccentColor();
+        const accentColor = remote.systemPreferences.getAccentColor();
         const navWidth = 48;
 
         const navigationTopNodes = [
