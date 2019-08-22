@@ -76,6 +76,7 @@
     "@fortawesome/react-fontawesome": "^0.1.4",
     "@node-steam/vdf": "^2.0.1",
     "blizzard-product-parser": "^1.0.1",
+    "electron-log": "^3.0.7",
     "electron-store": "^4.0.0",
     "electron-updater": "^4.1.2",
     "iconv-lite": "^0.5.0",

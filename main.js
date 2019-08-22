@@ -1,10 +1,13 @@
 const {app, globalShortcut, BrowserWindow} = require('electron');
 const {autoUpdater} = require('electron-updater');
+const log = require('electron-log');
 
 const path = require('path');
 const url = require('url');
 
 autoUpdater.autoInstallOnAppQuit = true;
+
+log.catchErrors({showDialog: true});
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

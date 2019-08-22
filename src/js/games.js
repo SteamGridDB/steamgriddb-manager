@@ -6,7 +6,7 @@ import GridImage from './gridImage.js';
 import AutoSuggestBox from 'react-uwp/AutoSuggestBox';
 import Grid from './Grid';
 import Steam from './Steam';
-const queryString = window.require('query-string');
+import queryString from 'query-string';
 
 class Games extends React.Component {
     constructor(props) {
