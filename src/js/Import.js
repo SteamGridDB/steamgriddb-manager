@@ -5,9 +5,9 @@ import PubSub from 'pubsub-js';
 import React from 'react';
 import settle from 'promise-settle';
 import PropTypes from 'prop-types';
-import Button from 'react-uwp/Button';
 import Image from 'react-uwp/Image';
 import ImportList from './ImportList';
+import ImportAllButton from './ImportAllButton.js';
 import Spinner from './spinner.js';
 import Steam from './Steam';
 import Origin from './Origin';
@@ -20,6 +20,9 @@ import BattleNet from './BattleNet';
 class Import extends React.Component {
     constructor(props) {
         super(props);
+
+        this.addGame = this.addGame.bind(this);
+        this.addGames = this.addGames.bind(this);
 
         this.store = new Store();
 
@@ -239,18 +242,23 @@ class Import extends React.Component {
         }
 
         return (
-            <div className="import-list" style={{padding: 15, paddingLeft: 0}}>
+            <div className="import-list" style={{padding: 15, paddingLeft: 10}}>
                 {Object.keys(games).map((platform, i) => {
                     if (typeof games[platform] === 'object') {
                         return (
                             <div key={i}>
                                 <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
-                                <Button style={{float: 'right'}} onClick={this.addGames.bind(this, games[platform], grids[i], this.platforms[i])}>Import All</Button>
+                                <ImportAllButton
+                                    games={games[platform]}
+                                    grids={grids[i]}
+                                    platform={this.platforms[i]}
+                                    onButtonClick={this.addGames}
+                                />
                                 <ImportList
                                     games={games[platform]}
                                     platform={this.platforms[i]}
                                     grids={grids[i]}
-                                    onImportClick={this.addGame.bind(this)}
+                                    onImportClick={this.addGame}
                                 />
                             </div>
                         );
