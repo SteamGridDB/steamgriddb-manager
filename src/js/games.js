@@ -4,9 +4,13 @@ import {Redirect} from 'react-router-dom';
 import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
 import AutoSuggestBox from 'react-uwp/AutoSuggestBox';
+import CommandBar from 'react-uwp/CommandBar';
+import AppBarButton from 'react-uwp/AppBarButton';
+import AppBarSeparator from 'react-uwp/AppBarSeparator';
 import Grid from './Grid';
 import Steam from './Steam';
 import queryString from 'query-string';
+import UWPNoise from '../img/uwp-noise.png';
 
 class Games extends React.Component {
     constructor(props) {
@@ -90,7 +94,7 @@ class Games extends React.Component {
 
     scrollTo(id) {
         document.getElementById(id).scrollIntoView(true);
-        document.querySelector('#grids-container').scrollTop -= 25; // scroll down a bit cause grid goes under floating launcher name
+        document.querySelector('#grids-container').scrollTop -= 64; // scroll down a bit cause grid goes under floating launcher name
     }
 
     addNoCache(imageURI) {
@@ -127,26 +131,46 @@ class Games extends React.Component {
 
         return (
             <div style={{height: 'inherit', overflow: 'hidden'}}>
-                <div style={{
-                    height: 32,
-                    width: '100%',
-                    margin: '10px 0'
-                }}>
-                    <AutoSuggestBox
-                        placeholder='Search'
-                        onChangeValue={this.filterGames}
+                <div id="grids-container" style={{height: '100%', overflow: 'auto', marginTop: 5}}>
+                    <CommandBar
+                        style={{
+                            position: 'fixed',
+                            top: 30,
+                            width: '100%',
+                            zIndex: 2,
+                            backgroundColor: 'rgba(0,0,0,.2)',
+                            backgroundImage: `url(${UWPNoise})`,
+                            backdropFilter: 'blur(20px)'
+                        }}
+                        contentStyle={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            marginLeft: 'auto'
+                        }}
+                        contentNode={
+                            <AutoSuggestBox
+                                placeholder='Search'
+                                onChangeValue={this.filterGames}
+                            />
+                        }
+                        background="transparent"
+                        labelPosition="collapsed"
+                        primaryCommands={[
+                            <AppBarSeparator key={1} />,
+                            <AppBarButton key={2} icon="Sort" label="Sort" />,
+                            <AppBarButton key={3} icon="Refresh" label="Refresh" />
+                        ]}
                     />
-                </div>
-                <div id="grids-container" style={{height: 'calc(100% - 55px)', overflow: 'auto'}}>
+                    <div style={{ height: 48 }}></div> {/* Spacer for CommandBar */}
                     {Object.keys(items).map((platform, i) => (
-                        <div key={i}>
+                        <div key={i} style={{paddingLeft: 10}}>
                             <div style={{
                                 ...this.context.theme.typographyStyles.subTitleAlt,
-                                backgroundColor: '#1a1a1a',
+                                display: 'inline-block',
                                 position: 'sticky',
-                                zIndex: 2,
-                                top: 0,
-                                paddingBottom: 5
+                                zIndex: 3,
+                                marginLeft: 10,
+                                top: 8
                             }}>
                                 {this.platformNames[platform]}
                             </div>

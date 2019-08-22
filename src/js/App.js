@@ -8,6 +8,8 @@ import ToastHandler from './toastHandler.js';
 import PubSub from 'pubsub-js';
 import {HashRouter as Router, Redirect, Link, Route} from 'react-router-dom';
 
+import UWPNoise from '../img/uwp-noise.png';
+
 import Search from './Search.js';
 import Games from './games.js';
 import Import from './Import.js';
@@ -99,7 +101,7 @@ class App extends React.Component {
                         {backBtn}
                         <TitleBar
                             title="SteamGridDB Manager"
-                            style={{width: titleWidth}}
+                            style={{width: titleWidth, height: 30}}
                             controls
                             isMaximized={this.state.isMaximized}
                             onCloseClick={this.close}
@@ -112,8 +114,16 @@ class App extends React.Component {
                         />
 
                         <NavigationView
-                            style={{height: 'calc(100vh - 30px)', width: '100%' }}
-                            background='rgba(0, 0, 0, 0.85)'
+                            style={{
+                                height: 'calc(100vh - 35px)',
+                                width: '100%'
+                            }}
+                            paneStyle={{
+                                backgroundColor: 'rgba(0,0,0,.2)',
+                                backgroundImage: `url(${UWPNoise})`,
+                                backdropFilter: 'blur(20px)'
+                            }}
+                            background='transparent'
                             displayMode='overlay'
                             autoResize={false}
                             initWidth={navWidth}
@@ -123,7 +133,6 @@ class App extends React.Component {
                             <div style={{...getTheme().typographyStyles.base,
                                 marginLeft: navWidth,
                                 height: '100%',
-                                paddingLeft: 10,
                                 position: 'relative',
                                 overflow: 'auto',
                                 zIndex: 0

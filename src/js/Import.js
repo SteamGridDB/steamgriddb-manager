@@ -234,7 +234,7 @@ class Import extends React.Component {
         // if no launcher installed
         if (Object.values(games).every((x) => x === false)) {
             return (
-                <div className="import-list" style={{padding: 15, paddingLeft: 0, textAlign: 'center', ...this.context.theme.typographyStyles.body}}>
+                <div className="import-list" style={{padding: 15, paddingLeft: 10, textAlign: 'center', ...this.context.theme.typographyStyles.body}}>
                     <p>Looks like you have no launchers installed. Install some launchers to import games from them into Steam.</p>
                     <p>The following launchers are supported: {this.platforms.map((x) => x.name).join(', ')}</p>
                 </div>

@@ -1,7 +1,3 @@
-body {
-    overflow: hidden;
-}
-
 ::-webkit-scrollbar {
     width: 12px;
 }
@@ -37,6 +33,11 @@ div[class^="fluent-background-"] {
 
 [class*="checkbox-iconParent"] {
     margin-left: auto;
+}
+
+/* react-uwp autosuggest is broken */
+[class*="autosuggest-box-root"] {
+    vertical-align: top !important;
 }
 
 .grid-fadein-appear {
