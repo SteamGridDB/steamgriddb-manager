@@ -165,9 +165,7 @@ class Steam {
                     const userdataGridPath = join(userdataPath, 'config', 'grid');
                     const shortcutPath = join(userdataPath, 'config', 'shortcuts.vdf');
                     shortcut.parseFile(shortcutPath, (err, items) => {
-                        const games = {
-                            'other': []
-                        };
+                        const games = {};
 
                         if (!items) {
                             return resolve([]);
@@ -200,6 +198,10 @@ class Steam {
                                     type: 'shortcut'
                                 });
                             } else {
+                                if (!games['other']) {
+                                    games['other'] = [];
+                                }
+
                                 games['other'].push({
                                     gameId: null,
                                     appid: appid,

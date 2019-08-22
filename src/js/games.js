@@ -19,12 +19,12 @@ class Games extends React.Component {
         this.zoom = 1;
         this.platformNames = {
             'steam': 'Steam',
-            'other': 'Other Games',
             'origin': 'Origin',
             'uplay': 'Uplay',
             'egs': 'Epic Games Launcher',
             'gog': 'GOG.com',
-            'bnet': 'Blizzard Battle.net'
+            'bnet': 'Blizzard Battle.net',
+            'other': 'Other Games'
         };
 
         this.state = {
@@ -118,6 +118,11 @@ class Games extends React.Component {
 
         if (this.state.toSearch) {
             return this.state.toSearch;
+        }
+
+        // Sort games alphabetically
+        for (const platform in items) {
+            items[platform] = items[platform].sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
         }
 
         return (
