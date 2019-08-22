@@ -82,6 +82,7 @@
     "electron-log": "^3.0.7",
     "electron-store": "^4.0.0",
     "electron-updater": "^4.1.2",
+    "fuse.js": "^3.4.5",
     "iconv-lite": "^0.5.0",
     "js-yaml": "^3.13.1",
     "jsonminify": "^0.4.1",

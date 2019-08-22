@@ -177,7 +177,7 @@ class Import extends React.Component {
                 image = grids[0].url;
             }
             if (image) {
-                const gamesClone = Object.assign(this.state.games);
+                const gamesClone = Object.assign({}, this.state.games);
                 const addGrid = Steam.addGrid(Steam.generateAppId(game.exe, game.name), image, (progress) => {
                     gamesClone[platform.id][gamesClone[platform.id].indexOf(game)].progress = progress;
                     this.setState({gamesClone});
@@ -205,7 +205,7 @@ class Import extends React.Component {
             icon: game.icon
         }]);
         if (image) {
-            const gamesClone = Object.assign(this.state.games);
+            const gamesClone = Object.assign({}, this.state.games);
             Steam.addGrid(Steam.generateAppId(game.exe, game.name), image, (progress) => {
                 gamesClone[platform.id][gamesClone[platform.id].indexOf(game)].progress = progress;
                 this.setState({gamesClone});

@@ -4,23 +4,31 @@ import {Redirect} from 'react-router-dom';
 import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
 import AutoSuggestBox from 'react-uwp/AutoSuggestBox';
-import CommandBar from 'react-uwp/CommandBar';
-import AppBarButton from 'react-uwp/AppBarButton';
-import AppBarSeparator from 'react-uwp/AppBarSeparator';
+import IconButton from 'react-uwp/IconButton';
 import Grid from './Grid';
 import Steam from './Steam';
 import queryString from 'query-string';
+import Fuse from 'fuse.js';
+import {debounce} from 'lodash';
+import {forceCheck} from 'react-lazyload';
 import UWPNoise from '../img/uwp-noise.png';
 
 class Games extends React.Component {
     constructor(props) {
         super(props);
         this.toSearch = this.toSearch.bind(this);
+        this.refreshGames = this.refreshGames.bind(this);
+        this.filterGames = this.filterGames.bind(this);
+        this.searchInput = debounce((searchTerm) => {
+            this.filterGames(searchTerm);
+        }, 300);
 
         const qs = this.props.location && queryString.parse(this.props.location.search);
         this.scrollToTarget = qs.scrollto;
 
         this.zoom = 1;
+
+        this.fetchedGames = {}; // Fetched games are stored here and shouldn't be changed unless a fetch is triggered again
         this.platformNames = {
             'steam': 'Steam',
             'origin': 'Origin',
@@ -63,12 +71,16 @@ class Games extends React.Component {
         const steamGamesPromise = Steam.getSteamGames();
         const nonSteamGamesPromise = Steam.getNonSteamGames();
         Promise.all([steamGamesPromise, nonSteamGamesPromise]).then((values) => {
+            const items = {steam: values[0], ...values[1]};
+            // Sort games alphabetically
+            for (const platform in items) {
+                items[platform] = items[platform].sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+            }
+
+            this.fetchedGames = items;
             this.setState({
                 isLoaded: true,
-                items: {
-                    steam: values[0],
-                    ...values[1]
-                }
+                items: items
             });
         });
     }
@@ -88,8 +100,41 @@ class Games extends React.Component {
         });
     }
 
-    filterGames() {
-        //console.log(searchTerm);
+    refreshGames() {
+        this.setState({
+            isLoaded: false
+        });
+        this.fetchGames();
+    }
+
+    filterGames(searchTerm) {
+        const items = Object.assign({}, this.fetchedGames);
+        if (searchTerm.trim() === '') {
+            this.setState({
+                items: items
+            });
+            return;
+        }
+
+        Object.keys(items).forEach((platform) => {
+            const fuse = new Fuse(items[platform], {
+                shouldSort: true,
+                threshold: 0.6,
+                location: 0,
+                distance: 100,
+                maxPatternLength: 32,
+                minMatchCharLength: 1,
+                keys: [
+                    'name'
+                ]
+            });
+            items[platform] = fuse.search(searchTerm);
+        });
+        this.setState({
+            items: items
+        });
+
+        forceCheck(); // Recheck lazyload
     }
 
     scrollTo(id) {
@@ -124,46 +169,36 @@ class Games extends React.Component {
             return this.state.toSearch;
         }
 
-        // Sort games alphabetically
-        for (const platform in items) {
-            items[platform] = items[platform].sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
-        }
-
         return (
             <div style={{height: 'inherit', overflow: 'hidden'}}>
                 <div id="grids-container" style={{height: '100%', overflow: 'auto', marginTop: 5}}>
-                    <CommandBar
+                    <div
                         style={{
+                            display: 'flex',
+                            alignItems: 'center',
                             position: 'fixed',
                             top: 30,
-                            width: '100%',
+                            width: 'calc(100vw - 55px)',
+                            height: 48,
                             zIndex: 2,
                             backgroundColor: 'rgba(0,0,0,.2)',
                             backgroundImage: `url(${UWPNoise})`,
                             backdropFilter: 'blur(20px)'
                         }}
-                        contentStyle={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            marginLeft: 'auto'
-                        }}
-                        contentNode={
-                            <AutoSuggestBox
-                                placeholder='Search'
-                                onChangeValue={this.filterGames}
-                            />
-                        }
-                        background="transparent"
-                        labelPosition="collapsed"
-                        primaryCommands={[
-                            <AppBarSeparator key={1} />,
-                            <AppBarButton key={2} icon="Sort" label="Sort" />,
-                            <AppBarButton key={3} icon="Refresh" label="Refresh" />
-                        ]}
-                    />
+                    >
+                        <AutoSuggestBox style={{marginLeft: 'auto', marginRight: 5}} placeholder='Search' onChangeValue={this.searchInput}/>
+                        <IconButton
+                            style={{flex: '0 0 auto', color: this.context.theme.baseMediumLow}}
+                            hoverStyle={{background: this.context.theme.listAccentMedium, color: this.context.theme.baseMediumHigh}}
+                            activeStyle={{background: this.context.theme.accent}}
+                            onClick={this.refreshGames}
+                        >
+                            Refresh
+                        </IconButton>
+                    </div>
                     <div style={{ height: 48 }}></div> {/* Spacer for CommandBar */}
-                    {Object.keys(items).map((platform, i) => (
-                        <div key={i} style={{paddingLeft: 10}}>
+                    {Object.keys(items).map((platform) => (
+                        <div key={platform} style={{paddingLeft: 10}}>
                             <div style={{
                                 ...this.context.theme.typographyStyles.subTitleAlt,
                                 display: 'inline-block',
@@ -178,11 +213,11 @@ class Games extends React.Component {
                                 zoom={this.zoom}
                                 platform={platform}
                             >
-                                {items[platform].map((item, i) => {
+                                {items[platform].map((item) => {
                                     const imageURI = this.addNoCache((item.imageURI));
                                     return (
                                         // id attribute is used as a scroll target after a search
-                                        <div id={item.appid} key={i}>
+                                        <div id={item.appid} key={item.appid}>
                                             <GridImage
                                                 name={item.name}
                                                 gameId={item.gameId}

@@ -131,7 +131,7 @@ class Search extends React.Component {
         }
 
         this.setIsDownloading(true);
-        const itemsClone = Object.assign(this.state.items);
+        const itemsClone = Object.assign({}, this.state.items);
         Steam.addGrid(props.appid, props.image, (progress) => {
             this.setState({downloadProgress: progress});
             itemsClone[props.index].progress = progress;
