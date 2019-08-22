@@ -18,6 +18,10 @@ import Import from './Import.js';
 const electron = window.require('electron');
 const remote = electron.remote;
 
+// Log renderer errors
+const log = window.require('electron-log');
+log.catchErrors({showDialog: true});
+
 import '../css/App.css';
 
 import Steam from './Steam.js';
