@@ -4,6 +4,11 @@
   "description": "Easily find and download new grid images for your Steam games.",
   "main": "main.js",
   "author": "SteamGridDB.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/steamgriddb/steamgriddb-manager.git"
+  },
   "scripts": {
     "start": "electron .",
     "build": "webpack --mode production && build",
@@ -71,9 +76,6 @@
     "webpack-cli": "^3.3.6"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.21",
-    "@fortawesome/free-solid-svg-icons": "^5.10.1",
-    "@fortawesome/react-fontawesome": "^0.1.4",
     "@node-steam/vdf": "^2.0.1",
     "blizzard-product-parser": "^1.0.1",
     "electron-log": "^3.0.7",
