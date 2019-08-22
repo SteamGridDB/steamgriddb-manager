@@ -4,7 +4,8 @@ import {Redirect} from 'react-router-dom';
 import Spinner from './spinner.js';
 import GridImage from './gridImage.js';
 import AutoSuggestBox from 'react-uwp/AutoSuggestBox';
-import IconButton from 'react-uwp/IconButton';
+import AppBarButton from 'react-uwp/AppBarButton';
+import AppBarSeparator from 'react-uwp/AppBarSeparator';
 import Grid from './Grid';
 import Steam from './Steam';
 import queryString from 'query-string';
@@ -186,15 +187,13 @@ class Games extends React.Component {
                             backdropFilter: 'blur(20px)'
                         }}
                     >
-                        <AutoSuggestBox style={{marginLeft: 'auto', marginRight: 5}} placeholder='Search' onChangeValue={this.searchInput}/>
-                        <IconButton
-                            style={{flex: '0 0 auto', color: this.context.theme.baseMediumLow}}
-                            hoverStyle={{background: this.context.theme.listAccentMedium, color: this.context.theme.baseMediumHigh}}
-                            activeStyle={{background: this.context.theme.accent}}
+                        <AutoSuggestBox style={{marginLeft: 'auto', marginRight: 24}} placeholder='Search' onChangeValue={this.searchInput}/>
+                        <AppBarSeparator style={{height: 24}} />
+                        <AppBarButton
+                            icon="Refresh"
+                            label="Refresh"
                             onClick={this.refreshGames}
-                        >
-                            Refresh
-                        </IconButton>
+                        />
                     </div>
                     <div style={{ height: 48 }}></div> {/* Spacer for CommandBar */}
                     {Object.keys(items).map((platform) => (
