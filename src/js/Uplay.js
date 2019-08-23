@@ -122,7 +122,7 @@ class Uplay {
             key.get('InstallDir', (err, installDir) => {
                 resolve({
                     id: id,
-                    InstallDir: installDir.value
+                    installDir: installDir.value
                 });
             });
         });
@@ -141,7 +141,13 @@ class Uplay {
                 }
 
                 const promiseArr = keys.map((key) => this._processRegKey(key).then((res) => res));
-                Promise.all(promiseArr).then((resultsArray) => resolve(resultsArray));
+                Promise.all(promiseArr).then((resultsArray) => {
+                    const out = {};
+                    resultsArray.forEach((item) => {
+                        out[String(item.id)] = item.installDir;
+                    });
+                    return resolve(out);
+                });
             });
         });
     }
@@ -205,22 +211,29 @@ class Uplay {
         });
     }
 
-    static getGameExes(executables) {
+    static getGameExes(executables, workingDirFallback = false) {
         return new Promise((resolve) => {
             const promises = [];
             executables.forEach((exe) => {
                 const promise = new Promise((resolve) => {
-                    // Get working directory
-                    this.resolveConfigPath(exe.working_directory).then((workingDir) => {
-                        if (workingDir) {
-                            // Get exe
-                            this.resolveConfigPath(exe.path).then((exePath) => {
+                    let append = '';
+                    if (exe.working_directory.append) {
+                        append = exe.working_directory.append;
+                    }
+                    this.resolveConfigPath(exe.path).then((exePath) => {
+                        // Get working directory
+                        this.resolveConfigPath(exe.working_directory).then((workingDir) => {
+                            if (workingDir) {
                                 // check if exe is actually there
                                 if (fs.existsSync(path.join(workingDir, exePath))) {
                                     resolve(path.join(workingDir, exePath));
                                 }
-                            });
-                        }
+                            } else {
+                                if (workingDirFallback && fs.existsSync(path.join(workingDirFallback, append, exePath))) {
+                                    resolve(path.join(workingDirFallback, append, exePath));
+                                }
+                            }
+                        });
                     });
                 });
                 promises.push(promise);
@@ -242,7 +255,7 @@ class Uplay {
                 this.parseConfig(path.join(uplayPath, 'cache', 'configuration', 'configurations')).then((configItems) => {
                     this._getRegInstalled().then((installedGames) => {
                         // Only need launch IDs
-                        installedGames = installedGames.map((game) => String(game.id));
+                        const installedGamesIds = Object.keys(installedGames);
 
                         const games = [];
                         const invalidNames = ['NAME', 'GAMENAME', 'l1'];
@@ -260,7 +273,10 @@ class Uplay {
                                 if (invalidNames.includes(game.root.name)) {
                                     if (typeof game.root.installer !== 'undefined') {
                                         gameName = game.root.installer.game_identifier;
-                                    } else {
+                                    }
+
+                                    // Override installer name if this value
+                                    if (typeof game.root.default[game.root.name] !== 'undefined') {
                                         gameName = game.root.default[game.root.name];
                                     }
                                 }
@@ -273,8 +289,8 @@ class Uplay {
                                 }
 
                                 // Only add if launcher id is found in registry and has executables
-                                if (installedGames.includes(String(game.root.launcher_id)) && game.root.start_game.offline) {
-                                    this.getGameExes(game.root.start_game.offline.executables)
+                                if (installedGamesIds.includes(String(game.root.launcher_id)) && (game.root.start_game.offline || game.root.start_game.online)) {
+                                    this.getGameExes((game.root.start_game.offline || game.root.start_game.online).executables, installedGames[game.root.launcher_id])
                                         .then((executables) => {
                                             const watchedExes = executables.map((x) => path.parse(path.basename(x)).name);
                                             games.push({
