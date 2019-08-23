@@ -97,25 +97,29 @@ class Steam {
                             if (ext === 'acf') {
                                 const filePath = join(appsPath, file);
                                 const data = fs.readFileSync(filePath, 'utf-8');
-                                const gameData = VDF.parse(data);
+                                try {
+                                    const gameData = VDF.parse(data);
+                                    if (gameData.AppState.appid === 228980) {
+                                        return;
+                                    }
 
-                                if (gameData.AppState.appid === 228980) {
+                                    let image = this.getCustomGridImage(userdataPath, gameData.AppState.appid);
+
+                                    if (!image) {
+                                        image = this.getDefaultGridImage(gameData.AppState.appid);
+                                    }
+
+                                    games.push({
+                                        appid: gameData.AppState.appid,
+                                        name: gameData.AppState.name,
+                                        image: image,
+                                        imageURI: image,
+                                        type: 'game'
+                                    });
+                                } catch(err) {
+                                    log.warn(`Error while parsing ${file}: ${err}`);
                                     return;
                                 }
-
-                                let image = this.getCustomGridImage(userdataPath, gameData.AppState.appid);
-
-                                if (!image) {
-                                    image = this.getDefaultGridImage(gameData.AppState.appid);
-                                }
-
-                                games.push({
-                                    appid: gameData.AppState.appid,
-                                    name: gameData.AppState.name,
-                                    image: image,
-                                    imageURI: image,
-                                    type: 'game'
-                                });
                             }
                         });
                     });
