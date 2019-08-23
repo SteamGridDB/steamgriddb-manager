@@ -54,13 +54,24 @@ div[class^="fluent-background-"] {
     transition: opacity 1s ease-in;
 }
 
+.grid-wrapper {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.grid-wrapper:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.grid-wrapper:hover .grid-overlay {
+    opacity: 1;
+}
+
 .grid-overlay {
     opacity: 0;
     position: absolute;
     top: 0;
     left: 0;
     background: rgba(0,0,0,0.5);
-    transition: opacity 150ms ease 0s;
     padding: 10px;
     z-index: 1;
 }

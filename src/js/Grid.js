@@ -14,7 +14,6 @@ class Grid extends React.Component {
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: `repeat(auto-fit, minmax(${(300 * this.zoom + 20)}px, 1fr))`,
-                gridAutoRows: `${(160 * this.zoom + 10)}px`,
                 justifyItems: 'center',
                 ...this.props.style
             }}>

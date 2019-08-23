@@ -140,7 +140,7 @@ class Games extends React.Component {
 
     scrollTo(id) {
         document.getElementById(id).scrollIntoView(true);
-        document.querySelector('#grids-container').scrollTop -= 64; // scroll down a bit cause grid goes under floating launcher name
+        document.querySelector('#grids-container').scrollTop -= 50; // scroll down a bit cause grid goes under floating launcher name
     }
 
     addNoCache(imageURI) {

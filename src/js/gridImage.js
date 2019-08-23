@@ -29,7 +29,7 @@ class GridImage extends React.Component {
                 <div style={{
                     position: 'absolute',
                     width: `${this.gridWidth}px`,
-                    bottom: '-5px'
+                    bottom: '24px'
                 }}>
                     <ProgressBar
                         defaultProgressValue={this.props.progress}
@@ -50,6 +50,7 @@ class GridImage extends React.Component {
                     once
                 >
                     <CSSTransitionGroup key="1"
+                        style={{display: 'flex'}}
                         transitionName="grid-fadein"
                         transitionAppear={true}
                         transitionAppearTimeout={1000}
@@ -66,25 +67,26 @@ class GridImage extends React.Component {
 
         return (
             <div
+                className="grid-wrapper"
                 style={{
-                    margin: '5px',
+                    margin: 5,
                     position: 'relative',
-                    width: `${this.gridWidth}px`,
-                    height: `${this.gridHeight}px`,
-                    backgroundColor: '#303030'
+                    width: `${this.gridWidth}px`
                 }}
                 onClick={this.handleClick}
             >
                 {image}
 
                 <div style={{
-                    position: 'absolute',
-                    bottom: '5px',
+                    ...this.context.theme.typographyStyles.base,
+                    fontWeight: 400,
+                    padding: 5,
+                    height: 30,
                     width: '100%',
-                    fontSize: '1.2em',
-                    fontWeight: '500',
                     textAlign: 'center',
-                    color: '#fff',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                     zIndex: 0
                 }}>
                     {this.props.name}
@@ -130,5 +132,6 @@ GridImage.propTypes = {
     ]),
     onGridClick: PropTypes.func
 };
+GridImage.contextTypes = { theme: PropTypes.object };
 
 export default GridImage;
