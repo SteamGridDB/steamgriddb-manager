@@ -48,6 +48,14 @@ class Epic {
     static getGames() {
         return new Promise((resolve, reject) => {
             this.getEpicPath().then((epicPath) => {
+                // Get path to LauncherAutoClose.ps1
+                let launcherWatcher = path.resolve(path.dirname(process.resourcesPath), '../../../', 'LauncherAutoClose.ps1');
+                if (!fs.existsSync(launcherWatcher)) {
+                    launcherWatcher = path.join(path.dirname(process.resourcesPath), 'LauncherAutoClose.ps1');
+                }
+
+                const powershellExe = path.join(process.env.windir, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+
                 const games = [];
                 let binFolder;
                 if (arch == 'ia32') {
@@ -69,9 +77,10 @@ class Epic {
                         games.push({
                             id: parsed.AppName,
                             name: parsed.DisplayName,
-                            exe: `"${path.join(binaryPath, 'EpicGamesLauncher.exe')}"`,
+                            exe: `"${powershellExe}"`,
+                            icon: `"${path.join(parsed.InstallLocation, parsed.LaunchExecutable)}"`,
                             startIn: `"${binaryPath}"`,
-                            params: `com.epicgames.launcher://apps/${parsed.AppName}?action=launch&silent=true`,
+                            params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\"" -launcher \\"EpicGamesLauncher\\" -game \\"${path.parse(parsed.LaunchExecutable).name}\\" -launchcmd \\"com.epicgames.launcher://apps/${parsed.AppName}?action=launch&silent=true\\""`,
                             platform: 'egs'
                         });
                     }
