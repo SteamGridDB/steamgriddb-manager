@@ -141,7 +141,7 @@ class Games extends React.Component {
     }
 
     scrollTo(id) {
-        document.getElementById(id).scrollIntoView(true);
+        document.getElementById(`game-${id}`).scrollIntoView(true);
         document.querySelector('#grids-container').scrollTop -= 50; // scroll down a bit cause grid goes under floating launcher name
     }
 
@@ -218,7 +218,7 @@ class Games extends React.Component {
                                     const imageURI = this.addNoCache((item.imageURI));
                                     return (
                                         // id attribute is used as a scroll target after a search
-                                        <div id={item.appid} key={item.appid}>
+                                        <div id={`game-${item.appid}`} key={item.appid}>
                                             <GridImage
                                                 name={item.name}
                                                 gameId={item.gameId}
