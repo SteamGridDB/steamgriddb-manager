@@ -57,6 +57,9 @@ class Steam {
             this.getSteamPath().then((steamPath) => {
                 this.getLoggedInUser().then((user) => {
                     const gridPath = join(steamPath, 'userdata', String(user), 'config', 'grid');
+                    if (!fs.existsSync(gridPath)){
+                        fs.mkdirSync(gridPath);
+                    }
                     this.currentUserGridPath = gridPath;
                     resolve(gridPath);
                 });
