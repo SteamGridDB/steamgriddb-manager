@@ -6,40 +6,46 @@ import Icon from 'react-uwp/Icon';
 class ToastHandler extends React.Component {
     constructor(props) {
         super(props);
-        this.closed = this.closed.bind(this);
+        this.close = this.close;
         this.state = {
-            toast: null,
-            show: false
+            toasts: []
         };
+    }
+
+    componentDidMount() {
         PubSub.subscribe('toast', (message, args) => {
+            const toast = {toast: args, show: true};
+            this.close(toast, 3000);
             this.setState({
-                toast: args,
-                show: true
+                toasts: this.state.toasts.concat(toast)
             });
         });
     }
 
-    closed() {
-        this.setState({
-            show: false
-        });
+    close(toast, closeDelay) {
+        const self = this;
+        setTimeout(() => {
+            const toasts = self.state.toasts.slice(0);
+            toasts[toasts.indexOf(toast)].show = false;
+            self.setState({
+                toasts: toasts
+            });
+        }, closeDelay);
     }
 
     render() {
-        const toast = this.state.toast ? (
+        const toasts = this.state.toasts.slice(0).map((x, i) => (
             <Toast
-                defaultShow={this.state.show}
-                logoNode={<Icon>{this.state.toast.logoNode}</Icon>}
-                title={this.state.toast.title}
-                closeDelay={3000}
-                onToggleShowToast={this.closed}
+                key={i}
+                defaultShow={x.show}
+                logoNode={<Icon>{x.toast.logoNode}</Icon>}
+                title={x.toast.title}
                 showCloseIcon
             >
-                {this.state.toast.contents}
+                {x.toast.contents}
             </Toast>
-        ) : (<div/>);
-
-        return toast;
+        ));
+        return toasts;
     }
 }
 

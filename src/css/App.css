@@ -40,6 +40,11 @@ div[class^="fluent-background-"] {
     vertical-align: top !important;
 }
 
+/* react-uwp toasts have no font set and you can't set them via style attr */
+[class*="toast-wrapper-"] {
+    font-family: Segoe UI, Microsoft YaHei, Open Sans, sans-serif, Hiragino Sans GB, Arial, Lantinghei SC, STHeiti, WenQuanYi Micro Hei, SimSun;
+}
+
 .grid-fadein-appear {
     opacity: 0;
 }
