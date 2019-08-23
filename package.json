@@ -1,6 +1,6 @@
 {
   "name": "steamgriddb-manager",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Easily find and download new grid images for your Steam games.",
   "main": "main.js",
   "author": "SteamGridDB.com",
