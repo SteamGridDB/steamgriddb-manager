@@ -13,6 +13,7 @@ import Fuse from 'fuse.js';
 import {debounce} from 'lodash';
 import {forceCheck} from 'react-lazyload';
 import UWPNoise from '../img/uwp-noise.png';
+const log = require('electron-log');
 
 class Games extends React.Component {
     constructor(props) {
@@ -55,6 +56,7 @@ class Games extends React.Component {
             Steam.getSteamPath().then(() => {
                 this.fetchGames();
             }).catch(() => {
+                log.warn('Steam is not installed');
                 this.setState({
                     hasSteam: false
                 });

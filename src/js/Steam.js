@@ -7,6 +7,7 @@ const shortcut = window.require('steam-shortcut-editor');
 const https = window.require('https');
 const Stream = window.require('stream').Transform;
 const metrohash64 = window.require('metrohash').metrohash64;
+const log = window.require('electron-log');
 import SteamID from 'steamid';
 import {crc32} from 'crc';
 
@@ -39,6 +40,7 @@ class Steam {
 
                 if (steamPath) {
                     this.steamPath = steamPath;
+                    log.info(`Got Steam path: ${steamPath}`);
                     resolve(steamPath);
                 } else {
                     reject(new Error('Could not find Steam path.'));
@@ -62,43 +64,6 @@ class Steam {
         });
     }
 
-    static getUsers() {
-        return new Promise((resolve) => {
-            this.getSteamPath().then((steamPath) => {
-                const users = [];
-                const userdataPath = join(steamPath, 'userdata');
-
-                const files = fs.readdirSync(userdataPath).filter((file) => fs.statSync(join(userdataPath, file)).isDirectory());
-
-                files.forEach((file) => {
-                    const userID = file;
-                    const userPath = join(userdataPath, file);
-                    const configFile = join(userPath, 'config', 'localconfig.vdf');
-
-                    // Make sure the config file is there
-                    try {
-                        fs.statSync(configFile);
-                    } catch(e) {
-                        return;
-                    }
-
-                    const data = fs.readFileSync(configFile, 'utf-8');
-                    const userData = VDF.parse(data);
-                    const username = userData.UserLocalConfigStore.friends.PersonaName;
-
-                    users.push({
-                        Name: username,
-                        SteamID3: userID,
-                        SteamID64: (new SteamID(userID)).getSteamID64(),
-                        Dir: userdataPath
-                    });
-                });
-
-                resolve(users);
-            });
-        });
-    }
-
     static getSteamGames() {
         return new Promise((resolve) => {
             this.getSteamPath().then((steamPath) => {
@@ -117,6 +82,8 @@ class Steam {
                             libraries.push(library);
                         }
                     });
+
+                    log.info(`Found ${libraries.length} Steam libraries`);
 
                     libraries.forEach((library) => {
                         const appsPath = join(library, 'steamapps');
@@ -149,6 +116,7 @@ class Steam {
                             }
                         });
                     });
+                    log.info(`Fetched ${games.length} Steam games`);
 
                     resolve(games);
                 });
@@ -241,7 +209,8 @@ class Steam {
                     if (loginusersData.users[user].mostrecent) {
                         const accountid = (new SteamID(user)).accountid;
                         this.loggedInUser = accountid;
-                        resolve(accountid);
+                        log.info(`Got Steam user: ${accountid}`);
+                        return resolve(accountid);
                     }
                 }
             });
