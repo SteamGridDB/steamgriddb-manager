@@ -56,12 +56,16 @@ class Origin {
 
     static _parseRuntime(runtime) {
         let exeDef = false;
-        if (runtime.launcher.filePath) {
-            // Only one exe
-            exeDef = runtime.launcher;
-        } else if (runtime.launcher[0] && runtime.launcher[0].filePath) {
-            // Multiple exes
-            exeDef = runtime.launcher[0]; // Always get first executable
+        if (runtime.launcher) {
+            if (runtime.launcher.filePath) {
+                // Only one exe
+                exeDef = runtime.launcher;
+            } else if (runtime.launcher[0] && runtime.launcher[0].filePath) {
+                // Multiple exes
+                exeDef = runtime.launcher[0]; // Always get first executable
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -113,11 +117,31 @@ class Origin {
                                             }
 
                                             if (xml.DiPManifest) {
-                                                executable = this._parseRuntime(xml.DiPManifest.runtime);
-                                                name = xml.DiPManifest.gameTitles.gameTitle[0]._text;
+                                                if (xml.DiPManifest.runtime) {
+                                                    executable = this._parseRuntime(xml.DiPManifest.runtime);
+                                                }
+                                                if (xml.DiPManifest.gameTitles.gameTitle) {
+                                                    if (xml.DiPManifest.gameTitles.gameTitle._text) {
+                                                        name = xml.DiPManifest.gameTitles.gameTitle._text;
+                                                    } else if (xml.DiPManifest.gameTitles.gameTitle[0]) {
+                                                        name = xml.DiPManifest.gameTitles.gameTitle[0]._text;
+                                                    }
+                                                }
                                             } else if (xml.game) {
-                                                executable = this._parseRuntime(xml.game.runtime);
-                                                name = xml.game.metadata.localeInfo[0].title._text;
+                                                if (xml.game.runtime) {
+                                                    executable = this._parseRuntime(xml.game.runtime);
+                                                }
+                                                if (xml.game.metadata.localeInfo) {
+                                                    if (xml.game.metadata.localeInfo.title) {
+                                                        name = xml.game.metadata.localeInfo.title._text;
+                                                    } else if (xml.game.metadata.localeInfo[0]) {
+                                                        name = xml.game.metadata.localeInfo[0].title._text;
+                                                    }
+                                                }
+                                            }
+
+                                            if (!name) {
+                                                return true;
                                             }
 
                                             if (executable) {
@@ -130,10 +154,8 @@ class Origin {
                                                     params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\"" -launcher \\"Origin\\" -game \\"${executable.name}\\" -launchcmd \\"origin://launchgamejump/${manifestStrParsed.id}\\""`,
                                                     platform: 'origin'
                                                 });
-                                                return true;
-                                            } else {
-                                                return reject(`Could not find game executable for ${path.basename(folder)}`);
                                             }
+                                            return true;
                                         }
                                     }
                                 }
