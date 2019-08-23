@@ -25,11 +25,18 @@
     "directories": {
       "buildResources": "assets/icons"
     },
+    "extraResources": [
+      {
+        "from": "assets/VisualElements",
+        "to": "VisualElements"
+      }
+    ],
     "extraFiles": [
       {
         "from": "LauncherAutoClose.ps1",
         "to": "."
-      }
+      },
+      "SteamGridDB Manager.VisualElementsManifest.xml"
     ],
     "win": {
       "target": "nsis"
