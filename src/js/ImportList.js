@@ -26,12 +26,14 @@ class ImportList extends React.Component {
             this.games.map((game, i) => {
                 let thumb = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkqAcAAIUAgUW0RjgAAAAASUVORK5CYII=';
                 let image = null;
-                if (this.games.length > 1 && this.grids[i].length === 1 && this.grids[i][0].success !== false) {
-                    thumb = this.grids[i][0].thumb;
-                    image = this.grids[i][0].url;
-                } else if (this.games.length === 1 && this.grids) {
-                    thumb = this.grids[0].thumb;
-                    image = this.grids[0].url;
+                if (this.grids) {
+                    if (this.games.length > 1 && this.grids[i].length === 1 && this.grids[i][0].success !== false) {
+                        thumb = this.grids[i][0].thumb;
+                        image = this.grids[i][0].url;
+                    } else if (this.games.length === 1 && this.grids) {
+                        thumb = this.grids[0].thumb;
+                        image = this.grids[0].url;
+                    }
                 }
 
                 let progress = game.progress;
