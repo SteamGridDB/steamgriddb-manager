@@ -10,6 +10,7 @@ import Grid from './Grid';
 import Steam from './Steam';
 import queryString from 'query-string';
 import Fuse from 'fuse.js';
+import PubSub from 'pubsub-js';
 import {debounce} from 'lodash';
 import {forceCheck} from 'react-lazyload';
 import TopBlur from './TopBlur';
@@ -67,6 +68,7 @@ class Games extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         if (Object.entries(prevState.items).length === 0 && this.scrollToTarget) {
             this.scrollTo(this.scrollToTarget);
+            PubSub.publish('showBack', false);
         }
     }
 
