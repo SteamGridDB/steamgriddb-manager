@@ -39,7 +39,7 @@
       "SteamGridDB Manager.VisualElementsManifest.xml"
     ],
     "win": {
-      "target": "nsis"
+      "target": ["nsis", "7z"]
     },
     "nsis": {
       "oneClick": false,
