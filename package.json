@@ -1,6 +1,6 @@
 {
   "name": "steamgriddb-manager",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Easily find and download new grid images for your Steam games.",
   "main": "main.js",
   "author": "SteamGridDB.com",
@@ -39,7 +39,10 @@
       "SteamGridDB Manager.VisualElementsManifest.xml"
     ],
     "win": {
-      "target": ["nsis", "7z"]
+      "target": [
+        "nsis",
+        "7z"
+      ]
     },
     "nsis": {
       "oneClick": false,
