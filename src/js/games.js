@@ -14,7 +14,7 @@ import PubSub from 'pubsub-js';
 import {debounce} from 'lodash';
 import {forceCheck} from 'react-lazyload';
 import TopBlur from './TopBlur';
-const log = require('electron-log');
+const log = window.require('electron-log');
 
 class Games extends React.Component {
     constructor(props) {
