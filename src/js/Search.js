@@ -5,6 +5,7 @@ import Steam from './Steam.js';
 import React from 'react';
 import Image from 'react-uwp/Image';
 import Grid from './Grid';
+import TopBlur from './TopBlur';
 import queryString from 'query-string';
 import PropTypes from 'prop-types';
 import PubSub from 'pubsub-js';
@@ -183,43 +184,46 @@ class Search extends React.Component {
             );
         }
 
-        if (this.state.apiError) {
-            return (
-                <div>
-                    <h5 style={{...this.context.theme.typographyStyles.title, textAlign: 'center'}}>
-                        Error trying to use the SteamGridDB API. 
-                    </h5>
-                </div>
-            );
-        }
-
         if (!isLoaded) {
             return (<Spinner/>);
         }
 
         return (
-            <Grid zoom={this.zoom}>
-                {items.map((item, i) => {
-                    let progress = item.progress;
-                    if (typeof item.progress == 'undefined') {
-                        progress = 0;
-                    }
-                    return (
-                        <GridImage
-                            key={i}
-                            index={i}
-                            appid={this.appid}
-                            name={this.game}
-                            author={item.author.name}
-                            image={item.thumb}
-                            zoom={this.zoom}
-                            progress={progress}
-                            onGridClick={this.applyGrid}
-                            data={item}
-                        />
-                    );
-                })}
-            </Grid>
+            <>
+                <TopBlur/>
+                <div id="search-container" style={{height: '100%', overflow: 'auto', padding: 15, paddingLeft: 10, paddingTop: 45}}>
+                    {this.state.apiError ? (
+                        <div>
+                            <h5 style={{...this.context.theme.typographyStyles.title, textAlign: 'center'}}>
+                                Error trying to use the SteamGridDB API. 
+                            </h5>
+                        </div>
+                    ) : (
+                        <Grid zoom={this.zoom}>
+                            {items.map((item, i) => {
+                                let progress = item.progress;
+                                if (typeof item.progress == 'undefined') {
+                                    progress = 0;
+                                }
+                                return (
+                                    <GridImage
+                                        key={i}
+                                        index={i}
+                                        appid={this.appid}
+                                        name={this.game}
+                                        author={item.author.name}
+                                        image={item.thumb}
+                                        zoom={this.zoom}
+                                        progress={progress}
+                                        onGridClick={this.applyGrid}
+                                        data={item}
+                                    />
+                                );
+                            })}
+                        </Grid>
+                    )}
+                </div>
+            </>
         );
     }
 }

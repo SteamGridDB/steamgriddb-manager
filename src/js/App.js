@@ -87,7 +87,16 @@ class App extends React.Component {
         let titleWidth = '100%';
         if (this.state.showBack) {
             backBtn = <Link to='/' onClick={() => {this.setState({showBack: false});}}>
-                <IconButton style={{width: navWidth, height: 30, lineHeight: '31px', backgroundColor: '#141414', float: 'left'}} size={22}>Back</IconButton>
+                <IconButton style={{
+                    display: 'block',
+                    position: 'relative',
+                    float: 'left',
+                    width: navWidth,
+                    height: 30,
+                    lineHeight: '31px',
+                    backgroundColor: '#141414',
+                    zIndex: 2,
+                }} size={22}>Back</IconButton>
             </Link>;
             titleWidth = `calc(100% - ${navWidth}px)`;
         }
@@ -101,28 +110,37 @@ class App extends React.Component {
                 })}
             >
                 <Router>
-                    <div style={{width: '100%', height: '100%', backgroundColor: '#1a1a1a'}}>
+                    <div style={{backgroundColor: '#1a1a1a'}}>
                         {backBtn}
                         <TitleBar
                             title="SteamGridDB Manager"
-                            style={{width: titleWidth, height: 30}}
+                            style={{
+                                position: 'relative',
+                                top: 0,
+                                width: titleWidth,
+                                height: 30,
+                                zIndex: 2
+                            }}
                             controls
                             isMaximized={this.state.isMaximized}
                             onCloseClick={this.close}
                             onMinimizeClick={this.minimize}
                             onMaximizeClick={this.toggleMaximize}
                             onRestoreDownClick = {this.toggleMaximize}
-                            background="#141414"
+                            background="transparent"
                             color="#fff"
                             theme="dark"
                         />
-
                         <NavigationView
                             style={{
-                                height: 'calc(100vh - 35px)',
-                                width: '100%'
+                                position: 'absolute',
+                                top: 0,
+                                height: '100vh',
+                                width: '100%',
+                                overflow: 'hidden'
                             }}
                             paneStyle={{
+                                marginTop: 30,
                                 backgroundColor: 'rgba(0,0,0,.2)',
                                 backgroundImage: `url(${UWPNoise})`,
                                 backdropFilter: 'blur(20px)'

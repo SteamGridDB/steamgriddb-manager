@@ -9,6 +9,7 @@ import Image from 'react-uwp/Image';
 import ImportList from './ImportList';
 import ImportAllButton from './ImportAllButton.js';
 import Spinner from './spinner.js';
+import TopBlur from './TopBlur';
 import Steam from './Steam';
 import Origin from './Origin';
 import Uplay from './Uplay';
@@ -232,46 +233,53 @@ class Import extends React.Component {
         }
 
         // if no launcher installed
+        let noLaunchers = false;
         if (Object.values(games).every((x) => x === false)) {
-            return (
-                <div className="import-list" style={{padding: 15, paddingLeft: 10, textAlign: 'center', ...this.context.theme.typographyStyles.body}}>
-                    <p>Looks like you have no launchers installed. Install some launchers to import games from them into Steam.</p>
+            noLaunchers =
+                <div style={{padding: 15, paddingLeft: 10, textAlign: 'center', ...this.context.theme.typographyStyles.body}}>
+                    <p>Looks like you have no launchers installed.</p>
                     <p>The following launchers are supported: {this.platforms.map((x) => x.name).join(', ')}</p>
-                </div>
-            );
+                </div>;
         }
 
         return (
-            <div className="import-list" style={{padding: 15, paddingLeft: 10}}>
-                {Object.keys(games).map((platform, i) => {
-                    if (typeof games[platform] === 'object') {
-                        return (
-                            <div key={i}>
-                                <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
-                                <ImportAllButton
-                                    games={games[platform]}
-                                    grids={grids[i]}
-                                    platform={this.platforms[i]}
-                                    onButtonClick={this.addGames}
-                                />
-                                <ImportList
-                                    games={games[platform]}
-                                    platform={this.platforms[i]}
-                                    grids={grids[i]}
-                                    onImportClick={this.addGame}
-                                />
-                            </div>
-                        );
-                    } else if (typeof games[platform] === 'string') {
-                        return (
-                            <div key={i}>
-                                <h5 style={this.context.theme.typographyStyles.subTitle}>{this.platforms[i].name}</h5>
-                                <p>Error importing: {games[platform]}</p>
-                            </div>
-                        );
-                    }
-                })}
-            </div>
+            <>
+                <TopBlur/>
+                <div id="import-container" style={{height: '100%', overflow: 'auto', padding: 15, paddingLeft: 10, paddingTop: 45}}>
+                    {noLaunchers ? (
+                        noLaunchers
+                    ) : (
+                        Object.keys(games).map((platform, i) => {
+                            if (typeof games[platform] === 'object') {
+                                return (
+                                    <div key={i}>
+                                        <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
+                                        <ImportAllButton
+                                            games={games[platform]}
+                                            grids={grids[i]}
+                                            platform={this.platforms[i]}
+                                            onButtonClick={this.addGames}
+                                        />
+                                        <ImportList
+                                            games={games[platform]}
+                                            platform={this.platforms[i]}
+                                            grids={grids[i]}
+                                            onImportClick={this.addGame}
+                                        />
+                                    </div>
+                                );
+                            } else if (typeof games[platform] === 'string') {
+                                return (
+                                    <div key={i}>
+                                        <h5 style={this.context.theme.typographyStyles.subTitle}>{this.platforms[i].name}</h5>
+                                        <p>Error importing: {games[platform]}</p>
+                                    </div>
+                                );
+                            }
+                        })
+                    )}
+                </div>
+            </>
         );
     }
 }

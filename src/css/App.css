@@ -12,6 +12,23 @@
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
 }
 
+/* hack to offset scrollbar */
+::-webkit-scrollbar-button:start {
+    background: transparent;
+}
+
+#import-container::-webkit-scrollbar-button:start {
+    height: 30px;
+}
+
+#search-container::-webkit-scrollbar-button:start {
+    height: 30px;
+}
+
+#grids-container::-webkit-scrollbar-button:start {
+    height: 78px;
+}
+
 div[class^="fluent-background-"] {
     background-color: #1a1a1a;
 }
@@ -21,7 +38,7 @@ div[class^="fluent-background-"] {
     transition: transform ease 300ms;
 }
 
-.import-list [class*="list-view-item-"]:hover button {
+#import-container [class*="list-view-item-"]:hover button {
     opacity: 1;
 }
 

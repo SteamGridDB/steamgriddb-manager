@@ -12,7 +12,7 @@ import queryString from 'query-string';
 import Fuse from 'fuse.js';
 import {debounce} from 'lodash';
 import {forceCheck} from 'react-lazyload';
-import UWPNoise from '../img/uwp-noise.png';
+import TopBlur from './TopBlur';
 const log = require('electron-log');
 
 class Games extends React.Component {
@@ -142,7 +142,7 @@ class Games extends React.Component {
 
     scrollTo(id) {
         document.getElementById(`game-${id}`).scrollIntoView(true);
-        document.querySelector('#grids-container').scrollTop -= 50; // scroll down a bit cause grid goes under floating launcher name
+        document.querySelector('#grids-container').scrollTop -= 75; // scroll down a bit cause grid goes under floating launcher name
     }
 
     addNoCache(imageURI) {
@@ -174,30 +174,27 @@ class Games extends React.Component {
 
         return (
             <div style={{height: 'inherit', overflow: 'hidden'}}>
-                <div id="grids-container" style={{height: '100%', overflow: 'auto', marginTop: 5}}>
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            position: 'fixed',
-                            top: 30,
-                            width: 'calc(100vw - 55px)',
-                            height: 48,
-                            zIndex: 2,
-                            backgroundColor: 'rgba(0,0,0,.2)',
-                            backgroundImage: `url(${UWPNoise})`,
-                            backdropFilter: 'blur(20px)'
-                        }}
-                    >
-                        <AutoSuggestBox style={{marginLeft: 'auto', marginRight: 24}} placeholder='Search' onChangeValue={this.searchInput}/>
-                        <AppBarSeparator style={{height: 24}} />
-                        <AppBarButton
-                            icon="Refresh"
-                            label="Refresh"
-                            onClick={this.refreshGames}
-                        />
-                    </div>
-                    <div style={{ height: 48 }}></div> {/* Spacer for CommandBar */}
+                <TopBlur additionalHeight={48} />
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        position: 'fixed',
+                        top: 30,
+                        width: 'calc(100vw - 55px)',
+                        height: 48,
+                        zIndex: 2
+                    }}
+                >
+                    <AutoSuggestBox style={{marginLeft: 'auto', marginRight: 24}} placeholder='Search' onChangeValue={this.searchInput}/>
+                    <AppBarSeparator style={{height: 24}} />
+                    <AppBarButton
+                        icon="Refresh"
+                        label="Refresh"
+                        onClick={this.refreshGames}
+                    />
+                </div>
+                <div id="grids-container" style={{height: '100%', overflow: 'auto', paddingTop: 64}}>
                     {Object.keys(items).map((platform) => (
                         <div key={platform} style={{paddingLeft: 10}}>
                             <div style={{
@@ -206,7 +203,7 @@ class Games extends React.Component {
                                 position: 'sticky',
                                 zIndex: 3,
                                 marginLeft: 10,
-                                top: 8
+                                top: -22
                             }}>
                                 {this.platformNames[platform]}
                             </div>
