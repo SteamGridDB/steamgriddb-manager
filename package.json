@@ -42,7 +42,8 @@
       "target": "nsis"
     },
     "nsis": {
-      "oneClick": false
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     },
     "publish": {
       "provider": "s3",
