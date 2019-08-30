@@ -95,10 +95,14 @@ class Gog {
                         reject(new Error('Could not get GOG games.'));
                     }
 
-                    const promiseArr = keys.map((key) => this._processRegKey(key).then((res) => res));
-                    Promise.all(promiseArr.map(promiseReflect))
-                        .then((results) => results.filter((result) => result.status === 'resolved').map((result) => result.data))
-                        .then((results) => resolve(results));
+                    if (keys) {
+                        const promiseArr = keys.map((key) => this._processRegKey(key).then((res) => res));
+                        Promise.all(promiseArr.map(promiseReflect))
+                            .then((results) => results.filter((result) => result.status === 'resolved').map((result) => result.data))
+                            .then((results) => resolve(results));
+                    } else {
+                        return resolve([]);
+                    }
                 });
             }).catch((err) => reject(err));
         });
