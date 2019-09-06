@@ -139,14 +139,18 @@ class Uplay {
                     reject(err);
                 }
 
-                const promiseArr = keys.map((key) => this._processRegKey(key).then((res) => res));
-                Promise.all(promiseArr).then((resultsArray) => {
-                    const out = {};
-                    resultsArray.forEach((item) => {
-                        out[String(item.id)] = item.installDir;
+                if (keys) {
+                    const promiseArr = keys.map((key) => this._processRegKey(key).then((res) => res));
+                    Promise.all(promiseArr).then((resultsArray) => {
+                        const out = {};
+                        resultsArray.forEach((item) => {
+                            out[String(item.id)] = item.installDir;
+                        });
+                        return resolve(out);
                     });
-                    return resolve(out);
-                });
+                } else {
+                    return resolve({});
+                }
             });
         });
     }
