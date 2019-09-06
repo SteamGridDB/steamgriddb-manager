@@ -67,7 +67,7 @@ class Epic {
                 const manifestsDir = 'C:\\ProgramData\\Epic\\EpicGamesLauncher\\Data\\Manifests';
 
                 if (!fs.existsSync(manifestsDir)) {
-                    return reject('Could not find Epic Games Launcher data.');
+                    return resolve([]);
                 }
 
                 fs.readdirSync(manifestsDir).forEach((file) => {
