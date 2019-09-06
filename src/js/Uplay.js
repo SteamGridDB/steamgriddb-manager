@@ -16,7 +16,6 @@ class Uplay {
                 if (err) {
                     reject(new Error('Could not check if Uplay is installed.'));
                 }
-
                 resolve(exists);
             });
         });
@@ -258,6 +257,7 @@ class Uplay {
                         const installedGamesIds = Object.keys(installedGames);
 
                         const games = [];
+                        const addGamesPromises = [];
                         const invalidNames = ['NAME', 'GAMENAME', 'l1'];
                         configItems.forEach((game) => {
                             if (game.root.start_game) { // DLC's and other non-games dont have this key
@@ -290,7 +290,7 @@ class Uplay {
 
                                 // Only add if launcher id is found in registry and has executables
                                 if (installedGamesIds.includes(String(game.root.launcher_id)) && (game.root.start_game.offline || game.root.start_game.online)) {
-                                    this.getGameExes((game.root.start_game.offline || game.root.start_game.online).executables, installedGames[game.root.launcher_id])
+                                    const addGame = this.getGameExes((game.root.start_game.offline || game.root.start_game.online).executables, installedGames[game.root.launcher_id])
                                         .then((executables) => {
                                             const watchedExes = executables.map((x) => path.parse(path.basename(x)).name);
                                             games.push({
@@ -303,11 +303,11 @@ class Uplay {
                                                 platform: 'uplay'
                                             });
                                         });
+                                    addGamesPromises.push(addGame);
                                 }
                             }
                         });
-
-                        resolve(games);
+                        Promise.all(addGamesPromises).then(() => resolve(games));
                     }).catch((err) => reject(err));
                 }).catch((err) => reject(err));
             }).catch((err) => reject(err));
