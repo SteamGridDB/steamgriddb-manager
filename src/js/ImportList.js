@@ -63,7 +63,10 @@ class ImportList extends React.Component {
 
 ImportList.propTypes = {
     games: PropTypes.array.isRequired,
-    grids: PropTypes.array.isRequired,
+    grids: PropTypes.oneOfType([
+        PropTypes.array,
+        PropTypes.bool
+    ]).isRequired,
     platform: PropTypes.object.isRequired,
     onImportClick: PropTypes.func
 };

@@ -23,7 +23,10 @@ class ImportAllButton extends React.Component {
 ImportAllButton.propTypes = {
     platform: PropTypes.object.isRequired,
     games: PropTypes.array.isRequired,
-    grids: PropTypes.array.isRequired,
+    grids: PropTypes.oneOfType([
+        PropTypes.array,
+        PropTypes.bool
+    ]).isRequired,
     onButtonClick: PropTypes.func
 };
 

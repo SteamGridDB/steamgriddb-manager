@@ -226,6 +226,8 @@ class Uplay {
                                 // check if exe is actually there
                                 if (fs.existsSync(path.join(workingDir, exePath))) {
                                     resolve(path.join(workingDir, exePath));
+                                } else {
+                                    resolve(false);
                                 }
                             } else {
                                 if (workingDirFallback && fs.existsSync(path.join(workingDirFallback, append, exePath))) {
@@ -292,16 +294,18 @@ class Uplay {
                                 if (installedGamesIds.includes(String(game.root.launcher_id)) && (game.root.start_game.offline || game.root.start_game.online)) {
                                     const addGame = this.getGameExes((game.root.start_game.offline || game.root.start_game.online).executables, installedGames[game.root.launcher_id])
                                         .then((executables) => {
-                                            const watchedExes = executables.map((x) => path.parse(path.basename(x)).name);
-                                            games.push({
-                                                id: gameId,
-                                                name: gameName,
-                                                exe: `"${powershellExe}"`,
-                                                icon: `"${executables[0]}"`,
-                                                startIn: `"${uplayPath}"`,
-                                                params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\" -launcher \\"upc\\" -game \\"${watchedExes.join('\\",\\"')}\\" -launchcmd \\"uplay://launch/${game.root.launcher_id}\\""`,
-                                                platform: 'uplay'
-                                            });
+                                            if (executables.every((x) => x !== false)) {
+                                                const watchedExes = executables.map((x) => path.parse(path.basename(x)).name);
+                                                games.push({
+                                                    id: gameId,
+                                                    name: gameName,
+                                                    exe: `"${powershellExe}"`,
+                                                    icon: `"${executables[0]}"`,
+                                                    startIn: `"${uplayPath}"`,
+                                                    params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\" -launcher \\"upc\\" -game \\"${watchedExes.join('\\",\\"')}\\" -launchcmd \\"uplay://launch/${game.root.launcher_id}\\""`,
+                                                    platform: 'uplay'
+                                                });
+                                            }
                                         });
                                     addGamesPromises.push(addGame);
                                 }
