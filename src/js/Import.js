@@ -1,6 +1,7 @@
 const Store = window.require('electron-store');
 const SGDB = window.require('steamgriddb');
 const metrohash64 = window.require('metrohash').metrohash64;
+const log = window.require('electron-log');
 import PubSub from 'pubsub-js';
 import React from 'react';
 import settle from 'promise-settle';
@@ -87,12 +88,16 @@ class Import extends React.Component {
                         if (result.isFulfilled() && result.value() !== false) {
                             games[this.platforms[index].id] = result.value();
 
+                            log.info(`Import: ${result.value().length} games found for ${this.platforms[index].id}`);
+
                             if (result.value().length > 0) {
-                                const ids = result.value().map((x) => encodeURIComponent(x.id)).join(','); // Comma separated list of IDs for use with SGDB API
+                                const ids = result.value().map((x) => encodeURIComponent(x.id)); // Comma separated list of IDs for use with SGDB API
                                 const platform = result.value()[0].platform;
 
+                                log.info(ids.join(','));
+
                                 // Get grids for each game
-                                const getGrids = this.SGDB.getGrids({type: platform, id: ids}).then((res) => {
+                                const getGrids = this.SGDB.getGrids({type: platform, id: ids.join(',')}).then((res) => {
                                     let formatted;
                                     // if only single id then return first grid
                                     if (result.value().length === 1) {
@@ -122,10 +127,12 @@ class Import extends React.Component {
                             // result.reason()
                             games[this.platforms[index].id] = result.reason();
                             gridsPromises.push(false);
+                            log.info(`Import: ${this.platforms[index].id} rejected ${result.reason()}`);
                         } else {
                             // not installed
                             games[this.platforms[index].id] = false;
                             gridsPromises.push(false);
+                            log.info(`Import: ${this.platforms[index].id} not installed`);
                         }
                     });
 
