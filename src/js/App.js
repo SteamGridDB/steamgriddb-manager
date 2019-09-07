@@ -135,9 +135,8 @@ class App extends React.Component {
                             style={{
                                 position: 'absolute',
                                 top: 0,
-                                height: '100vh',
+                                height: 'calc(100vh - 30px)',
                                 width: '100%',
-                                overflow: 'hidden'
                             }}
                             paneStyle={{
                                 marginTop: 30,
