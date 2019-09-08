@@ -123,7 +123,7 @@ class Import extends React.Component {
         }
 
         games.forEach((game) => {
-            gamesStorage[metrohash64(game.exe+game.params)] = game;
+            gamesStorage[metrohash64(game.exe+(typeof game.params !== 'undefined' ? game.params : ''))] = game;
         });
         this.store.set('games', gamesStorage);
     }
