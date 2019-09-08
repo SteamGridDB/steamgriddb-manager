@@ -15,6 +15,7 @@ import {debounce} from 'lodash';
 import {forceCheck} from 'react-lazyload';
 import TopBlur from './TopBlur';
 const log = window.require('electron-log');
+import platformModules from './importers';
 
 class Games extends React.Component {
     constructor(props) {
@@ -34,13 +35,12 @@ class Games extends React.Component {
         this.fetchedGames = {}; // Fetched games are stored here and shouldn't be changed unless a fetch is triggered again
         this.platformNames = {
             'steam': 'Steam',
-            'origin': 'Origin',
-            'uplay': 'Uplay',
-            'egs': 'Epic Games Launcher',
-            'gog': 'GOG.com',
-            'bnet': 'Blizzard Battle.net',
             'other': 'Other Games'
         };
+
+        Object.keys(platformModules).forEach((module) => {
+            this.platformNames[platformModules[module].id] = platformModules[module].name;
+        });
 
         this.state = {
             error: null,

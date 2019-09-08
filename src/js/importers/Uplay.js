@@ -324,3 +324,5 @@ class Uplay {
 }
 
 export default Uplay;
+export const name = 'Uplay';
+export const id = 'uplay';

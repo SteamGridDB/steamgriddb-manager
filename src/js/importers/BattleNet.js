@@ -103,3 +103,5 @@ class BattleNet {
 }
 
 export default BattleNet;
+export const name = 'Blizzard Battle.net';
+export const id = 'bnet';

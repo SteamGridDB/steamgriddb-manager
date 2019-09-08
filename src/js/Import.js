@@ -12,12 +12,7 @@ import ImportAllButton from './ImportAllButton.js';
 import Spinner from './spinner.js';
 import TopBlur from './TopBlur';
 import Steam from './Steam';
-import Origin from './Origin';
-import Uplay from './Uplay';
-import Epic from './Epic';
-import Gog from './Gog';
-import BattleNet from './BattleNet';
-//import Bethesda from './Bethesda';
+import platformModules from './importers';
 
 class Import extends React.Component {
     constructor(props) {
@@ -28,33 +23,7 @@ class Import extends React.Component {
 
         this.store = new Store();
 
-        this.platforms = [
-            {
-                id: 'origin',
-                name: 'Origin',
-                class: Origin
-            },
-            {
-                id: 'uplay',
-                name: 'Uplay',
-                class: Uplay
-            },
-            {
-                id: 'egs',
-                name: 'Epic Games Launcher',
-                class: Epic
-            },
-            {
-                id: 'bnet',
-                name: 'Blizzard Battle.net',
-                class: BattleNet
-            },
-            {
-                id: 'gog',
-                name: 'GOG.com',
-                class: Gog
-            }
-        ];
+        this.platforms = Object.keys(platformModules).map((key) => ({id: platformModules[key].id, name: platformModules[key].name, class: platformModules[key].default}));
 
         this.SGDB = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
 
