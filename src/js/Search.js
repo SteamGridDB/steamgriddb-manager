@@ -90,22 +90,18 @@ class Search extends React.Component {
         }
 
         if (this.gameType === 'shortcut' && this.platform !== 'other') {
-            client.getGame({
-                type: this.platform,
-                id: this.gameId
-            }).then((res) => {
-                client.getGridsById(res.id)
-                    .then((items) => {
-                        this.setState({
-                            isLoaded: true,
-                            items: items
-                        });
+            client.getGrids({id: this.gameId, type: this.platform})
+                .then((items) => {
+                    this.setState({
+                        isLoaded: true,
+                        items: items
                     });
-            }).catch(() => {
-                this.setState({
-                    apiError: true
+                })
+                .catch(() => {
+                    this.setState({
+                        apiError: true
+                    });
                 });
-            });
         }
 
         if (this.gameType === 'shortcut' && this.platform === 'other') {
