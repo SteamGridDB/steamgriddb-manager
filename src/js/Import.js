@@ -23,7 +23,12 @@ class Import extends React.Component {
 
         this.store = new Store();
 
-        this.platforms = Object.keys(platformModules).map((key) => ({id: platformModules[key].id, name: platformModules[key].name, class: platformModules[key].default}));
+        this.platforms = Object.keys(platformModules).map((key) => ({
+            id: platformModules[key].id,
+            name: platformModules[key].name,
+            class: platformModules[key].default,
+            error: false
+        }));
 
         this.SGDB = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
 
@@ -93,8 +98,9 @@ class Import extends React.Component {
                             }
                         } else if (result.isRejected()) {
                             // getGames() rejected
-                            // result.reason()
-                            games[this.platforms[index].id] = result.reason();
+                            this.platforms[index].error = true;
+                            this.platforms[index].errorReason = result.reason();
+                            games[this.platforms[index].id] = [];
                             gridsPromises.push(false);
                             log.info(`Import: ${this.platforms[index].id} rejected ${result.reason()}`);
                         } else {
@@ -226,7 +232,7 @@ class Import extends React.Component {
                         noLaunchers
                     ) : (
                         Object.keys(games).map((platform, i) => {
-                            if (typeof games[platform] === 'object') {
+                            if (!this.platforms[i].error) {
                                 return (
                                     <div key={i}>
                                         <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
@@ -244,11 +250,11 @@ class Import extends React.Component {
                                         />
                                     </div>
                                 );
-                            } else if (typeof games[platform] === 'string') {
+                            } else {
                                 return (
                                     <div key={i}>
                                         <h5 style={this.context.theme.typographyStyles.subTitle}>{this.platforms[i].name}</h5>
-                                        <p>Error importing: {games[platform]}</p>
+                                        <p>Error importing: {this.platforms[i].errorReason}</p>
                                     </div>
                                 );
                             }
