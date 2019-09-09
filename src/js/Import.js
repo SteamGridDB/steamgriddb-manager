@@ -254,7 +254,7 @@ class Import extends React.Component {
                                 return (
                                     <div key={i}>
                                         <h5 style={this.context.theme.typographyStyles.subTitle}>{this.platforms[i].name}</h5>
-                                        <p>Error importing: {this.platforms[i].errorReason}</p>
+                                        <p>Error importing: {this.platforms[i].errorReason.message}</p>
                                     </div>
                                 );
                             }
