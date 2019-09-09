@@ -112,3 +112,4 @@ class Gog {
 export default Gog;
 export const name = 'GOG.com';
 export const id = 'gog';
+export const official = true;

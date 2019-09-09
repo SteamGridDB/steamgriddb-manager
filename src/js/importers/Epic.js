@@ -94,3 +94,4 @@ class Epic {
 export default Epic;
 export const name = 'Epic Games Launcher';
 export const id = 'egs';
+export const official = true;

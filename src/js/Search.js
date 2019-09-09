@@ -9,6 +9,7 @@ import TopBlur from './TopBlur';
 import queryString from 'query-string';
 import PropTypes from 'prop-types';
 import PubSub from 'pubsub-js';
+import {officialList} from './importers';
 const SGDB = window.require('steamgriddb');
 const Store = window.require('electron-store');
 
@@ -89,7 +90,7 @@ class Search extends React.Component {
                 });
         }
 
-        if (this.gameType === 'shortcut' && this.platform !== 'other') {
+        if (this.gameType === 'shortcut' && officialList.includes(this.platform)) {
             client.getGrids({id: this.gameId, type: this.platform})
                 .then((items) => {
                     this.setState({
@@ -102,9 +103,7 @@ class Search extends React.Component {
                         apiError: true
                     });
                 });
-        }
-
-        if (this.gameType === 'shortcut' && this.platform === 'other') {
+        } else if (this.gameType === 'shortcut' && !officialList.includes(this.platform)) {
             client.searchGame(this.query)
                 .then((res) => {
                     client.getGridsById(res[0].id)

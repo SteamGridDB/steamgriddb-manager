@@ -174,3 +174,4 @@ class Origin {
 export default Origin;
 export const name = 'Origin';
 export const id = 'origin';
+export const official = true;
