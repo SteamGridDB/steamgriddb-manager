@@ -55,22 +55,27 @@ class Origin {
     }
 
     static _parseRuntime(runtime) {
-        let exeDef = false;
+        const exeDefs = [];
         if (runtime.launcher) {
             if (runtime.launcher.filePath) {
                 // Only one exe
-                exeDef = runtime.launcher;
+                exeDefs.push(runtime.launcher.filePath._text);
             } else if (runtime.launcher[0] && runtime.launcher[0].filePath) {
                 // Multiple exes
-                exeDef = runtime.launcher[0]; // Always get first executable
+                runtime.launcher.forEach((exe) => {
+                    if (exe.filePath) {
+                        exeDefs.push(exe.filePath._text);
+                    }
+                });
             } else {
                 return false;
             }
         } else {
             return false;
         }
+
         // remove everything in [] cause we only need the exe name
-        return path.parse(exeDef.filePath._text.replace(/\[.+\]/g, ''));
+        return exeDefs.map((exe) => (exe.replace(/\[.+\]/g, '')));
     }
 
     static getGames() {
@@ -104,7 +109,7 @@ class Origin {
                                         // If __Installer/installerdata.xml file exists in the install dir
                                         if (fs.existsSync(installerDataPath)) {
                                             // Parse installerdata.xml file
-                                            let xml, executable, name;
+                                            let xml, executables, name;
                                             try {
                                                 const installerDataFile = fs.readFileSync(installerDataPath);
                                                 try {
@@ -118,7 +123,7 @@ class Origin {
 
                                             if (xml.DiPManifest) {
                                                 if (xml.DiPManifest.runtime) {
-                                                    executable = this._parseRuntime(xml.DiPManifest.runtime);
+                                                    executables = this._parseRuntime(xml.DiPManifest.runtime);
                                                 }
                                                 if (xml.DiPManifest.gameTitles.gameTitle) {
                                                     if (xml.DiPManifest.gameTitles.gameTitle._text) {
@@ -129,7 +134,7 @@ class Origin {
                                                 }
                                             } else if (xml.game) {
                                                 if (xml.game.runtime) {
-                                                    executable = this._parseRuntime(xml.game.runtime);
+                                                    executables = this._parseRuntime(xml.game.runtime);
                                                 }
                                                 if (xml.game.metadata.localeInfo) {
                                                     if (xml.game.metadata.localeInfo.title) {
@@ -144,14 +149,15 @@ class Origin {
                                                 return true;
                                             }
 
-                                            if (executable) {
+                                            if (executables) {
+                                                const watchedExes = executables.map((x) => path.parse(path.basename(x)).name);
                                                 games.push({
                                                     id: manifestStrParsed.id,
                                                     name: name,
                                                     exe: `"${powershellExe}"`,
-                                                    icon: `"${path.join(manifestStrParsed.dipinstallpath, executable.base)}"`,
+                                                    icon: `"${path.join(manifestStrParsed.dipinstallpath, executables[0])}"`,
                                                     startIn: `"${path.dirname(originPath)}"`,
-                                                    params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\"" -launcher \\"Origin\\" -game \\"${executable.name}\\" -launchcmd \\"origin://launchgamejump/${manifestStrParsed.id}\\""`,
+                                                    params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\"" -launcher \\"Origin\\" -game \\"${watchedExes.join('\\",\\"')}\\" -launchcmd \\"origin://launchgamejump/${manifestStrParsed.id}\\""`,
                                                     platform: 'origin'
                                                 });
                                             }
