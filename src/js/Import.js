@@ -232,31 +232,33 @@ class Import extends React.Component {
                         noLaunchers
                     ) : (
                         Object.keys(games).map((platform, i) => {
-                            if (!this.platforms[i].error) {
-                                return (
-                                    <div key={i}>
-                                        <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
-                                        <ImportAllButton
-                                            games={games[platform]}
-                                            grids={grids[i]}
-                                            platform={this.platforms[i]}
-                                            onButtonClick={this.addGames}
-                                        />
-                                        <ImportList
-                                            games={games[platform]}
-                                            platform={this.platforms[i]}
-                                            grids={grids[i]}
-                                            onImportClick={this.addGame}
-                                        />
-                                    </div>
-                                );
-                            } else {
-                                return (
-                                    <div key={i}>
-                                        <h5 style={this.context.theme.typographyStyles.subTitle}>{this.platforms[i].name}</h5>
-                                        <p>Error importing: {this.platforms[i].errorReason.message}</p>
-                                    </div>
-                                );
+                            if (this.platforms[i].installed) {
+                                if (!this.platforms[i].error) {
+                                    return (
+                                        <div key={i}>
+                                            <h5 style={{float: 'left', ...this.context.theme.typographyStyles.subTitle}}>{this.platforms[i].name}</h5>
+                                            <ImportAllButton
+                                                games={games[platform]}
+                                                grids={grids[i]}
+                                                platform={this.platforms[i]}
+                                                onButtonClick={this.addGames}
+                                            />
+                                            <ImportList
+                                                games={games[platform]}
+                                                platform={this.platforms[i]}
+                                                grids={grids[i]}
+                                                onImportClick={this.addGame}
+                                            />
+                                        </div>
+                                    );
+                                } else {
+                                    return (
+                                        <div key={i}>
+                                            <h5 style={this.context.theme.typographyStyles.subTitle}>{this.platforms[i].name}</h5>
+                                            <p>Error importing: {this.platforms[i].errorReason.message}</p>
+                                        </div>
+                                    );
+                                }
                             }
                         })
                     )}
