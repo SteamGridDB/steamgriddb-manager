@@ -1,15 +1,17 @@
 # This script is used to auto-close launchers that don't have an auto-close setting.
 
 
-# $launchcmd = Command to launch game
-# $launcher  = Launcher to kill
-# $game      = Game(s) to watch
-
 param (
-    [Parameter(Mandatory=$true)][string]$launchcmd,
-    [Parameter(Mandatory=$true)][string]$launcher,
-    [Parameter(Mandatory=$true)][string[]]$game
+    [Parameter(Mandatory=$True)][string]$launchcmd,    # Command to launch game
+    [Parameter(Mandatory=$True)][string]$launcher,     # Launcher to kill
+    [Parameter(Mandatory=$True)][string[]]$game,       # Game(s) to watch
+
+    [Parameter(Mandatory=$False)][bool]$bnet = $False, # Use Battle.net-specific launch method
+    [Parameter(Mandatory=$False)][string]$bnetpath,    # Battle.net executable
+    [Parameter(Mandatory=$False)][string]$bnetlaunchid # Battle.net launch ID
 )
+
+$scriptPath = Split-Path -parent $MyInvocation.MyCommand.Definition
 
 function Wait-ProcessChildren($id) {
     $child = Get-WmiObject win32_process | where {$_.ParentProcessId -In $id}
@@ -22,12 +24,16 @@ function Wait-ProcessChildren($id) {
 
 # Kill launcher
 Write-Host 'Killing launcher'
-Get-Process $launcher | Stop-Process
+Get-Process $launcher -ErrorAction SilentlyContinue | Stop-Process
 
 # Start Game
-Start-Process $launchcmd
+If ($bnet) {
+    & "$scriptPath\BnetHelper.ps1" -bnet $bnetpath -launchid $bnetlaunchid
+} Else {
+    Start-Process $launchcmd
+}
 
-$gameStarted = $false
+$gameStarted = $False
 
 Write-Host 'Waiting for game to start'
 
@@ -38,8 +44,7 @@ Do {
 
     If (!($gameProcess)) {
         # Timeout after 30 minutes
-		If ($currentDate.AddMinutes(30) -lt (Get-Date))
-		{
+		If ($currentDate.AddMinutes(30) -lt (Get-Date)) {
 			Write-Host 'Game process could not be found'
 			exit
 		}

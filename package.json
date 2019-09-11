@@ -36,6 +36,10 @@
         "from": "LauncherAutoClose.ps1",
         "to": "."
       },
+      {
+        "from": "BnetHelper.ps1",
+        "to": "."
+      },
       "SteamGridDB Manager.VisualElementsManifest.xml"
     ],
     "win": {

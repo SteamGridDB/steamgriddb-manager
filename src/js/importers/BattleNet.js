@@ -1,8 +1,76 @@
-const electron = window.require('electron');
 const Registry = window.require('winreg');
 const fs = window.require('fs');
 const path = window.require('path');
 import decoder from 'blizzard-product-parser/src/js/database'; // Workaround for badly configured lib
+
+const BNET_GAMES = {
+    'd3': {
+        name: 'Diablo III',
+        launchId: 'D3',
+        exes: ['Diablo III', 'Diablo III64'],
+        icon: 'Diablo III Launcher.exe'
+    },
+    'dst2': {
+        name: 'Destiny 2',
+        launchId: 'DST2',
+        exes: ['destiny2'],
+        icon: 'Destiny 2 Launcher.exe'
+    },
+    'hero': {
+        name: 'Heroes of the Storm',
+        launchId: 'Hero',
+        exes: ['HeroesSwitcher', 'HeroesSwitcher_x64'],
+        icon: 'Heroes of the Storm.exe'
+    },
+    /*
+    'odin': {
+        name: 'Call of Duty: Modern Warfare',
+        launchId: 'ODIN',
+    },
+    */
+    'pro': {
+        name: 'Overwatch',
+        launchId: 'Pro',
+        exes: ['Overwatch'],
+        icon: 'Overwatch Launcher.exe'
+    },
+    's1': {
+        name: 'Starcraft Remastered',
+        launchId: 'S1',
+        exes: ['StarCraft'],
+        icon: 'StarCraft Launcher.exe'
+    },
+    's2': {
+        name: 'Starcraft 2',
+        launchId: 'S2',
+        exes: ['SC2Switcher_x64', 'SC2Switcher'],
+        icon: 'StarCraft II.exe'
+    },
+    'viper': {
+        name: 'Call of Duty: Black Ops 4',
+        launchId: 'VIPR',
+        exes: ['BlackOps4', 'BlackOps4_boot'],
+        icon: 'Black Ops 4 Launcher.exe'
+    },
+    'w3': {
+        name: 'Warcraft 3: Reforged',
+        launchId: 'W3',
+        exes: ['Warcraft III'],
+        icon: 'Warcraft III.exe'
+    },
+    'wtcg': {
+        name: 'Hearthstone',
+        launchId: 'WTCG',
+        exes: ['Hearthstone'],
+        icon: 'Hearthstone.exe'
+    },
+    'wow': {
+        name: 'World of Warcraft',
+        launchId: 'WoW',
+        exes: ['Wow'],
+        icon: 'World of Warcraft Launcher.exe'
+    }
+};
 
 class BattleNet {
     static isInstalled() {
@@ -52,26 +120,15 @@ class BattleNet {
         return new Promise((resolve, reject) => {
             this.getBattlenetPath().then((bnetPath) => {
                 const games = [];
-                const executable = path.join(bnetPath, 'Battle.net.exe');
-                let appData = (electron.app || electron.remote.app).getPath('userData');
-                appData = path.join(appData.replace(path.basename(appData), ''), 'Battle.net');
+                const bnetExe = path.join(bnetPath, 'Battle.net.exe');
 
-                // Get latest .config file
-                const files = fs.readdirSync(appData).filter((files) => !(files === 'Battle.net.config' || !files.includes('.config')));
-                const latest = files.reduce((prev, current) => {
-                    const prevFile = fs.statSync(path.join(appData, prev)).mtimeMs;
-                    const currentFile = fs.statSync(path.join(appData, current)).mtimeMs;
-                    return (prevFile.mtimeMs > currentFile.mtimeMs) ? prev : current;
-                });
+                // Get path to LauncherAutoClose.ps1
+                let launcherWatcher = path.resolve(path.dirname(process.resourcesPath), '../../../', 'LauncherAutoClose.ps1');
+                if (!fs.existsSync(launcherWatcher)) {
+                    launcherWatcher = path.join(path.dirname(process.resourcesPath), 'LauncherAutoClose.ps1');
+                }
 
-                // Parse config file as JSON
-                const config = JSON.parse(fs.readFileSync(path.join(appData, latest)).toString());
-                const gameIds = {};
-
-                // Map correct case id to lower case key
-                Object.keys(config.User.Client.PlayScreen.GameFamily).forEach((id) => {
-                    gameIds[id.toLowerCase()] = id;
-                });
+                const powershellExe = path.join(process.env.windir, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
 
                 try {
                     const decoded = decoder.decode(fs.readFileSync('C:\\ProgramData\\Battle.net\\Agent\\product.db'));
@@ -79,16 +136,19 @@ class BattleNet {
 
                     installed.forEach((product) => {
                         const gameId = product.uid;
-                        let launchId = product.productCode; // Lowercase, find correct case by matching with .config file
-                        launchId = gameIds[launchId.toLowerCase()];
-                        if (launchId) {
-                            const name = path.basename(product.settings.installPath);
+                        const launchIdLower = product.productCode.toLowerCase();
+                        if (BNET_GAMES[launchIdLower]) {
+                            const launchId = BNET_GAMES[launchIdLower].launchId;
+                            const name = BNET_GAMES[launchIdLower].name;
+                            const exes = BNET_GAMES[launchIdLower].exes;
+                            const icon = path.join(product.settings.installPath, BNET_GAMES[launchIdLower].icon);
                             games.push({
                                 id: gameId,
                                 name: name,
-                                exe: `"${executable}"`,
+                                exe: `"${powershellExe}"`,
+                                icon: `"${icon}"`,
                                 startIn: `"${bnetPath}"`,
-                                params: `--exec="launch ${launchId}"`,
+                                params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\" -launcher \\"battle.net\\" -game \\"${exes.join('\\",\\"')}\\" -launchcmd \\"dummy\\" -bnet $True -bnetpath \\"${bnetExe}\\" -bnetlaunchid \\"${launchId}\\""`,
                                 platform: 'bnet'
                             });
                         }
