@@ -1,6 +1,7 @@
 const Registry = window.require('winreg');
 const fs = window.require('fs');
 const promiseReflect = window.require('promise-reflect');
+const log = window.require('electron-log');
 
 class Gog {
     static isInstalled() {
@@ -83,6 +84,7 @@ class Gog {
 
     static getGames() {
         return new Promise((resolve, reject) => {
+            log.info('Import: Started gog');
             this.getGogPath().then(() => {
                 const reg = new Registry({
                     hive: Registry.HKLM,

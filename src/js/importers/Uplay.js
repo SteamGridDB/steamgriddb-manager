@@ -2,6 +2,7 @@ const Registry = window.require('winreg');
 const yaml = window.require('js-yaml');
 const fs = window.require('fs');
 const path = window.require('path');
+const log = window.require('electron-log');
 
 class Uplay {
     static isInstalled() {
@@ -249,6 +250,7 @@ class Uplay {
 
     static getGames() {
         return new Promise((resolve, reject) => {
+            log.info('Import: Started uplay');
             // Get path to LauncherAutoClose.ps1
             let launcherWatcher = path.resolve(path.dirname(process.resourcesPath), '../../../', 'LauncherAutoClose.ps1');
             if (!fs.existsSync(launcherWatcher)) {

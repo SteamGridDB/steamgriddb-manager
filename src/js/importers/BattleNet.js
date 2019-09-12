@@ -1,6 +1,7 @@
 const Registry = window.require('winreg');
 const fs = window.require('fs');
 const path = window.require('path');
+const log = window.require('electron-log');
 import decoder from 'blizzard-product-parser/src/js/database'; // Workaround for badly configured lib
 
 const BNET_GAMES = {
@@ -118,6 +119,7 @@ class BattleNet {
 
     static getGames() {
         return new Promise((resolve, reject) => {
+            log.info('Import: Started bnet');
             this.getBattlenetPath().then((bnetPath) => {
                 const games = [];
                 const bnetExe = path.join(bnetPath, 'Battle.net.exe');
@@ -136,12 +138,12 @@ class BattleNet {
 
                     installed.forEach((product) => {
                         const gameId = product.uid;
-                        const launchIdLower = product.productCode.toLowerCase();
-                        if (BNET_GAMES[launchIdLower]) {
-                            const launchId = BNET_GAMES[launchIdLower].launchId;
-                            const name = BNET_GAMES[launchIdLower].name;
-                            const exes = BNET_GAMES[launchIdLower].exes;
-                            const icon = path.join(product.settings.installPath, BNET_GAMES[launchIdLower].icon);
+                        const productCode = product.productCode.toLowerCase();
+                        if (BNET_GAMES[productCode]) {
+                            const launchId = BNET_GAMES[productCode].launchId;
+                            const name = BNET_GAMES[productCode].name;
+                            const exes = BNET_GAMES[productCode].exes;
+                            const icon = path.join(product.settings.installPath, BNET_GAMES[productCode].icon);
                             games.push({
                                 id: gameId,
                                 name: name,

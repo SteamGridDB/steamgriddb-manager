@@ -4,6 +4,7 @@ const path = window.require('path');
 const querystring = window.require('querystring');
 const xml2js = window.require('xml-js').xml2js;
 const iconv = window.require('iconv-lite');
+const log = window.require('electron-log');
 
 class Origin {
     static isInstalled() {
@@ -80,6 +81,7 @@ class Origin {
 
     static getGames() {
         return new Promise((resolve, reject) => {
+            log.info('Import: Started origin');
             this.getOriginPath().then((originPath) => {
                 const originDataPath = 'C:\\ProgramData\\Origin';
                 const games = [];

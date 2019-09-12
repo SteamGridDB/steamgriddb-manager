@@ -3,6 +3,7 @@ const fs = window.require('fs');
 const path = window.require('path');
 const jsonminify = window.require('jsonminify');
 const {arch} = window.require('os');
+const log = window.require('electron-log');
 
 class Epic {
     static isInstalled() {
@@ -47,6 +48,7 @@ class Epic {
 
     static getGames() {
         return new Promise((resolve, reject) => {
+            log.info('Import: Started egs');
             this.getEpicPath().then((epicPath) => {
                 // Get path to LauncherAutoClose.ps1
                 let launcherWatcher = path.resolve(path.dirname(process.resourcesPath), '../../../', 'LauncherAutoClose.ps1');
