@@ -59,7 +59,7 @@ const BNET_GAMES = {
         exes: ['Warcraft III'],
         icon: 'Warcraft III.exe'
     },
-    'wtcg': {
+    'hsb': {
         name: 'Hearthstone',
         launchId: 'WTCG',
         exes: ['Hearthstone'],
