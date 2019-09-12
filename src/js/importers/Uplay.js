@@ -229,8 +229,8 @@ class Uplay {
                         this.resolveConfigPath(exe.working_directory).then((workingDir) => {
                             if (workingDir) {
                                 // check if exe is actually there
-                                if (fs.existsSync(path.join(workingDir, exePath))) {
-                                    resolve(path.join(workingDir, exePath));
+                                if (fs.existsSync(path.join(workingDir, append, exePath))) {
+                                    resolve(path.join(workingDir, append, exePath));
                                 } else {
                                     resolve(false);
                                 }
