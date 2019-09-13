@@ -239,7 +239,7 @@ class Uplay {
                                     resolve(false);
                                 }
                             } else {
-                                if (workingDirFallback && fs.existsSync(path.join(workingDirFallback, append, exePath))) {
+                                if (workingDirFallback && fs.existsSync(path.join(workingDirFallback, exePath))) {
                                     resolve(path.join(workingDirFallback, exePath));
                                 } else if (workingDirFallback && fs.existsSync(path.join(workingDirFallback, append, exePath))) {
                                     resolve(path.join(workingDirFallback, append, exePath));
