@@ -225,6 +225,10 @@ class Uplay {
                         append = exe.working_directory.append;
                     }
                     this.resolveConfigPath(exe.path).then((exePath) => {
+                        if (!exePath) {
+                            resolve(false);
+                        }
+
                         // Get working directory
                         this.resolveConfigPath(exe.working_directory).then((workingDir) => {
                             if (workingDir) {
@@ -311,13 +315,18 @@ class Uplay {
                                                     params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\" -launcher \\"upc\\" -game \\"${watchedExes.join('\\",\\"')}\\" -launchcmd \\"uplay://launch/${game.root.launcher_id}\\""`,
                                                     platform: 'uplay'
                                                 });
+                                            } else {
+                                                log.info(`Import: uplay - Could not resolve executable for ${gameName}`);
                                             }
                                         });
                                     addGamesPromises.push(addGame);
                                 }
                             }
                         });
-                        Promise.all(addGamesPromises).then(() => resolve(games));
+                        Promise.all(addGamesPromises).then(() => {
+                            log.info('Import: Completed uplay');
+                            return resolve(games);
+                        });
                     }).catch((err) => reject(err));
                 }).catch((err) => reject(err));
             }).catch((err) => reject(err));
