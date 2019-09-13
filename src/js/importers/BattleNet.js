@@ -155,6 +155,7 @@ class BattleNet {
                             });
                         }
                     });
+                    log.info('Import: Completed bnet');
                     resolve(games);
                 } catch(err) {
                     reject(err);

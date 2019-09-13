@@ -101,7 +101,10 @@ class Gog {
                         const promiseArr = keys.map((key) => this._processRegKey(key).then((res) => res));
                         Promise.all(promiseArr.map(promiseReflect))
                             .then((results) => results.filter((result) => result.status === 'resolved').map((result) => result.data))
-                            .then((results) => resolve(results));
+                            .then((results) => {
+                                log.info('Import: Completed gog');
+                                resolve(results);
+                            });
                     } else {
                         return resolve([]);
                     }

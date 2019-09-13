@@ -87,6 +87,7 @@ class Epic {
                         });
                     }
                 });
+                log.info('Import: Completed egs');
                 resolve(games);
             }).catch((err) => reject(err));
         });

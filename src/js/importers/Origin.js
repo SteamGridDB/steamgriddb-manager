@@ -170,6 +170,7 @@ class Origin {
                             });
                         }
                     });
+                    log.info('Import: Completed origin');
                     resolve(games);
                 } else {
                     reject('Could not find Origin content folder.');
