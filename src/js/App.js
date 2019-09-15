@@ -13,10 +13,11 @@ import UWPNoise from '../img/uwp-noise.png';
 import Search from './Search.js';
 import Games from './games.js';
 import Import from './Import.js';
+import Remote from './Remote.js';
 
 // Using window.require so babel doesn't change the node require
 const electron = window.require('electron');
-const remote = electron.remote;
+const remote = new Remote(electron.remote);
 
 // Log renderer errors
 const log = window.require('electron-log');
@@ -75,8 +76,8 @@ class App extends React.Component {
     }
 
     render() {
-        const accentColor = remote.systemPreferences.getAccentColor();
         const navWidth = 48;
+        const accentColor = remote.systemPreferences.getAccentColor();
 
         const navigationTopNodes = [
             <SplitViewCommand key="0" label="Library" icon={'Library'} onClick={() => this.handleNavRedirect('/')} />,
