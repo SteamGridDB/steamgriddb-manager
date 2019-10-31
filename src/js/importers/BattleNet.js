@@ -23,12 +23,12 @@ const BNET_GAMES = {
         exes: ['HeroesSwitcher', 'HeroesSwitcher_x64'],
         icon: 'Heroes of the Storm.exe'
     },
-    /*
     'odin': {
         name: 'Call of Duty: Modern Warfare',
         launchId: 'ODIN',
+        exes: ['codmw2019'],
+        icon: 'Modern Warfare Launcher.exe'
     },
-    */
     'pro': {
         name: 'Overwatch',
         launchId: 'Pro',
