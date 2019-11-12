@@ -2,6 +2,7 @@ const Registry = window.require('winreg');
 const fs = window.require('fs');
 const path = window.require('path');
 const log = window.require('electron-log');
+import { PowerShell, LauncherAutoClose } from '../paths.js';
 import decoder from 'blizzard-product-parser/src/js/database'; // Workaround for badly configured lib
 
 const BNET_GAMES = {
@@ -124,14 +125,6 @@ class BattleNet {
                 const games = [];
                 const bnetExe = path.join(bnetPath, 'Battle.net.exe');
 
-                // Get path to LauncherAutoClose.ps1
-                let launcherWatcher = path.resolve(path.dirname(process.resourcesPath), '../../../', 'LauncherAutoClose.ps1');
-                if (!fs.existsSync(launcherWatcher)) {
-                    launcherWatcher = path.join(path.dirname(process.resourcesPath), 'LauncherAutoClose.ps1');
-                }
-
-                const powershellExe = path.join(process.env.windir, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
-
                 try {
                     const decoded = decoder.decode(fs.readFileSync('C:\\ProgramData\\Battle.net\\Agent\\product.db'));
                     const installed = decoded.productInstall.filter((product) => !(product.uid === 'battle.net' || product.uid === 'agent')); // Filter out non-games
@@ -147,10 +140,10 @@ class BattleNet {
                             games.push({
                                 id: gameId,
                                 name: name,
-                                exe: `"${powershellExe}"`,
+                                exe: `"${PowerShell}"`,
                                 icon: `"${icon}"`,
                                 startIn: `"${bnetPath}"`,
-                                params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${launcherWatcher}\\" -launcher \\"battle.net\\" -game \\"${exes.join('\\",\\"')}\\" -launchcmd \\"dummy\\" -bnet $True -bnetpath \\"${bnetExe}\\" -bnetlaunchid \\"${launchId}\\""`,
+                                params: `-windowstyle hidden -NoProfile -ExecutionPolicy Bypass -Command "& \\"${LauncherAutoClose}\\" -launcher \\"battle.net\\" -game \\"${exes.join('\\",\\"')}\\" -launchcmd \\"dummy\\" -bnet $True -bnetpath \\"${bnetExe}\\" -bnetlaunchid \\"${launchId}\\""`,
                                 platform: 'bnet'
                             });
                         }
