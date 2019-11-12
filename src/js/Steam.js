@@ -1,6 +1,7 @@
 const Registry = window.require('winreg');
 const Store = window.require('electron-store');
 const fs = window.require('fs');
+const os = window.require('os');
 const {join} = window.require('path');
 const VDF = window.require('@node-steam/vdf');
 const shortcut = window.require('steam-shortcut-editor');
@@ -24,28 +25,41 @@ class Steam {
                 return resolve(this.steamPath);
             }
 
-            const key = new Registry({
-                hive: Registry.HKCU,
-                key:  '\\Software\\Valve\\Steam'
-            });
-
-            key.values((err, items) => {
-                let steamPath = false;
-
-                items.forEach((item) => {
-                    if (item.name === 'SteamPath') {
-                        steamPath = item.value;
-                    }
+            if (process.platform === 'win32') {
+                const key = new Registry({
+                    hive: Registry.HKCU,
+                    key: '\\Software\\Valve\\Steam'
                 });
 
-                if (steamPath) {
-                    this.steamPath = steamPath;
-                    log.info(`Got Steam path: ${steamPath}`);
+                key.values((err, items) => {
+                    let steamPath = false;
+
+                    items.forEach((item) => {
+                        if (item.name === 'SteamPath') {
+                            steamPath = item.value;
+                        }
+                    });
+
+                    if (steamPath) {
+                        this.steamPath = steamPath;
+                        log.info(`Got Steam path: ${steamPath}`);
+                        resolve(steamPath);
+                    } else {
+                        reject(new Error('Could not find Steam path.'));
+                    }
+                });
+            } else if (process.platform === 'linux') {
+                // TODO: add support for Steam in other locations than default
+                const steamPath = `${os.homedir()}/.steam/steam`;
+
+                if (fs.existsSync(steamPath)) {
                     resolve(steamPath);
                 } else {
-                    reject(new Error('Could not find Steam path.'));
+                    reject(new Error(`Steam was not found in default location (${steamPath})`));
                 }
-            });
+            } else {
+                reject(new Error(`getSteamPath() has no code path for platform "${process.platform}"`));
+            }
         });
     }
 
