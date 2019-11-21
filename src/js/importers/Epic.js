@@ -54,9 +54,9 @@ class Epic {
       this.getEpicPath().then((epicPath) => {
         const games = [];
         let binFolder;
-        if (arch === 'ia32') {
+        if (arch() === 'ia32') {
           binFolder = 'Win32';
-        } else if (arch === 'x64') {
+        } else if (arch() === 'x64') {
           binFolder = 'Win64';
         }
         const binaryPath = path.join(epicPath, 'Launcher', 'Portal', 'Binaries', binFolder);
