@@ -77,12 +77,7 @@ class Search extends React.Component {
     }
 
     this.setIsDownloading(true);
-    const itemsClone = { ...this.state.items };
-    Steam.addGrid(props.appid, props.image, (progress) => {
-      this.setState({ downloadProgress: progress });
-      itemsClone[props.index].progress = progress;
-      this.setState({ itemsClone });
-    }).then((dest) => {
+    Steam.addAsset('horizontalGrid', props.appid, props.image).then((dest) => {
       this.setImageDownloaded(props.appid, props.name, dest);
     }).catch(() => {
       this.setIsDownloading(false);

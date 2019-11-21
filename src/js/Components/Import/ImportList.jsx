@@ -37,8 +37,8 @@ class ImportList extends React.Component {
         }
 
         let thumb;
-        if (this.grids[i].length > 0) {
-          thumb = this.grids[i][0].thumb;
+        if (this.grids[i]) {
+          thumb = this.grids[i].thumb;
         }
 
         return (
