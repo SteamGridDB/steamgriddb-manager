@@ -5,82 +5,20 @@
         "node": true,
         "browser": true
     },
-    "extends": ["eslint:recommended", "plugin:react/recommended"],
+    "extends": ["airbnb"],
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly",
         "BigInt": true
     },
-    "parserOptions": {
-        "ecmaFeatures": {
-            "jsx": true
-        },
-        "ecmaVersion": 2018,
-        "sourceType": "module"
-    },
-    "plugins": [
-        "react"
-    ],
     "rules": {
-        "indent": [
-            "error",
-            4
-        ],
-        "prefer-template": "error",
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ],
-        "array-bracket-newline": [
-            "error",
-            "consistent"
-        ],
-        "no-console": "error",
-        "function-paren-newline": ["error", "consistent"],
-        "prefer-arrow-callback": [
-            "error",
-            {
-                "allowNamedFunctions": false,
-                "allowUnboundThis": true
-            }
-        ],
-        "arrow-spacing": [
-            "error",
-            {
-                "before": true,
-                "after": true
-            }
-        ],
-        "arrow-body-style": [
-            "error",
-            "as-needed",
-            {
-                "requireReturnForObjectLiteral": false
-            }
-        ],
-        "arrow-parens": [
-            "error",
-            "always",
-            {
-                "requireForBlockBody": true
-            }
-        ],
-        "no-var": "error",
-        "prefer-const": [
-            "error",
-            {
-                "destructuring": "any",
-                "ignoreReadBeforeAssign": true
-            }
-        ],
-        "react/jsx-no-bind": "warn"
+        "indent": ["error", 2],
+        "react/jsx-indent": ["error", 2],
+        "class-methods-use-this": ["off"],
+        "no-underscore-dangle": ["off"],
+        "no-param-reassign": ["error", { "props": false }],
+        "react/forbid-prop-types": ["off"],
+        "jsx-a11y/click-events-have-key-events": ["off"],
+        "jsx-a11y/no-static-element-interactions": ["off"]
     }
 }
