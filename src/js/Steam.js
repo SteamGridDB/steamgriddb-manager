@@ -4,7 +4,7 @@ import { crc32 } from 'crc';
 const Registry = window.require('winreg');
 const Store = window.require('electron-store');
 const fs = window.require('fs');
-const { join } = window.require('path');
+const { join, extname } = window.require('path');
 const VDF = window.require('@node-steam/vdf');
 const shortcut = window.require('steam-shortcut-editor');
 const https = window.require('https');
@@ -265,13 +265,6 @@ class Steam {
     return image;
   }
 
-  static deleteCustomGridImage(userdataGridPath, appid) {
-    const imagePath = this.getCustomGridImage(userdataGridPath, appid);
-    if (imagePath) {
-      fs.unlinkSync(imagePath);
-    }
-  }
-
   static getShortcutFile() {
     return new Promise((resolve) => {
       this.getSteamPath().then((steamPath) => {
@@ -284,12 +277,27 @@ class Steam {
     });
   }
 
-  static addGrid(appId, url, onProgress = () => {}) {
+  static addAsset(type, appId, url) {
     return new Promise((resolve, reject) => {
       this.getCurrentUserGridPath().then((userGridPath) => {
         const imageUrl = url;
-        const imageExt = imageUrl.substr(imageUrl.lastIndexOf('.') + 1);
-        const dest = join(userGridPath, `${appId}.${imageExt}`);
+        const imageExt = extname(imageUrl);
+
+        let dest;
+
+        switch (type) {
+        case 'horizontalGrid':
+          dest = join(userGridPath, `${appId}${imageExt}`);
+          break;
+        case 'verticalGrid':
+          dest = join(userGridPath, `${appId}p${imageExt}`);
+          break;
+        case 'hero':
+          dest = join(userGridPath, `${appId}_hero${imageExt}`);
+          break;
+        default:
+          reject();
+        }
 
         let cur = 0;
         const data = new Stream();
@@ -298,20 +306,18 @@ class Steam {
         https.get(url, (response) => {
           const len = parseInt(response.headers['content-length'], 10);
 
-          response.on('end', () => {
-            this.deleteCustomGridImage(userGridPath, appId);
-            fs.writeFileSync(dest, data.read());
-            resolve(dest);
-          });
-
           response.on('data', (chunk) => {
             cur += chunk.length;
             data.push(chunk);
             progress = Math.round((cur / len) * 10) / 10;
             if (progress !== lastProgress) {
               lastProgress = progress;
-              onProgress(progress);
             }
+          });
+
+          response.on('end', () => {
+            fs.writeFileSync(dest, data.read());
+            resolve(dest);
           });
         }).on('error', (err) => {
           fs.unlink(dest);

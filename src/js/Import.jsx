@@ -12,6 +12,8 @@ const Store = window.require('electron-store');
 const SGDB = window.require('steamgriddb');
 const { metrohash64 } = window.require('metrohash');
 const log = window.require('electron-log');
+const { join, extname, dirname } = window.require('path');
+const Lnf = window.require('lnf');
 
 class Import extends React.Component {
   constructor(props) {
@@ -28,6 +30,8 @@ class Import extends React.Component {
       class: platformModules[key].default,
       games: [],
       grids: [],
+      posters: [],
+      heroes: [],
       installed: false,
       error: false,
     }));
@@ -72,22 +76,7 @@ class Import extends React.Component {
             // Get grids for each platform
             const ids = platform.games.map((x) => encodeURIComponent(x.id));
             const getGrids = this.SGDB.getGrids({ type: platform.id, id: ids.join(',') }).then((res) => {
-              let formatted;
-              // if only single id then return first grid
-              if (ids.length === 1) {
-                if (res.length > 0) {
-                  formatted = [[res[0]]];
-                }
-              } else {
-                // if multiple ids treat each object as a request
-                formatted = res.map((x) => {
-                  if (x.success) {
-                    return x.data;
-                  }
-                  return false;
-                });
-              }
-              platform.grids = formatted;
+              platform.grids = this._formatResponse(ids, res);
             }).catch(() => {
               // show an error toast
             });
@@ -113,6 +102,26 @@ class Import extends React.Component {
       gamesStorage[metrohash64(game.exe + (game.params !== 'undefined' ? game.params : ''))] = game;
     });
     this.store.set('games', gamesStorage);
+  }
+
+  // @todo this is horrible but can't be arsed right now
+  _formatResponse(ids, res) {
+    let formatted = false;
+    // if only single id then return first grid
+    if (ids.length === 1) {
+      if (res.length > 0) {
+        formatted = [res[0]];
+      }
+    } else {
+      // if multiple ids treat each object as a request
+      formatted = res.map((x) => {
+        if (x.success) {
+          if (x.data[0]) return x.data[0];
+        }
+        return false;
+      });
+    }
+    return formatted;
   }
 
   addGames(games, platform) {
@@ -141,6 +150,67 @@ class Import extends React.Component {
               {platform.name}
             </p>
           ),
+        });
+      }).then(() => {
+        // Download images
+        PubSub.publish('toast', {
+          logoNode: 'Download',
+          title: 'Downloading Images...',
+          contents: (<p>Downloading images for imported games...</p>),
+        });
+
+        const ids = games.map((x) => encodeURIComponent(x.id));
+        let posters = [];
+        let heroes = [];
+
+        // Get posters
+        const getPosters = this.SGDB.getGrids({ type: platform.id, id: ids.join(','), dimensions: ['600x900'] }).then((res) => {
+          posters = this._formatResponse(ids, res);
+        }).catch(() => {
+          // show an error toast
+        });
+
+        // Get heroes
+        const getHeroes = this.SGDB.getHeroes({ type: platform.id, id: ids.join(',') }).then((res) => {
+          heroes = this._formatResponse(ids, res);
+        }).catch(() => {
+          // show an error toast
+        });
+
+        Promise.all([getPosters, getHeroes]).then(() => {
+          const downloadPromises = [];
+          games.forEach((game, i) => {
+            const appId = Steam.generateNewAppId(game.exe, game.name);
+
+            // Take (legacy) grids from when we got them for the ImportList
+            const savedGrid = platform.grids[platform.games.indexOf(games[i])];
+            if (platform.grids[i] && savedGrid) {
+              const appIdOld = Steam.generateAppId(game.exe, game.name);
+              const saveGrids = Steam.addAsset('horizontalGrid', appId, savedGrid.url).then((dest) => {
+                // Symlink to old appid so it works in BPM
+                Lnf.sync(dest, join(dirname(dest), `${appIdOld}${extname(dest)}`));
+              });
+              downloadPromises.push(saveGrids);
+            }
+
+            // Download posters
+            if (posters[i]) {
+              downloadPromises.push(Steam.addAsset('verticalGrid', appId, posters[i].url));
+            }
+
+            // Download heroes
+            if (heroes[i]) {
+              downloadPromises.push(Steam.addAsset('hero', appId, heroes[i].url));
+            }
+          });
+
+          Promise.all(downloadPromises).then(() => {
+            PubSub.publish('toast', {
+              logoNode: 'Download',
+              title: 'Downloadeds Complete',
+              contents: (<p>All Images Downloaded!</p>),
+            });
+          });
         });
       }).catch((err) => {
         if (err.type === 'OpenError') {
