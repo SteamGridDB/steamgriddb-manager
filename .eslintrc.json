@@ -6,6 +6,9 @@
         "browser": true
     },
     "extends": ["airbnb"],
+    "settings": {
+        "import/core-modules": ["electron"]
+    },
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly",
