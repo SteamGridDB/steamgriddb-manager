@@ -4,16 +4,15 @@ import { Redirect } from 'react-router-dom';
 import AutoSuggestBox from 'react-uwp/AutoSuggestBox';
 import AppBarButton from 'react-uwp/AppBarButton';
 import AppBarSeparator from 'react-uwp/AppBarSeparator';
+import Separator from 'react-uwp/Separator';
 import Fuse from 'fuse.js';
 import PubSub from 'pubsub-js';
 import { debounce } from 'lodash';
 import { forceCheck } from 'react-lazyload';
-import queryString from 'query-string';
-import Grid from './Components/Grid';
 import Spinner from './Components/spinner';
-import GridImage from './Components/gridImage';
 import Steam from './Steam';
 import TopBlur from './Components/TopBlur';
+import GameListItem from './Components/Games/GameListItem';
 import platformModules from './importers';
 
 const log = window.require('electron-log');
@@ -21,17 +20,12 @@ const log = window.require('electron-log');
 class Games extends React.Component {
   constructor(props) {
     super(props);
-    this.toSearch = this.toSearch.bind(this);
+    this.toGame = this.toGame.bind(this);
     this.refreshGames = this.refreshGames.bind(this);
     this.filterGames = this.filterGames.bind(this);
     this.searchInput = debounce((searchTerm) => {
       this.filterGames(searchTerm);
     }, 300);
-
-    const { location } = this.props;
-
-    const qs = location && queryString.parse(location.search);
-    this.scrollToTarget = qs.scrollto;
 
     this.zoom = 1;
 
@@ -48,7 +42,7 @@ class Games extends React.Component {
 
     this.state = {
       isLoaded: false,
-      toSearch: false,
+      toGame: false,
       hasSteam: true,
       items: {},
     };
@@ -56,6 +50,7 @@ class Games extends React.Component {
 
   componentDidMount() {
     const { items } = this.state;
+    PubSub.publish('showBack', false);
 
     if (Object.entries(items).length <= 0) {
       Steam.getSteamPath().then(() => {
@@ -64,13 +59,6 @@ class Games extends React.Component {
         log.warn('Steam is not installed');
         this.setState({ hasSteam: false });
       });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (Object.entries(prevState.items).length === 0 && this.scrollToTarget) {
-      this.scrollTo(this.scrollToTarget);
-      PubSub.publish('showBack', false);
     }
   }
 
@@ -98,17 +86,11 @@ class Games extends React.Component {
     });
   }
 
-  toSearch(props) {
-    const parsedQs = queryString.stringify({
-      game: props.name,
-      appid: props.appid,
-      type: props.gameType,
-      gameId: props.gameId,
-      platform: props.platform,
+  toGame(platform, index) {
+    const data = this.fetchedGames[platform][index];
+    this.setState({
+      toGame: <Redirect to={{ pathname: '/game', state: data }} />,
     });
-
-    const to = `/search/?${parsedQs}`;
-    this.setState({ toSearch: <Redirect to={to} /> });
   }
 
   refreshGames() {
@@ -142,25 +124,12 @@ class Games extends React.Component {
     forceCheck(); // Recheck lazyload
   }
 
-  addNoCache(imageURI) {
-    if (!imageURI) {
-      return false;
-    }
-
-    return `${imageURI}?${(new Date().getTime())}`;
-  }
-
-  scrollTo(id) {
-    document.getElementById(`game-${id}`).scrollIntoView(true);
-    document.querySelector('#grids-container').scrollTop -= 75; // scroll down a bit cause grid goes under floating launcher name
-  }
-
   render() {
     const {
       isLoaded,
       hasSteam,
       items,
-      toSearch,
+      toGame,
     } = this.state;
     const { theme } = this.context;
 
@@ -176,8 +145,8 @@ class Games extends React.Component {
       return <Spinner />;
     }
 
-    if (toSearch) {
-      return toSearch;
+    if (toGame) {
+      return toGame;
     }
 
     return (
@@ -204,42 +173,16 @@ class Games extends React.Component {
         </div>
         <div id="grids-container" style={{ height: '100%', overflow: 'auto', paddingTop: 64 }}>
           {Object.keys(items).map((platform) => (
-            <div key={platform} style={{ paddingLeft: 10 }}>
-              <div style={{
-                ...theme.typographyStyles.subTitleAlt,
-                display: 'inline-block',
-                position: 'sticky',
-                zIndex: 3,
-                marginLeft: 10,
-                top: -22,
-              }}
-              >
-                {this.platformNames[platform]}
-              </div>
-              <Grid
-                zoom={this.zoom}
-                platform={platform}
-              >
-                {items[platform].map((item) => {
-                  const imageURI = this.addNoCache((item.imageURI));
-                  return (
-                    // id attribute is used as a scroll target after a search
-                    <div id={`game-${item.appid}`} key={item.appid}>
-                      <GridImage
-                        name={item.name}
-                        gameId={item.gameId}
-                        platform={platform}
-                        appid={item.appid}
-                        gameType={item.type}
-                        image={imageURI}
-                        zoom={this.zoom}
-                        onGridClick={this.toSearch}
-                      />
-                    </div>
-                  );
-                })}
-              </Grid>
-            </div>
+            <GameListItem
+              key={platform}
+              platform={platform}
+              platformName={this.platformNames[platform]}
+              listSource={[
+                ...items[platform].map((item) => <p key={item.appid} id={`game-${item.appid}`} game={item}>{item.name}</p>),
+                <Separator disabled />,
+              ]}
+              onItemClick={this.toGame}
+            />
           ))}
         </div>
       </div>
@@ -247,8 +190,5 @@ class Games extends React.Component {
   }
 }
 
-Games.propTypes = {
-  location: PropTypes.object
-};
 Games.contextTypes = { theme: PropTypes.object };
 export default Games;
