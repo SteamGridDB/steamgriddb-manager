@@ -15,9 +15,10 @@ import ToastHandler from './Components/toastHandler';
 
 import UWPNoise from '../img/uwp-noise.png';
 import '../css/App.css';
-import Search from './Search';
 import Games from './games';
+import Game from './Game';
 import Import from './Import';
+import Search from './Search';
 
 import Steam from './Steam';
 
@@ -178,6 +179,7 @@ class App extends React.Component {
 
                 <Route exact path="/" component={Games} />
                 <Route exact path="/import" component={Import} />
+                <Route exact path="/game" component={Game} />
                 <Route exact path="/search" component={Search} />
               </div>
             </NavigationView>

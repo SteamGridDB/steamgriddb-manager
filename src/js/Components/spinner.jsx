@@ -4,7 +4,7 @@ import { ProgressCircle } from 'react-desktop/windows';
 
 const Spinner = (props, context) => {
   const { theme } = context;
-  const { text } = props;
+  const { text, size, style } = props;
 
   return (
     <div
@@ -15,9 +15,10 @@ const Spinner = (props, context) => {
         justifyContent: 'center',
         width: '100%',
         height: '100%',
+        ...style,
       }}
     >
-      <ProgressCircle size="100" color={theme.accent} />
+      <ProgressCircle size={size} color={theme.accent} />
       <p style={{ marginTop: 15 }}>{text}</p>
     </div>
   );
@@ -25,10 +26,14 @@ const Spinner = (props, context) => {
 
 Spinner.propTypes = {
   text: PropTypes.string,
+  size: PropTypes.number,
+  style: PropTypes.object,
 };
 
 Spinner.defaultProps = {
   text: '',
+  size: 100,
+  style: {},
 };
 
 Spinner.contextTypes = { theme: PropTypes.object };

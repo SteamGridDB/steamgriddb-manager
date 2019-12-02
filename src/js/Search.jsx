@@ -1,186 +1,110 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Redirect } from 'react-router-dom';
 import Image from 'react-uwp/Image';
-import queryString from 'query-string';
-import PropTypes from 'prop-types';
+import Button from 'react-uwp/Button';
 import PubSub from 'pubsub-js';
-import Grid from './Components/Grid';
 import TopBlur from './Components/TopBlur';
 import Spinner from './Components/spinner';
-import GridImage from './Components/gridImage';
-import { officialList } from './importers';
 import Steam from './Steam';
 
 const SGDB = window.require('steamgriddb');
-const Store = window.require('electron-store');
 
 class Search extends React.Component {
   constructor(props) {
     super(props);
+
+    this.onClick = this.onClick.bind(this);
+    this.SGDB = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
+
     const { location } = this.props;
 
-    this.applyGrid = this.applyGrid.bind(this);
-    this.zoom = 1;
-    this.store = new Store();
-
-    const qs = location && queryString.parse(location.search);
-    this.game = qs.game;
-    this.query = qs.game;
-    this.appid = qs.appid;
-    this.gameType = qs.type;
-    this.platform = qs.platform;
-    this.gameId = qs.gameId;
-
     this.state = {
-      error: null,
-      apiError: false,
-      isLoaded: false,
-      isHover: false,
-      isDownloading: false,
-      imageDownloaded: false,
+      game: location.state,
       items: [],
+      toGame: false,
+      isLoaded: false,
     };
-
-    this.setImageDownloaded = this.setImageDownloaded.bind(this);
-    this.setIsDownloading = this.setIsDownloading.bind(this);
-    this.getIsDownloading = this.getIsDownloading.bind(this);
 
     PubSub.publish('showBack', true);
   }
 
   componentDidMount() {
-    const { items } = this.state;
-    if (items.length <= 0) {
-      this.searchGrids();
+    const { game } = this.state;
+    const { location } = this.props;
+
+    let type = 'steam';
+    if (game.platform) {
+      type = game.platform;
+    }
+
+    let id;
+    if (game.platform) {
+      id = game.gameId;
+    } else {
+      id = game.appid;
+    }
+
+    switch (location.state.assetType) {
+    case 'horizontalGrid':
+      this.SGDB.getGrids({ type, id }).then((res) => {
+        this.setState({
+          isLoaded: true,
+          items: res,
+        });
+      });
+      break;
+    case 'verticalGrid':
+      this.SGDB.getGrids({ type, id, dimensions: ['600x900'] }).then((res) => {
+        this.setState({
+          isLoaded: true,
+          items: res,
+        });
+      });
+      break;
+    case 'hero':
+      this.SGDB.getHeroes({ type, id }).then((res) => {
+        this.setState({
+          isLoaded: true,
+          items: res,
+        });
+      });
+      break;
+    default:
+      break;
     }
   }
 
-  setIsDownloading(isDownloading) {
-    this.setState({ isDownloading });
-  }
+  onClick(item, itemIndex) {
+    const { game, items } = this.state;
+    const { location } = this.props;
 
-  getIsDownloading() {
-    const { isDownloading } = this.state;
-    return isDownloading;
-  }
+    const clonedItems = [...items];
+    clonedItems[itemIndex].downloading = true;
 
-  setImageDownloaded(appid, game, image) {
     this.setState({
-      imageDownloaded: { appid, game, image },
-      isDownloading: false,
+      items: clonedItems,
     });
-  }
 
-  applyGrid(props) {
-    if (this.getIsDownloading()) {
-      return;
-    }
-
-    this.setIsDownloading(true);
-    Steam.addAsset('horizontalGrid', props.appid, props.image).then((dest) => {
-      this.setImageDownloaded(props.appid, props.name, dest);
-    }).catch(() => {
-      this.setIsDownloading(false);
+    Steam.addAsset(location.state.assetType, game.appid, item.url).then(() => {
+      clonedItems[itemIndex].downloading = false;
+      this.setState({
+        items: clonedItems,
+      });
+      this.setState({ toGame: <Redirect to={{ pathname: '/game', state: location.state }} /> });
     });
-  }
-
-  searchGrids() {
-    const client = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
-
-    if (this.gameType === 'game') {
-      const defaultGridImage = Steam.getDefaultGridImage(this.appid);
-      const items = [{
-        url: defaultGridImage,
-        thumb: defaultGridImage,
-        style: 'default',
-        title: this.query,
-        author: {
-          name: null,
-        },
-      }];
-      client.getGridsBySteamAppId(this.appid)
-        .then((res) => {
-          this.setState({
-            isLoaded: true,
-            items: [...items, ...res],
-          });
-        })
-        .catch((err) => {
-          if (err.response.statusCode === 404) {
-            // Game not found is fine
-            this.setState({
-              isLoaded: true,
-              items,
-            });
-          } else {
-            // Any other error is baad
-            this.setState({ apiError: true });
-          }
-        });
-    }
-
-    if (this.gameType === 'shortcut' && officialList.includes(this.platform)) {
-      client.getGrids({ id: this.gameId, type: this.platform })
-        .then((items) => {
-          this.setState({
-            isLoaded: true,
-            items,
-          });
-        })
-        .catch(() => {
-          this.setState({
-            apiError: true,
-          });
-        });
-    } else if (this.gameType === 'shortcut' && !officialList.includes(this.platform)) {
-      client.searchGame(this.query)
-        .then((res) => {
-          client.getGridsById(res[0].id)
-            .then((items) => {
-              this.setState({
-                isLoaded: true,
-                items,
-              });
-            });
-        }).catch(() => {
-          this.setState({ apiError: true });
-        });
-    }
   }
 
   render() {
-    const {
-      isLoaded,
-      items,
-      apiError,
-      imageDownloaded,
-    } = this.state;
+    const { isLoaded, toGame, items } = this.state;
     const { theme } = this.context;
 
-    if (imageDownloaded) {
-      const url = `/?scrollto=${imageDownloaded.appid}`;
-
-      // Show toast
-      PubSub.publish('toast', {
-        logoNode: 'Download',
-        title: `Success: ${imageDownloaded.game}`,
-        contents: (
-          <Image
-            style={{ width: '100%', marginTop: 10 }}
-            src={imageDownloaded.image}
-          />
-        ),
-      });
-
-      return (
-        <div>
-          <Redirect to={url} />
-        </div>
-      );
+    if (!isLoaded) {
+      return <Spinner />;
     }
 
-    if (!isLoaded) {
-      return (<Spinner />);
+    if (toGame) {
+      return toGame;
     }
 
     return (
@@ -196,36 +120,38 @@ class Search extends React.Component {
             paddingTop: 45,
           }}
         >
-          {apiError ? (
-            <div>
-              <h5 style={{ ...theme.typographyStyles.title, textAlign: 'center' }}>
-                Error trying to use the SteamGridDB API.
-              </h5>
-            </div>
-          ) : (
-            <Grid zoom={this.zoom}>
-              {items.map((item, i) => {
-                let { progress } = item;
-                if (typeof item.progress === 'undefined') {
-                  progress = 0;
-                }
-                return (
-                  <GridImage
-                    key={i}
-                    index={i}
-                    appid={this.appid}
-                    name={this.game}
-                    author={item.author.name}
-                    image={item.thumb}
-                    zoom={this.zoom}
-                    progress={progress}
-                    onGridClick={this.applyGrid}
-                    data={item}
+          {items.map((item, i) => (
+            <Button
+              key={item.id}
+              style={{ padding: 0, margin: 5 }}
+              onClick={() => this.onClick(item, i)}
+            >
+              {item.downloading ? (
+                <div style={{ position: 'relative' }}>
+                  <Spinner size={70} style={{ position: 'absolute', background: 'rgba(0,0,0,.5)' }} />
+                  <Image
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                    }}
+                    src={item.thumb}
                   />
-                );
-              })}
-            </Grid>
-          )}
+                </div>
+              ) : (
+                <Image
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                  }}
+                  src={item.thumb}
+                />
+              )}
+              <p style={{ ...theme.typographyStyles.captionAlt, padding: 5 }}>
+                <Image style={{ height: 20, marginRight: 5 }} src={item.author.avatar} />
+                {item.author.name}
+              </p>
+            </Button>
+          ))}
         </div>
       </>
     );
@@ -233,7 +159,7 @@ class Search extends React.Component {
 }
 
 Search.propTypes = {
-  location: PropTypes.object
+  location: PropTypes.object.isRequired,
 };
 Search.contextTypes = { theme: PropTypes.object };
 export default Search;
