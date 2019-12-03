@@ -213,7 +213,7 @@ class Steam {
         const loginusersData = VDF.parse(data);
 
         Object.keys(loginusersData.users).every((user) => {
-          if (loginusersData.users[user].mostrecent) {
+          if (loginusersData.users[user].MostRecent) {
             const { accountid } = (new SteamID(user));
             this.loggedInUser = accountid;
             log.info(`Got Steam user: ${accountid}`);
