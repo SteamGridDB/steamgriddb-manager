@@ -207,7 +207,7 @@ class Import extends React.Component {
           Promise.all(downloadPromises).then(() => {
             PubSub.publish('toast', {
               logoNode: 'Download',
-              title: 'Downloadeds Complete',
+              title: 'Downloads Complete',
               contents: (<p>All Images Downloaded!</p>),
             });
           });
