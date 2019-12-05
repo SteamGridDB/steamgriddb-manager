@@ -87,7 +87,8 @@ class Games extends React.Component {
   }
 
   toGame(platform, index) {
-    const data = this.fetchedGames[platform][index];
+    const { items } = this.state;
+    const data = items[platform][index];
     this.setState({
       toGame: <Redirect to={{ pathname: '/game', state: data }} />,
     });
