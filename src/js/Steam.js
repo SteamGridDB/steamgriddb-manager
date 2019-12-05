@@ -142,7 +142,7 @@ class Steam {
             }
 
             items.shortcuts.forEach((item) => {
-              const appName = item.appname || item.AppName;
+              const appName = item.appname || item.AppName || item.appName;
               const exe = item.exe || item.Exe;
               const appid = this.generateNewAppId(exe, appName);
 
