@@ -61,6 +61,7 @@ class Uplay {
       const finalOutput = [];
       let game = ['root:'];
       let launcherId = null;
+      let end = false;
       this._generateHexArr(configFile).forEach((hexStr) => {
         const line = Buffer.from(hexStr, 'hex').toString('utf8').replace(/\n/g, '');
         const foundId = hexStr.match(/08([0-9a-f]+)10[0-9a-f]+1a/);
@@ -90,14 +91,22 @@ class Uplay {
           }
         }
 
-        // Already manually saved "root:"
-        if (line.trim().includes('root:') && !line.trim().includes('_')) {
+        if (line.indexOf('localizations:') === 0) {
+          end = true;
           return;
         }
 
-        // Save lines if starts with spaces
-        if (line.substr(0, 2) === '  ' && !line.includes('sort_string:')) {
-          game.push(line);
+        // Already manually saved "root:"
+        if (line.trim().includes('root:') && !line.trim().includes('_')) {
+          end = false;
+          return;
+        }
+
+        if (!end) {
+          // Save lines if starts with spaces
+          if (line.substr(0, 2) === '  ' && !line.includes('sort_string:')) {
+            game.push(line);
+          }
         }
       });
       resolve(finalOutput);
@@ -289,10 +298,12 @@ class Uplay {
                   }
 
                   // Override installer name if this value
-                  if (typeof game.root.default[game.root.name] !== 'undefined') {
+                  if (typeof game.root.default !== 'undefined' && typeof game.root.default[game.root.name] !== 'undefined') {
                     gameName = game.root.default[game.root.name];
                   }
                 }
+
+                console.log(gameName);
 
                 if (game.root.space_id) {
                   gameId = game.root.space_id;
