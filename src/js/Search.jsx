@@ -31,7 +31,6 @@ class Search extends React.Component {
 
   componentDidMount() {
     const { game } = this.state;
-    const { location } = this.props;
 
     let type = 'steam';
     if (game.platform) {
@@ -44,6 +43,41 @@ class Search extends React.Component {
     } else {
       id = game.appid;
     }
+
+    if (game.platform === 'other') {
+      type = 'game';
+      this.SGDB.searchGame(game.name)
+        .then((gameResp) => {
+          id = gameResp[0].id;
+          this.queryApi(type, id);
+        });
+    } else {
+      this.queryApi(type, id);
+    }
+  }
+
+  onClick(item, itemIndex) {
+    const { game, items } = this.state;
+    const { location } = this.props;
+
+    const clonedItems = [...items];
+    clonedItems[itemIndex].downloading = true;
+
+    this.setState({
+      items: clonedItems,
+    });
+
+    Steam.addAsset(location.state.assetType, game.appid, item.url).then(() => {
+      clonedItems[itemIndex].downloading = false;
+      this.setState({
+        items: clonedItems,
+      });
+      this.setState({ toGame: <Redirect to={{ pathname: '/game', state: location.state }} /> });
+    });
+  }
+
+  queryApi(type, id) {
+    const { location } = this.props;
 
     switch (location.state.assetType) {
     case 'horizontalGrid':
@@ -73,26 +107,6 @@ class Search extends React.Component {
     default:
       break;
     }
-  }
-
-  onClick(item, itemIndex) {
-    const { game, items } = this.state;
-    const { location } = this.props;
-
-    const clonedItems = [...items];
-    clonedItems[itemIndex].downloading = true;
-
-    this.setState({
-      items: clonedItems,
-    });
-
-    Steam.addAsset(location.state.assetType, game.appid, item.url).then(() => {
-      clonedItems[itemIndex].downloading = false;
-      this.setState({
-        items: clonedItems,
-      });
-      this.setState({ toGame: <Redirect to={{ pathname: '/game', state: location.state }} /> });
-    });
   }
 
   render() {
