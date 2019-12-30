@@ -106,7 +106,6 @@ class Oculus {
     return new Promise((resolve, reject) => {
       const url = "https://www.oculus.com/experiences/rift/" + appId + "/";
       request.get(url, (error, response, data) => {
-        fs.writeFileSync('C:\\Users\\DaHan\\' + appId + '.html', data);
         const $ = cheerio.load(data);
         let jsonStr = $("head > script[type='application/ld+json']").html();
         let json = JSON.parse(jsonStr);
