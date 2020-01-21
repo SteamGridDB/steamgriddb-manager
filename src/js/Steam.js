@@ -212,7 +212,7 @@ class Steam {
         const data = fs.readFileSync(loginusersPath, 'utf-8');
         const loginusersData = VDF.parse(data);
 
-        Object.keys(loginusersData.users).every((user) => {
+        Object.keys(loginusersData.users).forEach((user) => {
           if (loginusersData.users[user].MostRecent || loginusersData.users[user].mostrecent) {
             const { accountid } = (new SteamID(user));
             this.loggedInUser = accountid;
