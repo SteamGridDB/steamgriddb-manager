@@ -28,7 +28,7 @@ const BNET_GAMES = {
   odin: {
     name: 'Call of Duty: Modern Warfare',
     launchId: 'ODIN',
-    exes: ['codmw2019'],
+    exes: ['codmw2019', 'ModernWarfare'],
     icon: 'Modern Warfare Launcher.exe',
   },
   pro: {
