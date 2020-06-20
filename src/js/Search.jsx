@@ -44,7 +44,7 @@ class Search extends React.Component {
       id = game.appid;
     }
 
-    if (game.platform === 'other') {
+    if (game.platform === 'other' || game.platform === 'egs') {
       type = 'game';
       this.SGDB.searchGame(game.name)
         .then((gameResp) => {
