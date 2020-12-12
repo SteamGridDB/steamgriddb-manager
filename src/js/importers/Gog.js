@@ -2,6 +2,7 @@ const Registry = window.require('winreg');
 const fs = window.require('fs');
 const promiseReflect = window.require('promise-reflect');
 const log = window.require('electron-log');
+import { IsLinux } from '../Linux';
 
 class Gog {
   static isInstalled() {
@@ -11,6 +12,10 @@ class Gog {
         arch: 'x86',
         key: '\\SOFTWARE\\GOG.com\\GalaxyClient\\paths',
       });
+
+      if (IsLinux) {
+        return resolve(false);
+      }
 
       reg.get('client', (err, installDir) => {
         if (err) {

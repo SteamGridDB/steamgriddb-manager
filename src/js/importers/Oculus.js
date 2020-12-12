@@ -4,6 +4,7 @@ const log = window.require('electron-log');
 const cheerio = window.require('cheerio');
 const request = window.require('request');
 const Shell = require('node-powershell');
+import { IsLinux } from '../Linux';
 
 class Oculus {
   static isInstalled() {
@@ -14,6 +15,10 @@ class Oculus {
         key: '\\Software\\Oculus VR, LLC\\Oculus\\Libraries',
       });
 
+      if (IsLinux) {
+        return resolve(false);
+      }
+      
       reg.valueExists('', (err, exists) => {
         if (err) {
           reject(new Error('Could not check if Oculus is installed.'));

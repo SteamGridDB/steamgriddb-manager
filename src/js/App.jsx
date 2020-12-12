@@ -19,7 +19,7 @@ import Games from './games';
 import Game from './Game';
 import Import from './Import';
 import Search from './Search';
-
+import { IsNotLinux } from './Linux';
 import Steam from './Steam';
 
 // Using window.require so babel doesn't change the node require
@@ -80,7 +80,13 @@ class App extends React.Component {
   }
 
   render() {
-    const accentColor = remote.systemPreferences.getAccentColor();
+    let color = '79daf9ff';
+    if (IsNotLinux) {
+      color = remote.systemPreferences.getAccentColor();
+    }
+
+    const accentColor = color;
+
     const navWidth = 48;
     const { showBack, isMaximized, redirectTo } = this.state;
 

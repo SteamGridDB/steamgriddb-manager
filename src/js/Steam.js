@@ -13,6 +13,11 @@ const { metrohash64 } = window.require('metrohash');
 const log = window.require('electron-log');
 const Categories = window.require('steam-categories');
 const glob = window.require('glob');
+const {remote} = window.require('electron');
+const {app} = remote;
+import { IsLinux } from './Linux';
+
+const home = app.getPath('home');
 
 class Steam {
   constructor() {
@@ -25,6 +30,10 @@ class Steam {
     return new Promise((resolve, reject) => {
       if (this.steamPath) {
         return resolve(this.steamPath);
+      }
+      
+      if (IsLinux) {
+        return resolve(home + '/.steam/steam/');
       }
 
       const key = new Registry({

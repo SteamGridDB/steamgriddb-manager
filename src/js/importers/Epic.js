@@ -1,4 +1,5 @@
 import { PowerShell, LauncherAutoClose } from '../paths';
+import { IsLinux } from '../Linux';
 
 const Registry = window.require('winreg');
 const fs = window.require('fs');
@@ -15,6 +16,10 @@ class Epic {
         arch: 'x86',
         key: '\\SOFTWARE\\EpicGames\\Unreal Engine',
       });
+
+      if (IsLinux) {
+        return resolve(false);
+      }
 
       reg.get('INSTALLDIR', (err, installDir) => {
         if (err) {
