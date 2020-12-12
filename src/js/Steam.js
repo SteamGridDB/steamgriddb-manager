@@ -306,6 +306,9 @@ class Steam {
         case 'hero':
           dest = join(userGridPath, `${appId}_hero${imageExt}`);
           break;
+        case 'logo':
+          dest = join(userGridPath, `${appId}_logo${imageExt}`);
+          break;
         default:
           reject();
         }
