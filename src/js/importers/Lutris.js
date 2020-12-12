@@ -1,10 +1,10 @@
-const Registry = window.require('winreg');
 const fs = window.require('fs');
-const promiseReflect = window.require('promise-reflect');
 const log = window.require('electron-log');
 const sqlite3 = window.require('sqlite3');
 import { IsNotLinux } from '../Linux';
+import Steam from '../Steam';
 const {remote} = window.require('electron');
+const { join, extname } = window.require('path');
 const {app} = remote;
 
 const home = app.getPath('home');
@@ -28,45 +28,6 @@ class Lutris {
     });
   }
 
-  static _processRegKey(key) {
-    return new Promise((resolve, reject) => {
-      key.get('dependsOn', (err, dependsOn) => {
-        if (dependsOn == null) {
-          key.values((errItems, items) => {
-            const game = {
-              platform: 'Lutris',
-            };
-
-            items.forEach((item) => {
-              if (item.name === 'gameID' || item.name === 'GAMEID') {
-                game.id = item.value;
-              }
-
-              if (item.name === 'gameName' || item.name === 'GAMENAME') {
-                game.name = item.value;
-              }
-
-              if (item.name === 'exe' || item.name === 'EXE') {
-                game.exe = `"${item.value}"`;
-              }
-
-              if (item.name === 'launchParam' || item.name === 'LAUNCHPARAM') {
-                game.params = item.value;
-              }
-
-              if (item.name === 'path' || item.name === 'PATH') {
-                game.startIn = `"${item.value}"`;
-              }
-            });
-            resolve(game);
-          });
-        } else {
-          reject(key);
-        }
-      });
-    });
-  }
-
   static getGames() {
     return new Promise((resolve, reject) => {
       log.info('Import: Started Lutris');
@@ -77,21 +38,29 @@ class Lutris {
             if (err) console.error('Database opening error: ', err);
         });
 
+        let exe = `"lutris"`;
+        
         database.all('SELECT * FROM games', (err, rows) => {
-          rows.forEach ((row) => {
-            console.log(row.name)
-            games.push({
-              id: row.slug,
-              name: row.name,
-              exe: `"lutris"`,
-              icon: '',
-              startIn: `"./"`,
-              params: 'lutris:rungame/' + row.slug,
-              platform: 'other',
-            });
-          })
 
-          resolve(games)
+          Steam.getCurrentUserGridPath().then((userGridPath) => {
+            rows.forEach ((row) => {
+
+              let appId = Steam.generateNewAppId(exe, row.name);
+              let icon = join(userGridPath, `${appId}.png`);
+
+              games.push({
+                id: row.slug,
+                name: row.name,
+                exe: exe,
+                icon: icon,
+                startIn: `"./"`,
+                params: 'lutris:rungame/' + row.slug,
+                platform: 'other',
+              });
+            })
+  
+            resolve(games)
+          });
         });
         
         return false;
