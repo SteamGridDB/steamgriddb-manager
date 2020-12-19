@@ -347,6 +347,39 @@ class Steam {
     });
   }
 
+  static removeAsset(type, appId) {
+    return new Promise((resolve, reject) => {
+      this.getCurrentUserGridPath().then((userGridPath) => {
+        let dest;
+
+        switch (type) {
+        case 'horizontalGrid':
+          dest = join(userGridPath, `${appId}`);
+          break;
+        case 'verticalGrid':
+          dest = join(userGridPath, `${appId}p`);
+          break;
+        case 'hero':
+          dest = join(userGridPath, `${appId}_hero`);
+          break;
+        case 'logo':
+          dest = join(userGridPath, `${appId}_logo`);
+          break;
+        default:
+          reject();
+        }
+
+        // Delete old image(s)
+        glob(`${dest}.*`, (er, files) => {
+          files.forEach((file) => {
+            fs.unlinkSync(file);
+          });
+          resolve(dest);
+        });
+      });
+    });
+  }
+
   static addShortcuts(shortcuts) {
     return new Promise((resolve) => {
       this.getShortcutFile().then((shortcutPath) => {

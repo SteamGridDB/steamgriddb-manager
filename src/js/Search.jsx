@@ -7,6 +7,8 @@ import PubSub from 'pubsub-js';
 import TopBlur from './Components/TopBlur';
 import Spinner from './Components/spinner';
 import Steam from './Steam';
+import AppBarButton from 'react-uwp/AppBarButton';
+import AppBarSeparator from 'react-uwp/AppBarSeparator';
 
 const SGDB = window.require('steamgriddb');
 
@@ -15,6 +17,7 @@ class Search extends React.Component {
     super(props);
 
     this.onClick = this.onClick.bind(this);
+    this.onRemove = this.onRemove.bind(this);
     this.SGDB = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
 
     const { location } = this.props;
@@ -76,6 +79,24 @@ class Search extends React.Component {
     });
   }
 
+  onRemove() {
+    const { game } = this.state;
+    const { location } = this.props;
+
+    Steam.removeAsset(location.state.assetType, game.appid).then(() => {
+      PubSub.publish('toast', {
+        logoNode: 'CheckMark',
+        title: 'Successfully Removed!',
+        contents: (
+          <p>
+            Asset is set to the original image.
+          </p>
+        ),
+      });
+      this.setState({ toGame: <Redirect to={{ pathname: '/game', state: location.state }} /> });
+    });
+  }
+
   queryApi(type, id) {
     const { location } = this.props;
 
@@ -130,8 +151,32 @@ class Search extends React.Component {
     }
 
     return (
-      <>
-        <TopBlur />
+      <div style={{ height: 'inherit', overflow: 'hidden' }}>
+        <TopBlur additionalHeight={48} />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'right',
+            position: 'fixed',
+            top: 30,
+            width: 'calc(100vw - 55px)',
+            height: 48,
+            zIndex: 2,
+          }}
+        >
+          <div style={{ marginLeft: 'auto', marginRight: 24 }} />
+          <AppBarButton
+            icon="Delete"
+            label="Reset"
+            onClick={this.onRemove}
+          />
+          <AppBarSeparator style={{ height: 24 }} />
+          <AppBarButton
+            icon="Add"
+            label="Custom Image"
+            onClick={() => this.onRemove()}
+          />
+        </div>
         <div
           id="search-container"
           style={{
@@ -140,6 +185,7 @@ class Search extends React.Component {
             padding: 15,
             paddingLeft: 10,
             paddingTop: 45,
+            marginTop: 48,
           }}
         >
           {items.map((item, i) => (
@@ -175,7 +221,7 @@ class Search extends React.Component {
             </Button>
           ))}
         </div>
-      </>
+      </div>
     );
   }
 }
