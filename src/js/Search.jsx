@@ -11,6 +11,7 @@ import AppBarButton from 'react-uwp/AppBarButton';
 import AppBarSeparator from 'react-uwp/AppBarSeparator';
 
 const SGDB = window.require('steamgriddb');
+const {dialog} = window.require('electron').remote;
 
 class Search extends React.Component {
   constructor(props) {
@@ -18,6 +19,7 @@ class Search extends React.Component {
 
     this.onClick = this.onClick.bind(this);
     this.onRemove = this.onRemove.bind(this);
+    this.onPickFile = this.onPickFile.bind(this);
     this.SGDB = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
 
     const { location } = this.props;
@@ -94,6 +96,27 @@ class Search extends React.Component {
         ),
       });
       this.setState({ toGame: <Redirect to={{ pathname: '/game', state: location.state }} /> });
+    });
+  }
+
+  onPickFile () {
+    const { game, items } = this.state;
+    const { location } = this.props;
+    const self = this;
+
+    dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        { name: 'Images', extensions: ['jpg', 'png', 'gif'] },
+      ]
+    }, function (files) {
+        if (files !== undefined && files.length) {
+          
+          Steam.addAsset(location.state.assetType, game.appid, files[0]).then(() => {
+
+            self.setState({ toGame: <Redirect to={{ pathname: '/game', state: location.state }} /> });
+          });
+        }            
     });
   }
 
@@ -174,7 +197,7 @@ class Search extends React.Component {
           <AppBarButton
             icon="Add"
             label="Custom Image"
-            onClick={() => this.onRemove()}
+            onClick={this.onPickFile}
           />
         </div>
         <div

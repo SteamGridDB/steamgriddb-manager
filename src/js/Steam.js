@@ -313,36 +313,52 @@ class Steam {
           reject();
         }
 
-        let cur = 0;
-        const data = new Stream();
-        let progress = 0;
-        let lastProgress = 0;
-        https.get(url, (response) => {
-          const len = parseInt(response.headers['content-length'], 10);
+        if (url.startsWith('http')) {
+          let cur = 0;
+          const data = new Stream();
+          let progress = 0;
+          let lastProgress = 0;
+          https.get(url, (response) => {
+            const len = parseInt(response.headers['content-length'], 10);
 
-          response.on('data', (chunk) => {
-            cur += chunk.length;
-            data.push(chunk);
-            progress = Math.round((cur / len) * 10) / 10;
-            if (progress !== lastProgress) {
-              lastProgress = progress;
-            }
-          });
+            response.on('data', (chunk) => {
+              cur += chunk.length;
+              data.push(chunk);
+              progress = Math.round((cur / len) * 10) / 10;
+              if (progress !== lastProgress) {
+                lastProgress = progress;
+              }
+            });
 
-          response.on('end', () => {
-            // Delete old image(s)
-            glob(`${dest.replace(imageExt, '')}.*`, (er, files) => {
-              files.forEach((file) => {
-                fs.unlinkSync(file);
+            response.on('end', () => {
+              // Delete old image(s)
+              glob(`${dest.replace(imageExt, '')}.*`, (er, files) => {
+                files.forEach((file) => {
+                  fs.unlinkSync(file);
+                });
+
+                fs.writeFileSync(dest, data.read());
+                resolve(dest);
               });
             });
-            fs.writeFileSync(dest, data.read());
-            resolve(dest);
+          }).on('error', (err) => {
+            fs.unlink(dest);
+            reject(err);
           });
-        }).on('error', (err) => {
-          fs.unlink(dest);
-          reject(err);
-        });
+
+        } else {  // if the url is actually a file path
+          // Delete old image(s)
+          glob(`${dest.replace(imageExt, '')}.*`, (er, files) => {
+            files.forEach((file) => {
+              fs.unlinkSync(file);
+            });
+            // copy over the file
+            fs.copyFile(url, dest, (err) => {
+              if (err) throw err;
+              resolve(dest);
+            });
+          });
+        }
       });
     });
   }
