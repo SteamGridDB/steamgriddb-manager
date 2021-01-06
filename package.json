@@ -13,6 +13,7 @@
     "start": "electron .",
     "build": "webpack --mode production && electron-builder",
     "run": "webpack --mode development && electron .",
+    "watch": "concurrently \"webpack --mode development --watch\" \"electron .\"",
     "pack": "electron-builder --dir",
     "publish": "webpack --mode production && electron-builder --publish always",
     "postinstall": "electron-builder install-app-deps"
@@ -67,6 +68,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-react": "^7.12.10",
     "babel-loader": "^8.2.2",
+    "concurrently": "^5.3.0",
     "css-loader": "^3.6.0",
     "electron": "^6.1.12",
     "electron-builder": "^21.2.0",
@@ -88,6 +90,7 @@
     "@node-steam/vdf": "^2.1.0",
     "blizzard-product-parser": "^1.0.1",
     "cheerio": "^1.0.0-rc.5",
+    "chokidar": "^3.4.3",
     "crc": "^3.8.0",
     "electron-log": "^3.0.7",
     "electron-store": "^5.2.0",
