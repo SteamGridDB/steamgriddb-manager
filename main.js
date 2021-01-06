@@ -1,6 +1,7 @@
 const { app, globalShortcut, BrowserWindow } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
+const chokidar = require('chokidar')
 
 const path = require('path');
 const url = require('url');
@@ -34,7 +35,15 @@ function createWindow() {
     slashes: true,
   }));
 
-  // Open the DevTools.
+  // Set up live reload
+  if (process.mainModule.filename.indexOf('app.asar') === -1) {
+    chokidar.watch('public')
+      .on('change', () => {
+        mainWindow.webContents.executeJavaScript('window.location = window.location.origin + window.location.pathname');
+      });
+  }
+
+  // Add a global shortcut for opening the dev tools
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.webContents.openDevTools();
   });

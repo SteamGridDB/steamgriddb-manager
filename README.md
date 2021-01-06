@@ -15,8 +15,9 @@ SteamGridDB Manager supports importing from the following launchers:
 # Building From Source
 1. Install the dependencies with `npm install`.
 2. Run one of the npm scripts:
-   - `npm run run` builds and starts the app.
-   - `npm run dist` builds, then outputs an installer into the `dist` directory using electron-builder.
+   - `npm run run` Builds and starts the app.
+   - `npm run watch` Builds and starts the app. Reloads the app when any file changes.
+   - `npm run dist` Builds, then outputs an installer into the `dist` directory using electron-builder.
 
 # License
 [MIT](LICENSE.md)
