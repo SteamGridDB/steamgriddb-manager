@@ -119,7 +119,7 @@ class Import extends React.Component {
               if (platform.games.length) {
             // Get grids for each platform
             const ids = platform.games.map((x) => encodeURIComponent(x.id));
-
+            const gameName = platform.games.map((x) => x.name);
                 const getGrids = this.SGDB.getGrids({
                   type: platform.id,
                   id: ids.join(','),
@@ -130,8 +130,16 @@ class Import extends React.Component {
               return res;
                   })
                   .catch((e) => {
+              // show an error toast
+              if (e.message == "Game not found") {
+                const checkPromises = this.checkFailedGames([{ id: ids, name: gameName }]);
+                Promise.all(checkPromises).then((res) => this.logFailedGames(res));  
+              }
+              else {
                     log.error('Erorr getting grids from SGDB');
                     console.error(e);
+              }
+
                     // @todo We need a way to log which game caused the error
                     // @todo Fallback to text search
                     // @todo show an error toast
@@ -188,7 +196,7 @@ class Import extends React.Component {
     var promises = [];
 
     failedGames.map((failedGame) => {
-      promises.push(`Game '${failedGame.name}', id ${failedGame.id} not found, looking for alternatives...`);
+      promises.push(`Game '${failedGame.name}', id '${failedGame.id}' not found, looking for alternatives...`);
       const sg = new Promise((resolve, reject) => {
         this.SGDB.searchGame(failedGame.name).then((res) => {
           var results = [];
