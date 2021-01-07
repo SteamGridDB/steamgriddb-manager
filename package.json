@@ -90,7 +90,7 @@
     "@node-steam/vdf": "^2.1.0",
     "blizzard-product-parser": "^1.0.1",
     "cheerio": "^1.0.0-rc.5",
-    "chokidar": "^3.4.3",
+    "chokidar": "^3.5.0",
     "crc": "^3.8.0",
     "electron-log": "^3.0.7",
     "electron-store": "^5.2.0",
