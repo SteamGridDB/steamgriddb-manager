@@ -136,8 +136,7 @@ class Import extends React.Component {
                     // @todo Fallback to text search
                     // @todo show an error toast
             });
-            gridsPromises.push(platform.games.map((x) => x.name));
-
+            gridsPromises.push(platform.games.map(x => ({ name: x.name, id: x.id })));
             gridsPromises.push(getGrids);
               }
           });
@@ -149,29 +148,22 @@ class Import extends React.Component {
               isLoaded: true,
               installedPlatforms,
             });
-            var failedGameNames = [];
+            var failedGames = [];
             for (var i = 0; i < res.length; i += 2) {
-              var names = res[i];
+              var games = res[i];
               var result = res[i + 1];
 
-              names.map((name, i) => {
-                if ((!result[i].success) && result[i].errors[0] == "Game not found") {
-                  failedGameNames.push(names[i]);
-                }
-              });
-            }
-            const checkPromises = this.checkFailedGames(failedGameNames);
-            Promise.all(checkPromises).then((res) => {
-              for (var i = 0; i < res.length; i += 2) {
-                var pre = res[i];
-                var msgs = res[i+1];
-
-                log.info(pre);
-                msgs.map((msg) => {
-                  log.info(msg);
+              // we will only find errors here for a multiple id search, in single search on error will be caught above
+              if (games.length > 1) {
+                games.map((game, i) => {
+                  if ((!result[i].success) && result[i].errors[0] == "Game not found") {
+                    failedGames.push(games[i]);
+                  }
           });
               }
-            });
+            }
+            const checkPromises = this.checkFailedGames(failedGames);
+            Promise.all(checkPromises).then((res) => this.logFailedGames(res));
           });
           })
             .catch((err) => {
@@ -179,19 +171,30 @@ class Import extends React.Component {
         });
       });
   }
+
+  logFailedGames(res) {
+    for (var i = 0; i < res.length; i += 2) {
+      var pre = res[i];
+      var msgs = res[i + 1];
+
+      log.info(pre);
+      msgs.map((msg) => {
+        log.info(msg);
+      });
+    }
   }
 
-  checkFailedGames(failedGameNames) {
+  checkFailedGames(failedGames) {
     var promises = [];
 
-    failedGameNames.map((failedGameName) => {
-      promises.push(`${failedGameName}: not found, looking for alternatives...`);
+    failedGames.map((failedGame) => {
+      promises.push(`Game '${failedGame.name}', id ${failedGame.id} not found, looking for alternatives...`);
       const sg = new Promise((resolve, reject) => {
-        this.SGDB.searchGame(failedGameName).then((res) => {
+        this.SGDB.searchGame(failedGame.name).then((res) => {
           var results = [];
-          res.forEach((game, i) => {
-            const types = JSON.stringify(game.types);
-            results.push(`${i}: name: '${game.name}', id: '${game.id}', type: '${types}'`);
+          res.forEach((altGame, i) => {
+            const altGameTypes = JSON.stringify(altGame.types);
+            results.push(`${i}: name: '${altGame.name}', id: '${altGame.id}', type: '${altGameTypes}'`);
           });
 
           resolve(results);
@@ -279,6 +282,8 @@ class Import extends React.Component {
       tags: [platform.name],
       icon: game.icon,
     }));
+
+    log.info(`Trying to import ${games.length} games from ${platform.name}`);
 
     Steam.addShortcuts(shortcuts).then(() => {
       Steam.addCategory(games, platform.name).then(() => {
