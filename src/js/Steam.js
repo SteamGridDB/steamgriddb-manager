@@ -319,10 +319,8 @@ class Steam {
 
           response.on('end', () => {
             // Delete old image(s)
-            glob(`${dest.replace(imageExt, '')}.*`, (er, files) => {
-              files.forEach((file) => {
-                fs.unlinkSync(file);
-              });
+            glob.sync(`${dest.replace(imageExt, '')}.*`).map((file) => {
+              fs.unlinkSync(file);
             });
             fs.writeFileSync(dest, data.read());
             resolve(dest);
