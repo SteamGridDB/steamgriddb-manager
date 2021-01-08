@@ -13,7 +13,6 @@ const SGDB = window.require('steamgriddb');
 const { metrohash64 } = window.require('metrohash');
 const log = window.require('electron-log');
 const { join, extname, dirname } = window.require('path');
-const Lnf = window.require('lnf');
 
 class Import extends React.Component {
   constructor(props) {
