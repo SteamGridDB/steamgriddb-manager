@@ -9,6 +9,7 @@ import Steam from './Steam';
 import heroPlaceholder from '../img/hero_none.png';
 import capsuleVerticalPlaceholder from '../img/capsule_vertical_none.png';
 import capsulePlaceholder from '../img/capsule_none.png';
+import logoPlaceholder from '../img/logo_none.png';
 
 const { join } = window.require('path');
 const fs = window.require('fs');
@@ -169,13 +170,13 @@ class Game extends React.Component {
           </div>
           <div>
             <h5 style={titleStyle}>Logo</h5>
-            <Button style={buttonStyle}>
+            <Button style={buttonStyle} onClick={() => this.toSearch('logo')}>
               <Image
                 style={{
                   maxWidth: '100%',
                   height: 'auto',
                 }}
-                src={this.addNoCache(logo)}
+                src={this.addNoCache(logo) || logoPlaceholder}
               />
             </Button>
           </div>

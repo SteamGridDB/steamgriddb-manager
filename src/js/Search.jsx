@@ -104,6 +104,14 @@ class Search extends React.Component {
         });
       });
       break;
+    case 'logo':
+      this.SGDB.getLogos({ type, id }).then((res) => {
+        this.setState({
+          isLoaded: true,
+          items: res,
+        });
+      });
+      break;
     default:
       break;
     }
