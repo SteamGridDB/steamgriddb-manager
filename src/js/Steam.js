@@ -145,8 +145,8 @@ class Steam {
               const appName = item.appname || item.AppName || item.appName;
               const exe = item.exe || item.Exe;
               const appid = this.generateNewAppId(exe, appName);
-
               const configId = metrohash64(exe + item.LaunchOptions);
+
               if (store.has(`games.${configId}`)) {
                 const storedGame = store.get(`games.${configId}`);
                 if (typeof games[storedGame.platform] === 'undefined') {
@@ -323,9 +323,10 @@ class Steam {
               files.forEach((file) => {
                 fs.unlinkSync(file);
               });
+
+              fs.writeFileSync(dest, data.read());
+              resolve(dest);
             });
-            fs.writeFileSync(dest, data.read());
-            resolve(dest);
           });
         }).on('error', (err) => {
           fs.unlink(dest);
@@ -383,8 +384,10 @@ class Steam {
   static addCategory(games, categoryId) {
     return new Promise((resolve, reject) => {
       const levelDBPath = join(process.env.localappdata, 'Steam', 'htmlcache', 'Local Storage', 'leveldb');
+
       this.getLoggedInUser().then((user) => {
         const cats = new Categories(levelDBPath, String(user));
+
         cats.read().then(() => {
           this.getCurrentUserGridPath().then((userGridPath) => {
             const localConfigPath = join(userGridPath, '../', 'localconfig.vdf');
@@ -429,7 +432,14 @@ class Steam {
               localConfig.UserLocalConfigStore.WebStorage['user-collections'] = JSON.stringify(collections).replace(/"/g, '\\"'); // I hate Steam
 
               const newVDF = VDF.stringify(localConfig);
-              fs.writeFileSync(localConfigPath, newVDF);
+
+              try {
+                fs.writeFileSync(localConfigPath, newVDF);
+              } catch (e) {
+                log.error('Error writing categories file');
+                console.error(e);
+              }
+
               cats.close();
               return resolve();
             });

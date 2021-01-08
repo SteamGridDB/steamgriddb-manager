@@ -34,17 +34,21 @@ class ToastHandler extends React.Component {
 
   render() {
     const { toasts } = this.state;
-    return toasts.slice(0).map((x, i) => (
-      <Toast
-        key={i}
-        defaultShow={x.show}
-        logoNode={<Icon>{x.toast.logoNode}</Icon>}
-        title={x.toast.title}
-        showCloseIcon
-      >
-        {x.toast.contents}
-      </Toast>
-    ));
+    return (
+      <>
+        {toasts.slice(0).map((x, i) => (
+          <Toast
+            key={i}
+            defaultShow={x.show}
+            logoNode={<Icon>{x.toast.logoNode}</Icon>}
+            title={x.toast.title}
+            showCloseIcon
+          >
+            {x.toast.contents}
+          </Toast>
+        ))}
+      </>
+    );
   }
 }
 
