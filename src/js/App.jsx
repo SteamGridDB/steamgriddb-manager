@@ -55,14 +55,6 @@ class App extends React.Component {
     });
   }
 
-  close() {
-    remote.getCurrentWindow().close();
-  }
-
-  minimize() {
-    remote.getCurrentWindow().minimize();
-  }
-
   toggleMaximize() {
     const { isMaximized } = this.state;
     const window = remote.getCurrentWindow();
@@ -76,6 +68,14 @@ class App extends React.Component {
 
   handleNavRedirect(path) {
     this.setState({ redirectTo: path });
+  }
+
+  minimize() {
+    remote.getCurrentWindow().minimize();
+  }
+
+  close() {
+    remote.getCurrentWindow().close();
   }
 
   render() {

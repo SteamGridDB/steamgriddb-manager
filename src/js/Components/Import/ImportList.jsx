@@ -29,33 +29,39 @@ class ImportList extends React.Component {
       clear: 'both',
     };
 
-    const importList = (
-      this.games.map((game, i) => {
-        let { progress } = game;
-        if (game.progress === undefined) {
-          progress = 0;
-        }
+    const { steamIsRunning } = this.props;
 
-        let thumb;
-        if (this.grids[i]) {
-          thumb = this.grids[i].thumb;
-        }
+    const importList = this.games.map((game, i) => {
+      let { progress } = game;
+      let thumb;
 
-        return (
+      if (game.progress === undefined) {
+        progress = 0;
+      }
+
+      if (this.grids[i]) {
+        thumb = this.grids[i].thumb;
+      }
+
+      return {
+        itemNode: (
           <ImportListItem
-            key={this.games.id}
+            key={game.id}
             progress={progress}
             platform={this.platform}
             thumb={thumb}
             game={game}
             onImportClick={this.onImportClick}
+            steamIsRunning={steamIsRunning}
           />
-        );
-      })
-    );
+        ),
+      };
+    });
 
     return (
-      <ListView style={listStyle} listSource={importList} />
+      <>
+        <ListView style={listStyle} listSource={importList} />
+      </>
     );
   }
 }
@@ -68,9 +74,11 @@ ImportList.propTypes = {
   ]).isRequired,
   platform: PropTypes.object.isRequired,
   onImportClick: PropTypes.func,
+  steamIsRunning: PropTypes.bool,
 };
 
 ImportList.defaultProps = {
   onImportClick: () => {},
+  steamIsRunning: false,
 };
 export default ImportList;

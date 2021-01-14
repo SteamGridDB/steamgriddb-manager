@@ -19,8 +19,16 @@ class ImportAllButton extends React.Component {
   }
 
   render() {
+    const { steamIsRunning } = this.props;
+
     return (
-      <Button style={{ float: 'right' }} onClick={this.handleClick}>Import All</Button>
+      <Button
+        style={{ float: 'right' }}
+        onClick={this.handleClick}
+        disabled={steamIsRunning}
+      >
+        Import All
+      </Button>
     );
   }
 }
@@ -29,10 +37,12 @@ ImportAllButton.propTypes = {
   platform: PropTypes.object.isRequired,
   games: PropTypes.array.isRequired,
   onButtonClick: PropTypes.func,
+  steamIsRunning: PropTypes.bool,
 };
 
 ImportAllButton.defaultProps = {
   onButtonClick: () => {},
+  steamIsRunning: false,
 };
 
 export default ImportAllButton;

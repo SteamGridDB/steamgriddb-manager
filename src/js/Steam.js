@@ -1,5 +1,6 @@
 import SteamID from 'steamid';
 import { crc32 } from 'crc';
+import React from 'react';
 
 const Registry = window.require('winreg');
 const Store = window.require('electron-store');
@@ -384,9 +385,39 @@ class Steam {
     });
   }
 
+  static getLevelDBPath() {
+    return join(process.env.localappdata, 'Steam', 'htmlcache', 'Local Storage', 'leveldb');
+  }
+
+  static async checkIfSteamIsRunning() {
+    return new Promise((resolve) => {
+      const levelDBPath = this.getLevelDBPath();
+
+      this.getLoggedInUser().then((user) => {
+        const cats = new Categories(levelDBPath, String(user));
+
+        /*
+         * Without checking Windows processes directly, this is the most reliable way
+         * to check if Steam is running. When Steam is running, there is a lock on
+         * this file, so if we can't read it, that means Steam must be running.
+         */
+        cats.read()
+          .then(() => {
+            resolve(false);
+          })
+          .catch(() => {
+            resolve(true);
+          })
+          .finally(() => {
+            cats.close();
+          });
+      });
+    });
+  }
+
   static addCategory(games, categoryId) {
     return new Promise((resolve, reject) => {
-      const levelDBPath = join(process.env.localappdata, 'Steam', 'htmlcache', 'Local Storage', 'leveldb');
+      const levelDBPath = this.getLevelDBPath();
 
       this.getLoggedInUser().then((user) => {
         const cats = new Categories(levelDBPath, String(user));
