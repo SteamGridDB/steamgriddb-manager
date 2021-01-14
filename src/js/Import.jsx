@@ -76,19 +76,19 @@ class Import extends React.Component {
 
       this.lastNonSteamGames = nonSteamGames;
 
-    Promise.all(this.platforms.map((platform) => platform.class.isInstalled()))
-      .then((values) => {
-        // Set .installed
-        this.platforms.forEach((platform, index) => {
-          platform.installed = values[index];
-        });
+      Promise.all(this.platforms.map((platform) => platform.class.isInstalled()))
+        .then((values) => {
+          // Set .installed
+          this.platforms.forEach((platform, index) => {
+            platform.installed = values[index];
+          });
 
-        const installedPlatforms = this.platforms.filter((platform) => (platform.installed));
+          const installedPlatforms = this.platforms.filter((platform) => (platform.installed));
 
-        // Do .getGames() in sequential order
-        const getGames = installedPlatforms
-          .reduce((promise, platform) => promise.then(() => {
-            this.setState({ loadingText: `Grabbing games from ${platform.name}...` });
+          // Do .getGames() in sequential order
+          const getGames = installedPlatforms
+            .reduce((promise, platform) => promise.then(() => {
+              this.setState({ loadingText: `Grabbing games from ${platform.name}...` });
 
               return platform.class.getGames()
                 .then((games) => {
@@ -102,82 +102,83 @@ class Import extends React.Component {
                   }
 
                   // nonSteamGames[platform.id].gameId
-              // Populate games array
-              platform.games = games;
-            });
+                  // Populate games array
+                  platform.games = games;
+                });
             })
               .catch((err) => {
-            platform.error = true;
-            log.info(`Import: ${platform.id} rejected ${err}`);
-          }), Promise.resolve());
+                platform.error = true;
+                log.info(`Import: ${platform.id} rejected ${err}`);
+              }), Promise.resolve());
 
-        getGames.then(() => {
-          this.setState({ loadingText: 'Getting images...' });
+          getGames.then(() => {
+            this.setState({ loadingText: 'Getting images...' });
 
-          const gridsPromises = [];
-          installedPlatforms.forEach((platform) => {
+            const gridsPromises = [];
+            installedPlatforms.forEach((platform) => {
               if (platform.games.length) {
-            // Get grids for each platform
-            const ids = platform.games.map((x) => encodeURIComponent(x.id));
-            const gameName = platform.games.map((x) => x.name);
+                // Get grids for each platform
+                const ids = platform.games.map((x) => encodeURIComponent(x.id));
+                const gameName = platform.games.map((x) => x.name);
                 const getGrids = this.SGDB.getGrids({
                   type: platform.id,
                   id: ids.join(','),
                   dimensions: ['460x215', '920x430'],
                 })
                   .then((res) => {
-              platform.grids = this._formatResponse(ids, res);
-              return res;
+                    platform.grids = this._formatResponse(ids, res);
+                    return res;
                   })
                   .catch((e) => {
-              // show an error toast
-              if (e.message == "Game not found") {
-                const checkPromises = this.checkFailedGames([{ id: ids, name: gameName }]);
-                Promise.all(checkPromises).then((res) => this.logFailedGames(res));  
-              }
-              else {
-                    log.error('Erorr getting grids from SGDB');
-                    console.error(e);
-              }
+                    // show an error toast
+                    if (e.message == "Game not found") {
+                      const checkPromises = this.checkFailedGames([{ id: ids, name: gameName }]);
+                      Promise.all(checkPromises).then((res) => this.logFailedGames(res));
+                    }
+                    else {
+                      log.error('Erorr getting grids from SGDB');
+                      console.error(e);
+                    }
 
                     // @todo We need a way to log which game caused the error
                     // @todo Fallback to text search
                     // @todo show an error toast
-            });
-            gridsPromises.push(platform.games.map(x => ({ name: x.name, id: x.id })));
-            gridsPromises.push(getGrids);
+                  });
+                gridsPromises.push(platform.games.map(x => ({ name: x.name, id: x.id })));
+                gridsPromises.push(getGrids);
               }
-          });
+            });
 
-          // Update state after we got the grids
+            // Update state after we got the grids
             Promise.all(gridsPromises)
               .then((res) => {
-            this.setState({
-              isLoaded: true,
-              installedPlatforms,
-            });
-            var failedGames = [];
-            for (var i = 0; i < res.length; i += 2) {
-              var games = res[i];
-              var result = res[i + 1];
+                this.setState({
+                  isLoaded: true,
+                  installedPlatforms,
+                });
+                var failedGames = [];
+                for (var i = 0; i < res.length; i += 2) {
+                  var games = res[i];
+                  var result = res[i + 1];
 
-              // we will only find errors here for a multiple id search, in single search on error will be caught above
-              if (games.length > 1) {
-                games.map((game, i) => {
-                  if ((!result[i].success) && result[i].errors[0] == "Game not found") {
-                    failedGames.push(games[i]);
+                  // we will only find errors here for a multiple id search, in single search on error will be caught above
+                  if (games.length > 1) {
+                    games.map((game, i) => {
+                      if ((!result[i].success) && result[i].errors[0] == "Game not found") {
+                        failedGames.push(games[i]);
+                      }
+                    });
                   }
-          });
-              }
-            }
-            const checkPromises = this.checkFailedGames(failedGames);
-            Promise.all(checkPromises).then((res) => this.logFailedGames(res));
-          });
+                }
+                const checkPromises = this.checkFailedGames(failedGames);
+                Promise.all(checkPromises).then((res) => this.logFailedGames(res));
+              });
           })
             .catch((err) => {
-          log.info(`Import: ${err}`);
+              log.info(`Import: ${err}`);
+            });
         });
-      });
+    }
   }
 
   logFailedGames(res) {
