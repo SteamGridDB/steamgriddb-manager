@@ -9,6 +9,7 @@ import Spinner from './Components/spinner';
 import Steam from './Steam';
 
 const SGDB = window.require('steamgriddb');
+const log = window.require('electron-log');
 
 class Search extends React.Component {
   constructor(props) {
@@ -46,8 +47,10 @@ class Search extends React.Component {
 
     if (game.platform === 'other') {
       type = 'game';
+      log.info(`no id for game '${game.name}', searching by name...`);
       this.SGDB.searchGame(game.name)
         .then((gameResp) => {
+          log.info(`using best result: '${gameResp[0].name}', id: ${gameResp[0].id}`);
           id = gameResp[0].id;
           this.queryApi(type, id);
         });
