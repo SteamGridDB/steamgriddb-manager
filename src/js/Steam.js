@@ -146,6 +146,7 @@ class Steam {
               const appName = item.appname || item.AppName || item.appName;
               const exe = item.exe || item.Exe;
               const appid = this.generateNewAppId(exe, appName);
+              const appidOld = this.generateAppId(exe, appName);
               const configId = metrohash64(exe + item.LaunchOptions);
 
               if (store.has(`games.${configId}`)) {
@@ -161,6 +162,7 @@ class Steam {
                     platform: storedGame.platform,
                     type: 'shortcut',
                     appid,
+                    appidOld,
                   });
                   processed.push(configId);
                 }
@@ -175,6 +177,7 @@ class Steam {
                   platform: 'other',
                   type: 'shortcut',
                   appid,
+                  appidOld,
                 });
               }
             });

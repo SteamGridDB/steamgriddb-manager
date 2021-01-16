@@ -67,7 +67,13 @@ class Search extends React.Component {
       items: clonedItems,
     });
 
-    Steam.addAsset(location.state.assetType, game.appid, item.url).then(() => {
+    const downloadPromises = [];
+
+    downloadPromises.push(Steam.addAsset(location.state.assetType, game.appid, item.url));
+    // Old app id is for Big Picture Mode
+    downloadPromises.push(Steam.addAsset(location.state.assetType, game.appidOld, item.url));
+    
+    Promise.all(downloadPromises).then(() => {
       clonedItems[itemIndex].downloading = false;
       this.setState({
         items: clonedItems,
