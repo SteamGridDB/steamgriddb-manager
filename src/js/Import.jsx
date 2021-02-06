@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import PubSub from 'pubsub-js';
+import { Icon } from 'react-uwp';
+import { isEqual } from 'lodash';
 import ImportList from './Components/Import/ImportList';
 import ImportAllButton from './Components/Import/ImportAllButton';
 import Spinner from './Components/spinner';
-import TopBlur from './Components/TopBlur';
 import Steam from './Steam';
 import platformModules from './importers';
 
@@ -12,8 +13,6 @@ const Store = window.require('electron-store');
 const SGDB = window.require('steamgriddb');
 const { metrohash64 } = window.require('metrohash');
 const log = window.require('electron-log');
-const { join, extname, dirname } = window.require('path');
-const Lnf = window.require('lnf');
 
 class Import extends React.Component {
   constructor(props) {
@@ -21,8 +20,12 @@ class Import extends React.Component {
 
     this.addGame = this.addGame.bind(this);
     this.addGames = this.addGames.bind(this);
+    this.checkIfSteamIsRunning = this.checkIfSteamIsRunning.bind(this);
+    this.getInstalledPlatforms = this.getInstalledPlatforms.bind(this);
 
     this.store = new Store();
+
+    this.checkSteamInterval = null;
 
     this.platforms = Object.keys(platformModules).map((key) => ({
       id: platformModules[key].id,
@@ -32,81 +35,171 @@ class Import extends React.Component {
       grids: [],
       posters: [],
       heroes: [],
+      logos: [],
       installed: false,
       error: false,
     }));
 
     this.SGDB = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
+    this.lastNonSteamGames = null;
 
     this.state = {
       isLoaded: false,
       loadingText: '',
       installedPlatforms: [],
+      steamIsRunning: null,
     };
   }
 
-  componentDidMount() {
-    Promise.all(this.platforms.map((platform) => platform.class.isInstalled()))
-      .then((values) => {
-        // Set .installed
-        this.platforms.forEach((platform, index) => {
-          platform.installed = values[index];
-        });
+  async componentDidMount() {
+    log.info('Opened Import Page');
 
-        const installedPlatforms = this.platforms.filter((platform) => (platform.installed));
+    await this.checkIfSteamIsRunning();
+    this.checkSteamInterval = setInterval(this.checkIfSteamIsRunning, 2000);
 
-        // Do .getGames() in sequential order
-        const getGames = installedPlatforms
-          .reduce((promise, platform) => promise.then(() => {
-            this.setState({ loadingText: `Grabbing games from ${platform.name}...` });
-            return platform.class.getGames().then((games) => {
-              // Populate games array
-              platform.games = games;
-            });
-          }).catch((err) => {
-            platform.error = true;
-            log.info(`Import: ${platform.id} rejected ${err}`);
-          }), Promise.resolve());
+    this.getInstalledPlatforms();
+  }
 
-        getGames.then(() => {
-          this.setState({ loadingText: 'Getting images...' });
+  componentWillUnmount() {
+    clearInterval(this.checkSteamInterval);
+  }
 
-          const gridsPromises = [];
-          installedPlatforms.forEach((platform) => {
-            // Get grids for each platform
-            const ids = platform.games.map((x) => encodeURIComponent(x.id));
-            const getGrids = this.SGDB.getGrids({ type: platform.id, id: ids.join(',') }).then((res) => {
-              platform.grids = this._formatResponse(ids, res);
-            }).catch(() => {
-              // show an error toast
-            });
-            gridsPromises.push(getGrids);
-          });
+  async getInstalledPlatforms() {
+    const nonSteamGames = await Steam.getNonSteamGames();
 
-          // Update state after we got the grids
-          Promise.all(gridsPromises).then(() => {
-            this.setState({
-              isLoaded: true,
-              installedPlatforms,
-            });
-          });
-        }).catch((err) => {
-          log.info(`Import: ${err}`);
-        });
+    if (!isEqual(nonSteamGames, this.lastNonSteamGames)) {
+      log.info('Getting installed games for import list');
+
+      this.setState({
+        isLoaded: false,
       });
+
+      this.lastNonSteamGames = nonSteamGames;
+
+      Promise.all(this.platforms.map((platform) => platform.class.isInstalled()))
+        .then((values) => {
+          // Set .installed
+          this.platforms.forEach((platform, index) => {
+            platform.installed = values[index];
+          });
+
+          const installedPlatforms = this.platforms.filter((platform) => (platform.installed));
+
+          // Do .getGames() in sequential order
+          const getGames = installedPlatforms
+            .reduce((promise, platform) => promise.then(() => {
+              this.setState({ loadingText: `Grabbing games from ${platform.name}...` });
+
+              return platform.class.getGames()
+                .then((games) => {
+                  // Filter out any games that are already imported
+                  if (nonSteamGames && nonSteamGames[platform.id]) {
+                    games = games.filter((game) => {
+                      return !nonSteamGames[platform.id].find((nonSteamGame) => {
+                        return nonSteamGame.gameId === game.id;
+                      });
+                    });
+                  }
+
+                  // nonSteamGames[platform.id].gameId
+                  // Populate games array
+                  platform.games = games;
+                });
+            })
+              .catch((err) => {
+                platform.error = true;
+                log.info(`Import: ${platform.id} rejected ${err}`);
+              }), Promise.resolve());
+
+          getGames.then(() => {
+            this.setState({ loadingText: 'Getting images...' });
+
+            const gridsPromises = [];
+            installedPlatforms.forEach((platform) => {
+              if (platform.games.length) {
+                // Get grids for each platform
+                const ids = platform.games.map((x) => encodeURIComponent(x.id));
+
+                const getGrids = this.SGDB.getGrids({
+                  type: platform.id,
+                  id: ids.join(','),
+                  dimensions: ['460x215', '920x430'],
+                })
+                  .then((res) => {
+                    platform.grids = this._formatResponse(ids, res);
+                  })
+                  .catch((e) => {
+                    log.error('Erorr getting grids from SGDB');
+                    console.error(e);
+                    // @todo We need a way to log which game caused the error
+                    // @todo Fallback to text search
+                    // @todo show an error toast
+                  });
+
+                gridsPromises.push(getGrids);
+              }
+            });
+
+            // Update state after we got the grids
+            Promise.all(gridsPromises)
+              .then(() => {
+                this.setState({
+                  isLoaded: true,
+                  installedPlatforms,
+                });
+              });
+          })
+            .catch((err) => {
+              log.info(`Import: ${err}`);
+            });
+        });
+    }
+  }
+
+  /*
+   * @todo We might want to put this at the App level, and publish changes via PubSub or props,
+   *   so different pages can display their own message if Steam is running.
+   */
+  async checkIfSteamIsRunning() {
+    const steamIsRunning = await Steam.checkIfSteamIsRunning();
+
+    if (steamIsRunning !== this.state.steamIsRunning) {
+      log.info(`Steam is ${steamIsRunning ? 'open' : 'closed'}`);
+
+      this.setState({
+        steamIsRunning,
+      });
+
+      // Update non-Steam games in case changes were made while Steam was open
+      if (!steamIsRunning) {
+        setTimeout(() => {
+          this.getInstalledPlatforms();
+        }, 0);
+      }
+    }
   }
 
   saveImportedGames(games) {
     const gamesStorage = this.store.get('games', {});
+
     games.forEach((game) => {
-      gamesStorage[metrohash64(game.exe + (game.params !== 'undefined' ? game.params : ''))] = game;
+      const key = game.exe + (
+        typeof game.params !== 'undefined'
+          ? game.params
+          : ''
+      );
+
+      const configId = metrohash64(key);
+      gamesStorage[configId] = game;
     });
+
     this.store.set('games', gamesStorage);
   }
 
   // @todo this is horrible but can't be arsed right now
   _formatResponse(ids, res) {
     let formatted = false;
+
     // if only single id then return first grid
     if (ids.length === 1) {
       if (res.length > 0) {
@@ -116,7 +209,9 @@ class Import extends React.Component {
       // if multiple ids treat each object as a request
       formatted = res.map((x) => {
         if (x.success) {
-          if (x.data[0]) return x.data[0];
+          if (x.data[0]) {
+            return x.data[0];
+          }
         }
         return false;
       });
@@ -162,35 +257,51 @@ class Import extends React.Component {
         const ids = games.map((x) => encodeURIComponent(x.id));
         let posters = [];
         let heroes = [];
+        let logos = [];
 
         // Get posters
         const getPosters = this.SGDB.getGrids({ type: platform.id, id: ids.join(','), dimensions: ['600x900'] }).then((res) => {
           posters = this._formatResponse(ids, res);
-        }).catch(() => {
-          // show an error toast
+        }).catch((e) => {
+          log.error('Error getting posters');
+          console.error(e);
+          // @todo show an error toast
         });
 
         // Get heroes
         const getHeroes = this.SGDB.getHeroes({ type: platform.id, id: ids.join(',') }).then((res) => {
           heroes = this._formatResponse(ids, res);
-        }).catch(() => {
-          // show an error toast
+        }).catch((e) => {
+          log.error('Error getting heroes');
+          console.error(e);
+          // @todo show an error toast
         });
 
-        Promise.all([getPosters, getHeroes]).then(() => {
+        // Get heroes
+        const getLogos = this.SGDB.getLogos({ type: platform.id, id: ids.join(',') }).then((res) => {
+          logos = this._formatResponse(ids, res);
+        }).catch((e) => {
+          log.error('Error getting logos');
+          console.error(e);
+          // @todo show an error toast
+        });
+
+        Promise.all([getPosters, getHeroes, getLogos]).then(() => {
           const downloadPromises = [];
+
           games.forEach((game, i) => {
             const appId = Steam.generateNewAppId(game.exe, game.name);
 
             // Take (legacy) grids from when we got them for the ImportList
             const savedGrid = platform.grids[platform.games.indexOf(games[i])];
+
             if (platform.grids[i] && savedGrid) {
               const appIdOld = Steam.generateAppId(game.exe, game.name);
-              const saveGrids = Steam.addAsset('horizontalGrid', appId, savedGrid.url).then((dest) => {
-                // Symlink to old appid so it works in BPM
-                Lnf.sync(dest, join(dirname(dest), `${appIdOld}${extname(dest)}`));
-              });
-              downloadPromises.push(saveGrids);
+
+              downloadPromises.push(Steam.addAsset('horizontalGrid', appId, savedGrid.url));
+
+              // Old app id is for Big Picture Mode
+              downloadPromises.push(Steam.addAsset('horizontalGrid', appIdOld, savedGrid.url));
             }
 
             // Download posters
@@ -201,6 +312,11 @@ class Import extends React.Component {
             // Download heroes
             if (heroes[i]) {
               downloadPromises.push(Steam.addAsset('hero', appId, heroes[i].url));
+            }
+
+            // Download logos
+            if (heroes[i]) {
+              downloadPromises.push(Steam.addAsset('logo', appId, logos[i].url));
             }
           });
 
@@ -213,6 +329,8 @@ class Import extends React.Component {
           });
         });
       }).catch((err) => {
+        log.error('Cannot import while Steam is running');
+
         if (err.type === 'OpenError') {
           PubSub.publish('toast', {
             logoNode: 'Error',
@@ -235,7 +353,9 @@ class Import extends React.Component {
   }
 
   render() {
-    const { isLoaded, loadingText, installedPlatforms } = this.state;
+    const {
+      isLoaded, loadingText, installedPlatforms, steamIsRunning,
+    } = this.state;
     const { theme } = this.context;
 
     if (!isLoaded) {
@@ -244,7 +364,6 @@ class Import extends React.Component {
 
     return (
       <>
-        <TopBlur />
         <div
           id="import-container"
           style={{
@@ -255,9 +374,28 @@ class Import extends React.Component {
             paddingTop: 45,
           }}
         >
+          {steamIsRunning
+            && (
+              <div style={{
+                width: '100%',
+                backgroundColor: '#c06572',
+                padding: '10px',
+                marginBottom: '10px',
+              }}
+              >
+                <Icon style={{
+                  marginBottom: '2px',
+                  marginRight: '5px',
+                }}
+                >
+                  IncidentTriangle
+                </Icon>
+                SteamGridDB Manager can not import games while Steam is running. Please close Steam.
+              </div>
+            )}
           {
             installedPlatforms.map((platform) => {
-              if (!platform.error) {
+              if (!platform.error && platform.games.length) {
                 return (
                   <div key={platform.id}>
                     <h5 style={{ float: 'left', ...theme.typographyStyles.subTitle }}>{platform.name}</h5>
@@ -266,16 +404,19 @@ class Import extends React.Component {
                       platform={platform}
                       grids={platform.grids}
                       onButtonClick={this.addGames}
+                      steamIsRunning={steamIsRunning}
                     />
                     <ImportList
                       games={platform.games}
                       platform={platform}
                       grids={platform.grids}
                       onImportClick={this.addGame}
+                      steamIsRunning={steamIsRunning}
                     />
                   </div>
                 );
               }
+
               return <></>;
             })
           }

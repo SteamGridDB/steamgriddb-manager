@@ -149,13 +149,13 @@ class Search extends React.Component {
       });
       break;
     case 'logo':
-    this.SGDB.getLogos({ type, id }).then((res) => {
-      this.setState({
-        isLoaded: true,
-        items: res,
+      this.SGDB.getLogos({ type, id }).then((res) => {
+        this.setState({
+          isLoaded: true,
+          items: res,
+        });
       });
-    });
-    break;
+      break;
     default:
       break;
     }

@@ -18,18 +18,13 @@ class ImportListItem extends React.Component {
     this.handleClick = this.handleClick.bind(this);
   }
 
-  shouldComponentUpdate(nextProps) {
-    const { progress } = this.props;
-    return !(progress === nextProps.progress);
-  }
-
   handleClick() {
     const { onImportClick } = this.props;
     onImportClick(this.game, this.platform);
   }
 
   render() {
-    const { progress, thumb } = this.props;
+    const { progress, thumb, steamIsRunning } = this.props;
 
     let progressBar = <></>;
     if (progress && progress !== 1) {
@@ -38,7 +33,6 @@ class ImportListItem extends React.Component {
 
     return (
       <div
-        key={this.game.id}
         style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -53,7 +47,13 @@ class ImportListItem extends React.Component {
           src={thumb}
         />
         {this.game.name}
-        <Button style={{ opacity: 0, marginLeft: 'auto' }} onClick={this.handleClick}>Import</Button>
+        <Button
+          style={{ opacity: 0, marginLeft: 'auto' }}
+          onClick={this.handleClick}
+          disabled={steamIsRunning}
+        >
+          Import
+        </Button>
         {progressBar}
       </div>
     );
@@ -69,12 +69,14 @@ ImportListItem.propTypes = {
     PropTypes.bool,
   ]),
   onImportClick: PropTypes.func,
+  steamIsRunning: PropTypes.bool,
 };
 
 ImportListItem.defaultProps = {
   progress: 0,
   thumb: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkqAcAAIUAgUW0RjgAAAAASUVORK5CYII=',
   onImportClick: () => {},
+  steamIsRunning: false,
 };
 
 export default ImportListItem;

@@ -30,7 +30,6 @@ const { remote } = electron;
 const log = window.require('electron-log');
 log.catchErrors({ showDialog: true });
 
-
 window.Steam = Steam;
 
 class App extends React.Component {
@@ -56,14 +55,6 @@ class App extends React.Component {
     });
   }
 
-  close() {
-    remote.getCurrentWindow().close();
-  }
-
-  minimize() {
-    remote.getCurrentWindow().minimize();
-  }
-
   toggleMaximize() {
     const { isMaximized } = this.state;
     const window = remote.getCurrentWindow();
@@ -79,6 +70,14 @@ class App extends React.Component {
     this.setState({ redirectTo: path });
   }
 
+  minimize() {
+    remote.getCurrentWindow().minimize();
+  }
+
+  close() {
+    remote.getCurrentWindow().close();
+  }
+
   render() {
     let color = '79daf9ff';
     if (IsNotLinux) {
@@ -90,7 +89,10 @@ class App extends React.Component {
     const navWidth = 48;
     const { showBack, isMaximized, redirectTo } = this.state;
 
-    const navigationTopNodes = [<SplitViewCommand key="0" label="Library" icon="Library" onClick={() => this.handleNavRedirect('/')} />, <SplitViewCommand key="1" label="Import Games" icon="ImportAll" onClick={() => this.handleNavRedirect('/import')} />];
+    const navigationTopNodes = [
+      <SplitViewCommand key="0" label="Library" icon="Library" onClick={() => this.handleNavRedirect('/')} />,
+      <SplitViewCommand key="1" label="Import Games" icon="ImportAll" onClick={() => this.handleNavRedirect('/import')} />,
+    ];
 
     let backBtn;
     let titleWidth = '100%';
@@ -115,7 +117,7 @@ class App extends React.Component {
             }}
             size={22}
           >
-          Back
+            Back
           </IconButton>
         </Link>
       );
@@ -187,10 +189,12 @@ class App extends React.Component {
                 <Route exact path="/import" component={Import} />
                 <Route exact path="/game" component={Game} />
                 <Route exact path="/search" component={Search} />
+
               </div>
             </NavigationView>
           </div>
         </Router>
+
         <ToastHandler />
       </UWPThemeProvider>
     );
