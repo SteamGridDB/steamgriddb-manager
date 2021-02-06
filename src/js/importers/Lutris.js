@@ -43,8 +43,8 @@ class Lutris {
         database.all('SELECT * FROM games', (err, rows) => {
 
           Steam.getCurrentUserGridPath().then((userGridPath) => {
-            rows.forEach ((row) => {
-
+            rows.filter(row => row.installed).forEach ((row) => {
+              
               let appId = Steam.generateNewAppId(exe, row.name);
               let icon = join(userGridPath, `${appId}.png`);
 
