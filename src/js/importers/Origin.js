@@ -1,5 +1,5 @@
 import { PowerShell, LauncherAutoClose } from '../paths';
-
+import { IsLinux } from '../Linux';
 const Registry = window.require('winreg');
 const fs = window.require('fs');
 const path = window.require('path');
@@ -16,6 +16,10 @@ class Origin {
         arch: 'x86',
         key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Origin',
       });
+
+      if (IsLinux) {
+        return resolve(false);
+      }
 
       reg.valueExists('', (err, exists) => {
         if (err) {

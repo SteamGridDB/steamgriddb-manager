@@ -14,6 +14,11 @@ const { metrohash64 } = window.require('metrohash');
 const log = window.require('electron-log');
 const Categories = window.require('steam-categories');
 const glob = window.require('glob');
+const {remote} = window.require('electron');
+const {app} = remote;
+import { IsLinux } from './Linux';
+
+const home = app.getPath('home');
 
 class Steam {
   constructor() {
@@ -26,6 +31,10 @@ class Steam {
     return new Promise((resolve, reject) => {
       if (this.steamPath) {
         return resolve(this.steamPath);
+      }
+      
+      if (IsLinux) {
+        return resolve(home + '/.steam/steam/');
       }
 
       const key = new Registry({
@@ -305,36 +314,87 @@ class Steam {
           reject();
         }
 
-        let cur = 0;
-        const data = new Stream();
-        let progress = 0;
-        let lastProgress = 0;
-        https.get(url, (response) => {
-          const len = parseInt(response.headers['content-length'], 10);
+        if (url.startsWith('http')) {
+          let cur = 0;
+          const data = new Stream();
+          let progress = 0;
+          let lastProgress = 0;
+          https.get(url, (response) => {
+            const len = parseInt(response.headers['content-length'], 10);
 
-          response.on('data', (chunk) => {
-            cur += chunk.length;
-            data.push(chunk);
-            progress = Math.round((cur / len) * 10) / 10;
-            if (progress !== lastProgress) {
-              lastProgress = progress;
-            }
-          });
+            response.on('data', (chunk) => {
+              cur += chunk.length;
+              data.push(chunk);
+              progress = Math.round((cur / len) * 10) / 10;
+              if (progress !== lastProgress) {
+                lastProgress = progress;
+              }
+            });
 
-          response.on('end', () => {
-            // Delete old image(s)
-            glob(`${dest.replace(imageExt, '')}.*`, (er, files) => {
-              files.forEach((file) => {
-                fs.unlinkSync(file);
+            response.on('end', () => {
+              // Delete old image(s)
+              glob(`${dest.replace(imageExt, '')}.*`, (er, files) => {
+                files.forEach((file) => {
+                  fs.unlinkSync(file);
+                });
+
+                fs.writeFileSync(dest, data.read());
+                resolve(dest);
               });
 
               fs.writeFileSync(dest, data.read());
               resolve(dest);
             });
+          }).on('error', (err) => {
+            fs.unlink(dest);
+            reject(err);
           });
-        }).on('error', (err) => {
-          fs.unlink(dest);
-          reject(err);
+
+        } else {  // if the url is actually a file path
+          // Delete old image(s)
+          glob(`${dest.replace(imageExt, '')}.*`, (er, files) => {
+            files.forEach((file) => {
+              fs.unlinkSync(file);
+            });
+            // copy over the file
+            fs.copyFile(url, dest, (err) => {
+              if (err) throw err;
+              resolve(dest);
+            });
+          });
+        }
+      });
+    });
+  }
+
+  static removeAsset(type, appId) {
+    return new Promise((resolve, reject) => {
+      this.getCurrentUserGridPath().then((userGridPath) => {
+        let dest;
+
+        switch (type) {
+        case 'horizontalGrid':
+          dest = join(userGridPath, `${appId}`);
+          break;
+        case 'verticalGrid':
+          dest = join(userGridPath, `${appId}p`);
+          break;
+        case 'hero':
+          dest = join(userGridPath, `${appId}_hero`);
+          break;
+        case 'logo':
+          dest = join(userGridPath, `${appId}_logo`);
+          break;
+        default:
+          reject();
+        }
+
+        // Delete old image(s)
+        glob(`${dest}.*`, (er, files) => {
+          files.forEach((file) => {
+            fs.unlinkSync(file);
+          });
+          resolve(dest);
         });
       });
     });
