@@ -341,9 +341,6 @@ class Steam {
                 fs.writeFileSync(dest, data.read());
                 resolve(dest);
               });
-
-              fs.writeFileSync(dest, data.read());
-              resolve(dest);
             });
           }).on('error', (err) => {
             fs.unlink(dest);
