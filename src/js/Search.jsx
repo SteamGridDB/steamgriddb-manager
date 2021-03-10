@@ -57,7 +57,15 @@ class Search extends React.Component {
           this.queryApi(type, id);
         });
     } else {
-      this.queryApi(type, id);
+      this.queryApi(type, id)
+      .catch((err) => {
+        type = 'game';
+        this.SGDB.searchGame(game.name)
+          .then((gameResp) => {
+            id = gameResp[0].id;
+            this.queryApi(type, id);
+          });
+      });
     }
   }
 
@@ -125,7 +133,7 @@ class Search extends React.Component {
 
     switch (location.state.assetType) {
     case 'horizontalGrid':
-      this.SGDB.getGrids({ type, id }).then((res) => {
+      return this.SGDB.getGrids({ type, id }).then((res) => {
         this.setState({
           isLoaded: true,
           items: res,
@@ -133,7 +141,7 @@ class Search extends React.Component {
       });
       break;
     case 'verticalGrid':
-      this.SGDB.getGrids({ type, id, dimensions: ['600x900'] }).then((res) => {
+      return this.SGDB.getGrids({ type, id, dimensions: ['600x900'] }).then((res) => {
         this.setState({
           isLoaded: true,
           items: res,
@@ -141,7 +149,7 @@ class Search extends React.Component {
       });
       break;
     case 'hero':
-      this.SGDB.getHeroes({ type, id }).then((res) => {
+      return this.SGDB.getHeroes({ type, id }).then((res) => {
         this.setState({
           isLoaded: true,
           items: res,
@@ -149,7 +157,7 @@ class Search extends React.Component {
       });
       break;
     case 'logo':
-      this.SGDB.getLogos({ type, id }).then((res) => {
+      return this.SGDB.getLogos({ type, id }).then((res) => {
         this.setState({
           isLoaded: true,
           items: res,
