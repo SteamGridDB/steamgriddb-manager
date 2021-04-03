@@ -79,6 +79,12 @@ const BNET_GAMES = {
     exes: ['Wow'],
     icon: 'World of Warcraft Launcher.exe',
   },
+  zeus: {
+    name: 'Call of Duty: Black Ops Cold War',
+    launchId: 'ZEUS',
+    exes: ['BlackOpsColdWar'],
+    icon: 'Black Ops Cold War Launcher.exe',
+  },
 };
 
 class BattleNet {
