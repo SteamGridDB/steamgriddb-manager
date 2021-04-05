@@ -162,6 +162,7 @@ class Steam {
                     platform: storedGame.platform,
                     type: 'shortcut',
                     appid,
+                    appidold,
                   });
                   processed.push(configId);
                 }
@@ -176,6 +177,7 @@ class Steam {
                   platform: 'other',
                   type: 'shortcut',
                   appid,
+                  appidold,
                 });
               }
             });
