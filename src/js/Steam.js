@@ -146,6 +146,7 @@ class Steam {
               const appName = item.appname || item.AppName || item.appName;
               const exe = item.exe || item.Exe;
               const appid = this.generateNewAppId(exe, appName);
+              const appidold = this.generateAppId(exe, appName);
               const configId = metrohash64(exe + item.LaunchOptions);
 
               if (store.has(`games.${configId}`)) {
