@@ -66,6 +66,11 @@ class Search extends React.Component {
     this.setState({
       items: clonedItems,
     });
+    
+    //Add horizontalGrid BPM image for Non-Steam Games
+    if (game.appidold && location.state.assetType == 'horizontalGrid') {
+      Steam.addAsset(location.state.assetType, game.appidold, item.url);  
+    }
 
     Steam.addAsset(location.state.assetType, game.appid, item.url).then(() => {
       clonedItems[itemIndex].downloading = false;
