@@ -145,8 +145,11 @@ class Steam {
             items.shortcuts.forEach((item) => {
               const appName = item.appname || item.AppName || item.appName;
               const exe = item.exe || item.Exe;
-              const appid = this.generateNewAppId(exe, appName);
               const configId = metrohash64(exe + item.LaunchOptions);
+              const appid = (item.appid) ?
+                (item.appid >>> 0) : //bitwise unsigned 32 bit ID of manually added non-steam game
+                this.generateNewAppId(exe, appName);
+              
 
               if (store.has(`games.${configId}`)) {
                 const storedGame = store.get(`games.${configId}`);
