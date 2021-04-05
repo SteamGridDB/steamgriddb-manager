@@ -67,12 +67,16 @@ class Search extends React.Component {
       items: clonedItems,
     });
     
-    //Add horizontalGrid BPM image for Non-Steam Games
-    if (game.appidold && location.state.assetType == 'horizontalGrid') {
-      Steam.addAsset(location.state.assetType, game.appidold, item.url);  
-    }
+    const downloadPromises = [];
 
-    Steam.addAsset(location.state.assetType, game.appid, item.url).then(() => {
+    downloadPromises.push(Steam.addAsset(location.state.assetType, game.appid, item.url));
+    
+    // Add horizontalGrid BPM image for Non-Steam Games
+    if (game.appidold && location.state.assetType == 'horizontalGrid') {
+      downloadPromises.push(Steam.addAsset(location.state.assetType, game.appidold, item.url));
+    }
+    
+    Promise.all(downloadPromises).then(() => {
       clonedItems[itemIndex].downloading = false;
       this.setState({
         items: clonedItems,
