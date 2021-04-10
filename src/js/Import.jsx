@@ -246,6 +246,7 @@ class Import extends React.Component {
             </p>
           ),
         });
+        log.info(games.length + ' games imported from ' + platform.name);
       }).then(() => {
         // Download images
         PubSub.publish('toast', {
@@ -253,7 +254,7 @@ class Import extends React.Component {
           title: 'Downloading Images...',
           contents: (<p>Downloading images for imported games...</p>),
         });
-
+        log.info('Downloading images for imported games...');
         const ids = games.map((x) => encodeURIComponent(x.id));
         let posters = [];
         let heroes = [];
@@ -326,6 +327,7 @@ class Import extends React.Component {
               title: 'Downloads Complete',
               contents: (<p>All Images Downloaded!</p>),
             });
+            log.info('All Images Downloaded!');
           });
         });
       }).catch((err) => {

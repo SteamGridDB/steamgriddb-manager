@@ -448,6 +448,9 @@ class Steam {
 
   static async checkIfSteamIsRunning() {
     return new Promise((resolve) => {
+      if (IsLinux) {
+        return resolve(false);
+      }
       const levelDBPath = this.getLevelDBPath();
 
       this.getLoggedInUser().then((user) => {
@@ -474,6 +477,9 @@ class Steam {
 
   static addCategory(games, categoryId) {
     return new Promise((resolve, reject) => {
+      if (IsLinux) {
+        return resolve();
+      }
       const levelDBPath = this.getLevelDBPath();
 
       this.getLoggedInUser().then((user) => {
