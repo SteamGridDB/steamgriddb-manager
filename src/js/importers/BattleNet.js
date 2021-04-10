@@ -67,6 +67,12 @@ const BNET_GAMES = {
     exes: ['Hearthstone'],
     icon: 'Hearthstone.exe',
   },
+  wlby: {
+    name: 'Crash Bandicoot 4',
+    launchId: 'WLBY',
+    exes: ['CrashBandicoot4'],
+    icon: 'CrashBandicoot4.exe',
+  },
   wow: {
     name: 'World of Warcraft',
     launchId: 'WoW',
