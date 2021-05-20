@@ -54,10 +54,7 @@
       "allowToChangeInstallationDirectory": true
     },
     "publish": {
-      "provider": "s3",
-      "region": "us-east-1",
-      "path": "/manager",
-      "bucket": "steamgriddb"
+      "provider": "github"
     }
   },
   "devDependencies": {
