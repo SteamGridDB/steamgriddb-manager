@@ -73,7 +73,7 @@ class Uplay {
             return;
           } if (game.length > 1) {
             try {
-              const gameParsed = yaml.load(game.join('\n'));
+              const gameParsed = yaml.load(game.join('\n'), {'json': true });
 
               if (launcherId) {
                 gameParsed.root.launcher_id = launcherId;
