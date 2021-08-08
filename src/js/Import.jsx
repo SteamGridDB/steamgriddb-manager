@@ -119,7 +119,7 @@ class Import extends React.Component {
               if (platform.games.length) {
                 // Get grids for each platform
                 const ids = platform.games.map((x) => encodeURIComponent(x.id));
-
+                const gameName = platform.games.map((x) => x.name);
                 const getGrids = this.SGDB.getGrids({
                   type: platform.id,
                   id: ids.join(','),
@@ -127,26 +127,51 @@ class Import extends React.Component {
                 })
                   .then((res) => {
                     platform.grids = this._formatResponse(ids, res);
+                    return res;
                   })
                   .catch((e) => {
-                    log.error('Erorr getting grids from SGDB');
-                    console.error(e);
+                    // show an error toast
+                    if (e.message == "Game not found") {
+                      const checkPromises = this.checkFailedGames([{ id: ids, name: gameName }]);
+                      Promise.all(checkPromises).then((res) => this.logFailedGames(res));
+                    }
+                    else {
+                      log.error('Erorr getting grids from SGDB');
+                      console.error(e);
+                    }
+
                     // @todo We need a way to log which game caused the error
                     // @todo Fallback to text search
                     // @todo show an error toast
                   });
-
+                gridsPromises.push(platform.games.map(x => ({ name: x.name, id: x.id })));
                 gridsPromises.push(getGrids);
               }
             });
 
             // Update state after we got the grids
             Promise.all(gridsPromises)
-              .then(() => {
+              .then((res) => {
                 this.setState({
                   isLoaded: true,
                   installedPlatforms,
                 });
+                var failedGames = [];
+                for (var i = 0; i < res.length; i += 2) {
+                  var games = res[i];
+                  var result = res[i + 1];
+
+                  // we will only find errors here for a multiple id search, in single search on error will be caught above
+                  if (games.length > 1) {
+                    games.map((game, i) => {
+                      if ((!result[i].success) && result[i].errors[0] == "Game not found") {
+                        failedGames.push(games[i]);
+                      }
+                    });
+                  }
+                }
+                const checkPromises = this.checkFailedGames(failedGames);
+                Promise.all(checkPromises).then((res) => this.logFailedGames(res));
               });
           })
             .catch((err) => {
@@ -154,6 +179,42 @@ class Import extends React.Component {
             });
         });
     }
+  }
+
+  logFailedGames(res) {
+    for (var i = 0; i < res.length; i += 2) {
+      var pre = res[i];
+      var msgs = res[i + 1];
+
+      log.info(pre);
+      msgs.map((msg) => {
+        log.info(msg);
+      });
+    }
+  }
+
+  checkFailedGames(failedGames) {
+    var promises = [];
+
+    failedGames.map((failedGame) => {
+      promises.push(`Game '${failedGame.name}', id '${failedGame.id}' not found, looking for alternatives...`);
+      const sg = new Promise((resolve, reject) => {
+        this.SGDB.searchGame(failedGame.name).then((res) => {
+          var results = [];
+          res.forEach((altGame, i) => {
+            const altGameTypes = JSON.stringify(altGame.types);
+            results.push(`${i}: name: '${altGame.name}', id: '${altGame.id}', type: '${altGameTypes}'`);
+          });
+
+          resolve(results);
+        }).catch((err) => {
+          reject(`searchGame: ${err}`);
+        });
+      });
+      promises.push(sg);
+    });
+
+    return promises;
   }
 
   /*
@@ -230,6 +291,8 @@ class Import extends React.Component {
       tags: [platform.name],
       icon: game.icon,
     }));
+
+    log.info(`Trying to import ${games.length} games from ${platform.name}`);
 
     Steam.addShortcuts(shortcuts).then(() => {
       Steam.addCategory(games, platform.name).then(() => {
