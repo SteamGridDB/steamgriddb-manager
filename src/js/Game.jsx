@@ -84,7 +84,8 @@ class Game extends React.Component {
     if (!imageURI) {
       return false;
     }
-
+    
+    imageURI=imageURI.replace(/\\/g, "/")
     return `${imageURI}?${(new Date().getTime())}`;
   }
 
