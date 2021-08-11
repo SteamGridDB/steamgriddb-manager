@@ -7,14 +7,19 @@ import PubSub from 'pubsub-js';
 import TopBlur from './Components/TopBlur';
 import Spinner from './Components/spinner';
 import Steam from './Steam';
+import AppBarButton from 'react-uwp/AppBarButton';
+import AppBarSeparator from 'react-uwp/AppBarSeparator';
 
 const SGDB = window.require('steamgriddb');
+const {dialog} = window.require('electron').remote;
 
 class Search extends React.Component {
   constructor(props) {
     super(props);
 
     this.onClick = this.onClick.bind(this);
+    this.onRemove = this.onRemove.bind(this);
+    this.onPickFile = this.onPickFile.bind(this);
     this.SGDB = new SGDB('b971a6f5f280490ab62c0ee7d0fd1d16');
 
     const { location } = this.props;
@@ -52,7 +57,15 @@ class Search extends React.Component {
           this.queryApi(type, id);
         });
     } else {
-      this.queryApi(type, id);
+      this.queryApi(type, id)
+      .catch((err) => {
+        type = 'game';
+        this.SGDB.searchGame(game.name)
+          .then((gameResp) => {
+            id = gameResp[0].id;
+            this.queryApi(type, id);
+          });
+      });
     }
   }
 
@@ -76,12 +89,51 @@ class Search extends React.Component {
     });
   }
 
+  onRemove() {
+    const { game } = this.state;
+    const { location } = this.props;
+
+    Steam.removeAsset(location.state.assetType, game.appid).then(() => {
+      PubSub.publish('toast', {
+        logoNode: 'CheckMark',
+        title: 'Successfully Removed!',
+        contents: (
+          <p>
+            Asset is set to the original image.
+          </p>
+        ),
+      });
+      this.setState({ toGame: <Redirect to={{ pathname: '/game', state: location.state }} /> });
+    });
+  }
+
+  onPickFile () {
+    const { game, items } = this.state;
+    const { location } = this.props;
+    const self = this;
+
+    dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        { name: 'Images', extensions: ['jpg', 'png', 'gif'] },
+      ]
+    }, function (files) {
+        if (files !== undefined && files.length) {
+          
+          Steam.addAsset(location.state.assetType, game.appid, files[0]).then(() => {
+
+            self.setState({ toGame: <Redirect to={{ pathname: '/game', state: location.state }} /> });
+          });
+        }            
+    });
+  }
+
   queryApi(type, id) {
     const { location } = this.props;
 
     switch (location.state.assetType) {
     case 'horizontalGrid':
-      this.SGDB.getGrids({ type, id }).then((res) => {
+      return this.SGDB.getGrids({ type, id }).then((res) => {
         this.setState({
           isLoaded: true,
           items: res,
@@ -89,7 +141,7 @@ class Search extends React.Component {
       });
       break;
     case 'verticalGrid':
-      this.SGDB.getGrids({ type, id, dimensions: ['600x900'] }).then((res) => {
+      return this.SGDB.getGrids({ type, id, dimensions: ['600x900'] }).then((res) => {
         this.setState({
           isLoaded: true,
           items: res,
@@ -97,7 +149,7 @@ class Search extends React.Component {
       });
       break;
     case 'hero':
-      this.SGDB.getHeroes({ type, id }).then((res) => {
+      return this.SGDB.getHeroes({ type, id }).then((res) => {
         this.setState({
           isLoaded: true,
           items: res,
@@ -105,7 +157,7 @@ class Search extends React.Component {
       });
       break;
     case 'logo':
-      this.SGDB.getLogos({ type, id }).then((res) => {
+      return this.SGDB.getLogos({ type, id }).then((res) => {
         this.setState({
           isLoaded: true,
           items: res,
@@ -130,8 +182,32 @@ class Search extends React.Component {
     }
 
     return (
-      <>
-        <TopBlur />
+      <div style={{ height: 'inherit', overflow: 'hidden' }}>
+        <TopBlur additionalHeight={48} />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'right',
+            position: 'fixed',
+            top: 30,
+            width: 'calc(100vw - 55px)',
+            height: 48,
+            zIndex: 2,
+          }}
+        >
+          <div style={{ marginLeft: 'auto', marginRight: 24 }} />
+          <AppBarButton
+            icon="Delete"
+            label="Reset"
+            onClick={this.onRemove}
+          />
+          <AppBarSeparator style={{ height: 24 }} />
+          <AppBarButton
+            icon="Add"
+            label="Custom Image"
+            onClick={this.onPickFile}
+          />
+        </div>
         <div
           id="search-container"
           style={{
@@ -140,6 +216,7 @@ class Search extends React.Component {
             padding: 15,
             paddingLeft: 10,
             paddingTop: 45,
+            marginTop: 48,
           }}
         >
           {items.map((item, i) => (
@@ -175,7 +252,7 @@ class Search extends React.Component {
             </Button>
           ))}
         </div>
-      </>
+      </div>
     );
   }
 }

@@ -1,5 +1,6 @@
 import decoder from 'blizzard-product-parser/src/js/database'; // Workaround for badly configured lib
 import { PowerShell, LauncherAutoClose } from '../paths';
+import { IsLinux } from '../Linux';
 
 const Registry = window.require('winreg');
 const fs = window.require('fs');
@@ -95,6 +96,10 @@ class BattleNet {
         arch: 'x86',
         key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Battle.net',
       });
+
+      if (IsLinux) {
+        return resolve(false);
+      }
 
       reg.valueExists('', (err, exists) => {
         if (err) {

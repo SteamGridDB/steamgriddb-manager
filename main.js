@@ -10,6 +10,10 @@ autoUpdater.autoInstallOnAppQuit = true;
 
 log.catchErrors({ showDialog: true });
 
+process.on('uncaughtException', function (err) {
+  console.log(err);
+})
+
 log.info(`Started SGDB Manager ${app.getVersion()}`);
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -30,7 +34,7 @@ function createWindow() {
   });
 
   mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'public', 'index.html'),
+    pathname: path.join(__dirname, 'public/index.html'),
     protocol: 'file:',
     slashes: true,
   }));
@@ -59,6 +63,7 @@ function createWindow() {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
+  // mainWindow.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished

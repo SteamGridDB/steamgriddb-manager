@@ -1,5 +1,5 @@
 import { PowerShell, LauncherAutoClose } from '../paths';
-
+import { IsLinux } from '../Linux';
 const Registry = window.require('winreg');
 const yaml = window.require('js-yaml');
 const fs = window.require('fs');
@@ -15,6 +15,10 @@ class Uplay {
         key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Uplay',
       });
 
+      if (IsLinux) {
+        return resolve(false);
+      }
+      
       reg.valueExists('', (err, exists) => {
         if (err) {
           reject(new Error('Could not check if Uplay is installed.'));
