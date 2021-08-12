@@ -97,7 +97,7 @@
     "iconv-lite": "^0.6.2",
     "js-yaml": "^4.0.0",
     "jsonminify": "^0.4.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "metrohash": "^2.6.0",
     "node-powershell": "^4.0.0",
     "promise-reflect": "^1.1.0",
