@@ -88,6 +88,7 @@
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
+    "@mapbox/node-pre-gyp": "^1.0.5",
     "@node-steam/vdf": "^2.1.0",
     "blizzard-product-parser": "^1.0.1",
     "cheerio": "^1.0.0-rc.5",

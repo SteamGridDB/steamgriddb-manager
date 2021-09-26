@@ -94,10 +94,10 @@ class Steam {
         libraries.push(steamPath);
 
         // Add library folders from libraryfolders.vdf
-        Object.keys(parsedLibFolders.LibraryFolders).forEach((key) => {
-          const library = parsedLibFolders.LibraryFolders[key];
+        Object.keys(parsedLibFolders.libraryfolders).forEach((key) => {
+          const library = parsedLibFolders.libraryfolders[key];
           if (!Number.isNaN(parseInt(key, 10))) {
-            libraries.push(library);
+            libraries.push(library['path']);
           }
         });
 
