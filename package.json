@@ -12,7 +12,7 @@
   "scripts": {
     "start": "electron .",
     "build": "webpack --mode production && electron-builder",
-    "run": "webpack --mode development && electron .",
+    "run": "webpack --mode development && electron . --no-sandbox",
     "watch": "concurrently \"webpack --mode development --watch\" \"electron .\"",
     "pack": "electron-builder --dir",
     "publish": "webpack --mode production && electron-builder --publish always",
