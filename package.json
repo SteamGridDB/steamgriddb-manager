@@ -16,7 +16,8 @@
     "watch": "concurrently \"webpack --mode development --watch\" \"electron .\"",
     "pack": "electron-builder --dir",
     "publish": "webpack --mode production && electron-builder --publish always",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "nodev": "node -v"
   },
   "build": {
     "appId": "com.steamgriddb.manager",
@@ -103,6 +104,7 @@
     "jsonminify": "^0.4.1",
     "lodash": "^4.17.20",
     "metrohash": "^2.6.0",
+    "node": "16.19.0",
     "node-powershell": "^4.0.0",
     "promise-reflect": "^1.1.0",
     "promise-settle": "^0.3.0",
